@@ -13,7 +13,7 @@ const Header = () => {
   return (
     <>
       {/* NAVBAR */}
-      <nav className="flex justify-between items-center px-6 py-4 bg-white shadow-sm relative">
+      <nav className="flex justify-between items-center px-6 py-4 bg-white shadow-sm relative text-[1rem] md:text-[1.2rem] font-semibold">
         
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-2">

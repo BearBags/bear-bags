@@ -11,11 +11,11 @@ import { HiOutlineBuildingLibrary } from "react-icons/hi2";
 
 const Impact = () => {
   return (
-    <section className="w-full bg-gradient-to-b from-[#06261F] via-[#08332A] to-[#06261F] py-20 px-6 text-white bg-[#173d36]">
+    <section id="impact" className="w-full bg-gradient-to-b from-[#06261F] via-[#08332A] to-[#06261F] py-12 md:py-20 px-4 sm:px-6 text-white bg-[#173d36]">
       <div className="max-w-6xl mx-auto text-center">
 
         {/* Heading */}
-        <h2 className="text-4xl md:text-5xl font-semibold mb-3 font-serif">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold mb-3 font-serif">
           Built to give back.
         </h2>
 
@@ -38,30 +38,30 @@ const Impact = () => {
 </div>
 
         {/* Metric Cards */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-6">
           
           {/* Card 1 */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-8 flex items-center justify-between text-left backdrop-blur-md h-[200px] bg-[#02362c7a] shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
-            <div className="flex items-center gap-5 justify-center">
-              <div className="w-20 h-20 flex items-center justify-center rounded-full bg-[#C8A45D]/20 text-[#C8A45D] text-xl">
-                <LiaHandHoldingHeartSolid className="inline-block w-10 h-10" />
+          <div className="rounded-xl border border-white/10 bg-white/5 p-5 sm:p-8 flex items-center text-left backdrop-blur-md bg-[#02362c7a] shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
+            <div className="flex items-center gap-4 sm:gap-5">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 flex items-center justify-center rounded-full bg-[#C8A45D]/20 text-[#C8A45D] shrink-0">
+                <LiaHandHoldingHeartSolid className="w-7 h-7 sm:w-10 sm:h-10" />
               </div>
-              <div>
-                <h3 className="text-5xl font-semibold mt-1 mb-2 font-serif">₹15,000</h3>
-                <p className="text-sm text-gray-300">contributed so far</p>
+              <div className="min-w-0">
+                <h3 className="text-3xl sm:text-5xl font-semibold mb-1 sm:mb-2 font-serif">₹15,000</h3>
+                <p className="text-xs sm:text-sm text-gray-300">contributed so far</p>
               </div>
             </div>
           </div>
 
           {/* Card 2 */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-8 flex items-center justify-between text-left backdrop-blur-md h-[200px] bg-[#02362c7a] shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
-            <div className="flex items-center gap-5 justify-center">
-              <div className="w-20 h-20 flex items-center justify-center rounded-full bg-[#C8A45D]/20 text-[#C8A45D] text-xl">
-                <MdPeopleOutline className="inline-block w-10 h-10" />
+          <div className="rounded-xl border border-white/10 bg-white/5 p-5 sm:p-8 flex items-center text-left backdrop-blur-md bg-[#02362c7a] shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
+            <div className="flex items-center gap-4 sm:gap-5">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 flex items-center justify-center rounded-full bg-[#C8A45D]/20 text-[#C8A45D] shrink-0">
+                <MdPeopleOutline className="w-7 h-7 sm:w-10 sm:h-10" />
               </div>
-              <div>
-                <h3 className="text-5xl font-semibold mt-1 mb-2 font-serif">30%</h3>
-                <p className="text-sm text-gray-300">
+              <div className="min-w-0">
+                <h3 className="text-3xl sm:text-5xl font-semibold mb-1 sm:mb-2 font-serif">30%</h3>
+                <p className="text-xs sm:text-sm text-gray-300">
                   profits committed to community development
                 </p>
               </div>
@@ -99,45 +99,45 @@ const Impact = () => {
 </p>
 
         {/* Bottom Feature Bar */}
-<div className="mt-14 rounded-2xl border border-white/10 bg-[#02362c7a] px-8 py-6 shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
-  <div className="grid grid-cols-1 md:grid-cols-4">
+<div className="mt-10 sm:mt-14 rounded-2xl border border-white/10 bg-[#02362c7a] px-4 sm:px-8 py-5 sm:py-6 shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-0">
     {[
       {
-        icon: <HiOutlineDocumentCheck className="w-7 h-7 text-white/90" />,
+        icon: <HiOutlineDocumentCheck className="w-6 h-6 sm:w-7 sm:h-7 text-white/90" />,
         title: "Verified Receipts",
         description: "All contributions backed by real receipts.",
       },
       {
-        icon: <HiOutlineBuildingLibrary className="w-7 h-7 text-white/90" />,
+        icon: <HiOutlineBuildingLibrary className="w-6 h-6 sm:w-7 sm:h-7 text-white/90" />,
         title: "Trusted Partners",
         description: "We work with verified, impact-driven NGOs.",
       },
       {
-        icon: <BiLandscape className="w-7 h-7 text-white/90" />,
+        icon: <BiLandscape className="w-6 h-6 sm:w-7 sm:h-7 text-white/90" />,
         title: "On-Ground Impact",
         description: "Real stories and photos from the communities.",
       },
       {
-        icon: <SlCalender className="w-7 h-7 text-white/90" />,
+        icon: <SlCalender className="w-6 h-6 sm:w-7 sm:h-7 text-white/90" />,
         title: "Regular Updates",
         description: "We share updates as impact happens.",
       },
     ].map((item, index) => (
       <div
         key={index}
-        className={`flex items-start gap-4 px-6 py-2 ${
-          index !== 3 ? "md:border-r md:border-white/10" : ""
+        className={`flex items-start gap-3 sm:gap-4 px-2 sm:px-6 py-3 sm:py-2 ${
+          index !== 3 ? "sm:border-r sm:border-white/10" : ""
         }`}
       >
         {/* Icon */}
         <div className="flex-shrink-0 mt-1">{item.icon}</div>
 
         {/* Content */}
-        <div>
-          <h4 className="text-white font-semibold text-[15px] leading-tight">
+        <div className="min-w-0">
+          <h4 className="text-white font-semibold text-sm sm:text-[15px] leading-tight">
             {item.title}
           </h4>
-          <p className="mt-1 text-[13px] leading-5 text-white/70 max-w-[180px]">
+          <p className="mt-0.5 sm:mt-1 text-xs sm:text-[13px] leading-5 text-white/70 max-w-[180px]">
             {item.description}
           </p>
         </div>

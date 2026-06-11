@@ -1,14 +1,26 @@
 'use client';
 import React, { useEffect, useRef } from "react";
+import { FaStar, FaStarHalfAlt } from "react-icons/fa";
 
-const testimonials = [
+interface Testimonial {
+  type: "image" | "video";
+  name: string;
+  image?: string;
+  video?: string;
+  quote: string;
+  avatar: string;
+  rating: number;
+}
+
+const testimonials:Testimonial[] = [
   {
     type: "image",
     name: "Avisha",
     image: "/images/review/avisha_review.jpeg",
     quote:
-      "I've tried at least four eco-friendly garbage bags before.",
+      "100% Recommend. Very Very good quality bags, using it for my pets and kitchen, would totally recommend.",
     avatar: "A",
+    rating: 5,
   },
 
   {
@@ -16,49 +28,55 @@ const testimonials = [
     name: "Anoop",
     video: "/videos/anoop_review.MP4",
     quote:
-      "Love that 30% of profits go to a good cause.",
+      "I personally liked the bags. The price is a bit higher compared to the local options, but the product quality is good. The moment I first held the bag, it felt premium and sturdier than most garbage bags I have used. I also noticed that the roll itself is slightly heavier, which I actually liked. The bag length is perfect for my dustbin. The only thing I felt was missing is a tie string to close the bag",
     avatar: "A",
+    rating: 4,
   },
    {
     type: "image",
     name: "Mekhala",
     image: "/images/review/mekhala_review.jpeg",
     quote:
-      "Finally found a compostable bag that actually works.",
+      "Purchased these bear bags from Amazon, and the quality of these bags is visible, the bags are thick so do not anticipate any leakage, big enough to fit the dustbins properly and plus they are compostable. Only thing which I felt was missing was the string which helps tie the bag, but since the bags are big enough they can be tied without that. Overall happy with purchase.",
     avatar: "M",
+    rating: 4.5,
   },
   {
     type: "image",
     name: "Sachin",
     image: "/images/review/sachin_review.jpeg",
     quote:
-      "Finally switched my entire home to compostable bags.",
+      "Great product! The bags are sturdy and handle daily waste without tearing. Reliable and well made, glad to have found a compostable option that doesn’t compromise on strength. Definitely worth the purchase",
       avatar: "S",
-  },
+    rating: 5,
+    },
     {
     type: "video",
     name: "Ayushi",
     video: "/videos/ayushi_review.mp4",
     quote:
-      "Love that 30% of profits go to a good cause.",
+      "Quality is good, strength is also good, can hold the household waste with ease.",
     avatar: "A",
+    rating: 5,
   },
    {
     type: "image",
     name: "Anish",
     image: "/images/review/anish_review.jpeg",
     quote:
-      "Finally found a compostable bag that actually works.",
+      "I orderd this Bear Bag from amazon. The packaging was really good. I always wanted to use compostable garbage bags but always had the issue with the quality . Bear Bag is really good , great build quality , good strength to be honest and we were able to fill it completely without it getting stretched. Would recommend it to folks interested to contribute to mother earth by purchasing compostable bags than plastic bags!",
     avatar: "M",
+    rating: 5,
   },
   {
     type: "image",
     name: "Lavanya",
     image: "/images/review/lavanya_review.jpg",
     quote:
-      "Finally switched my entire home to compostable bags.",
+      "Good Quality biodegradable bags. Strong, practical and eco-friendly.",
       avatar: "L",
-  },
+    rating: 5,
+    },
 ];
 interface TrackType {
   scrollWidth: number;
@@ -164,9 +182,17 @@ const isPaused = useRef(false);
     </div>
   )}
 
-  <div className="mb-4 flex text-[#ffb400] text-lg">
-    ★★★★★
-  </div>
+  {/* <div className="mb-4 flex text-[#ffb400] text-lg">
+   {item.rating}
+  </div> */}
+
+<div className="mb-4 flex items-center gap-1 text-[#ffb400] text-lg">
+  {[...Array(Math.floor(item.rating))].map((_, i) => (
+    <FaStar key={i} />
+  ))}
+
+  {item.rating % 1 !== 0 && <FaStarHalfAlt />}
+</div>
 
   <p className="text-neutral-700 leading-7 mb-6">
     “{item.quote}”

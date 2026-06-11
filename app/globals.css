@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; }
 
   :root {
     --forest: #1a3a2a;
@@ -326,7 +326,13 @@ width: 513px;
   .pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--forest-light); }
 
   /* ─── SECTION COMMONS ─── */
-  section { padding: 100px 5%; }
+  /* section { padding: 100px 5%; } */
+    #home { padding: 100px 5%; }
+    #product { padding: 100px 5%; }
+    #impact { padding: 100px 5%; }
+    #testimonials { padding: 100px 5%; }
+    #faq { padding: 100px 5%; }
+    #newsletter { padding: 100px 5%; }
 
   .section-label {
     font-size: 11px;
@@ -558,56 +564,49 @@ width: 513px;
 
 .image-wrapper {
   position: relative;
-  width: 1750px;
-  height: 600px;
-  border-radius: 20px;
+  width: 100%;
+  height: 280px;
   overflow: hidden;
-  border-radius: 30px;
-  overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
 }
 
-.image-wrapper {
-  border-radius: 30px;
-  overflow: hidden;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-  transition: all 0.3s ease;
-  margin: 0 auto; /* keep centered */
-
+@media (min-width: 640px) {
+  .image-wrapper {
+    height: 380px;
+  }
 }
 
-.image-wrapper:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 25px 60px rgba(0,0,0,0.18);
-}
-
-.image {
-  object-fit: fill;
-  border-radius: 5px;
-}
-
-/* Desktop */
-/* Tablet */
 @media (min-width: 768px) {
   .image-wrapper {
-    height: 400px;
+    height: 480px;
   }
 }
 
-/* Laptop */
 @media (min-width: 1024px) {
   .image-wrapper {
-    max-width: 1000px;
-    height: 500px;
+    height: 580px;
   }
 }
 
-/* Large screens */
-@media (min-width: 1600px) {
+@media (min-width: 1536px) {
   .image-wrapper {
-    max-width: 1400px;
-    height: 600px;
+    height: 680px;
   }
+}
+
+.stretch-inner {
+  position: absolute;
+  inset: 0;
+  animation: stretchPulse 5s ease-in-out infinite;
+  transform-origin: center center;
+  top: -5rem;
+}
+
+@keyframes stretchPulse {
+  0%, 100% { transform: scaleX(1); }
+  20% { transform: scaleX(1.12) scaleY(0.94); }
+  40% { transform: scaleX(0.97) scaleY(1.02); }
+  55% { transform: scaleX(1.06) scaleY(0.97); }
+  70% { transform: scaleX(1); }
 }
 
 

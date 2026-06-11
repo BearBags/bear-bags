@@ -31,7 +31,7 @@ const ProductIntroduction = () => {
   const product = getProductBySlug('medium-size-bag');
   if (!product) return null;
   return (
-    <section className="bg-[#fff9f3] px-4 sm:px-6 py-10 md:py-16 flex justify-center">
+    <section id='product' className="bg-[#fff9f3] px-4 sm:px-6 py-10 md:py-16 flex justify-center pt-6 pb-4">
       <div className="w-full max-w-9xl bg-[#fff9f3] px-6 sm:px-10 py-10 md:py-14">
 
         {/* TOP SECTION */}

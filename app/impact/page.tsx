@@ -5,12 +5,12 @@ import Image from 'next/image';
 
 const letters = [
   {
-    name: 'Samarthanam Trust',
+    name: 'Gnana Jyothi Trust',
     image: '/images/acknowledgment/Gnana Jyothi Trust_Acknowledgement Letter.jpeg',
     pdf: '/images/acknowledgment/Gnana Jyothi Trust_Acknowledgement Letter.jpeg',
   },
   {
-    name: 'Gana Jyothi Trust',
+    name: 'Samarthanam Trust',
     image: '/images/acknowledgment/Samarthanam Acknowledgment Letter Screenshot.png',
     pdf: '/images/acknowledgment/Samarthanam Acknowledgment Letter Screenshot.png',
   },
