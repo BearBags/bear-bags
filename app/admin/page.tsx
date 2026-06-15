@@ -1,4 +1,12 @@
 import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+
+async function logout() {
+  'use server';
+  (await cookies()).delete('bear_admin_session');
+  redirect('/admin/login');
+}
 
 async function getData() {
   const [orders, subscribers] = await Promise.all([
@@ -22,16 +30,8 @@ export default async function AdminPage() {
 
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-semibold text-[#134632]">Bear Bags — Admin</h1>
-          <form action="/api/admin/login" method="POST">
-            <button
-              formAction="/api/admin/login"
-              type="submit"
-              onClick={async (e) => {
-                e.preventDefault();
-                await fetch('/api/admin/login', { method: 'DELETE' });
-                window.location.href = '/admin/login';
-              }}
-              className="rounded-full border border-[#d1ddcf] bg-white px-5 py-2 text-sm text-[#555] hover:bg-[#f0f0e8]">
+          <form action={logout}>
+            <button type="submit" className="rounded-full border border-[#d1ddcf] bg-white px-5 py-2 text-sm text-[#555] hover:bg-[#f0f0e8]">
               Log out
             </button>
           </form>

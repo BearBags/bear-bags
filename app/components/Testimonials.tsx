@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { FaStar, FaStarHalfAlt } from "react-icons/fa";
 
 interface Testimonial {
@@ -80,17 +80,9 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-function TestimonialCard({ item, onMouseEnter, onMouseLeave }: {
-  item: Testimonial;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
-}) {
+function TestimonialCard({ item }: { item: Testimonial }) {
   return (
-    <div
-      className="w-[300px] sm:w-[340px] shrink-0 rounded-3xl border border-neutral-200 bg-white p-6 sm:p-7 shadow-sm"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
+    <div className="w-[300px] sm:w-[340px] shrink-0 rounded-3xl border border-neutral-200 bg-white p-6 sm:p-7 shadow-sm">
       {item.type === "image" && item.image && (
         <div className="mb-5 overflow-hidden rounded-2xl">
           <img src={item.image} alt={item.name} className="h-[200px] sm:h-[240px] w-full object-cover" />
@@ -101,13 +93,10 @@ function TestimonialCard({ item, onMouseEnter, onMouseLeave }: {
           <video src={item.video} autoPlay muted loop playsInline className="h-[200px] sm:h-[240px] w-full object-cover" />
         </div>
       )}
-
       <StarRating rating={item.rating} />
-
       <p className="text-neutral-700 leading-7 mb-6 text-sm sm:text-base">
         "{item.quote}"
       </p>
-
       <div className="flex items-center gap-4">
         <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-black text-white flex items-center justify-center font-semibold text-sm sm:text-base shrink-0">
           {item.avatar}
@@ -119,29 +108,56 @@ function TestimonialCard({ item, onMouseEnter, onMouseLeave }: {
 }
 
 const Testimonials = () => {
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const isPaused = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let animationFrame: number;
-    let position = 0;
-    const speed = 0.5;
+    const el = containerRef.current;
+    if (!el) return;
 
-    const animate = () => {
-      if (!isPaused.current) {
-        position -= speed;
-        const track = trackRef.current;
-        if (track) {
-          const firstSetWidth = track.scrollWidth / 2;
-          if (Math.abs(position) >= firstSetWidth) position = 0;
-          track.style.transform = `translateX(${position}px)`;
-        }
+    let raf: number;
+    let pos = 0;
+    let paused = false;
+    let resumeTimer: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      if (!paused) {
+        pos += 0.5;
+        const half = el.scrollWidth / 2;
+        if (pos >= half) pos = 0;
+        el.scrollLeft = pos;
       }
-      animationFrame = requestAnimationFrame(animate);
+      raf = requestAnimationFrame(tick);
     };
 
-    animate();
-    return () => cancelAnimationFrame(animationFrame);
+    const pause = () => {
+      paused = true;
+      clearTimeout(resumeTimer);
+    };
+
+    const resume = () => {
+      clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => {
+        // sync pos to wherever the user scrolled before resuming animation
+        pos = el.scrollLeft;
+        paused = false;
+      }, 1500);
+    };
+
+    el.addEventListener('mouseenter', pause);
+    el.addEventListener('mouseleave', resume);
+    el.addEventListener('touchstart', pause, { passive: true });
+    el.addEventListener('touchend', resume, { passive: true });
+
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(resumeTimer);
+      el.removeEventListener('mouseenter', pause);
+      el.removeEventListener('mouseleave', resume);
+      el.removeEventListener('touchstart', pause);
+      el.removeEventListener('touchend', resume);
+    };
   }, []);
 
   return (
@@ -156,30 +172,17 @@ const Testimonials = () => {
         </h2>
       </div>
 
-      {/* ── Mobile / tablet: touch-scrollable row, no animation ── */}
-      <div className="lg:hidden overflow-x-auto no-scrollbar">
-        <div className="flex gap-4 px-5 sm:px-8 pb-4 w-max">
-          {testimonials.map((item, index) => (
-            <TestimonialCard key={index} item={item} />
-          ))}
-        </div>
-      </div>
+      {/* Auto-scroll + touch/mouse scrollable — all screen sizes */}
+      <div className="relative">
+        <div className="absolute left-0 top-0 z-10 h-full w-16 sm:w-24 bg-gradient-to-r from-[#f8f8f6] to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 z-10 h-full w-16 sm:w-24 bg-gradient-to-l from-[#f8f8f6] to-transparent pointer-events-none" />
 
-      {/* ── Desktop: animated marquee ── */}
-      <div className="hidden lg:block relative overflow-hidden">
-        <div className="absolute left-0 top-0 z-10 h-full w-32 bg-gradient-to-r from-[#f8f8f6] to-transparent pointer-events-none" />
-        <div className="absolute right-0 top-0 z-10 h-full w-32 bg-gradient-to-l from-[#f8f8f6] to-transparent pointer-events-none" />
-
-        <div ref={trackRef} className="flex w-max will-change-transform">
-          {[...testimonials, ...testimonials].map((item, index) => (
-            <div key={index} className="mx-3">
-              <TestimonialCard
-                item={item}
-                onMouseEnter={() => { isPaused.current = true; }}
-                onMouseLeave={() => { isPaused.current = false; }}
-              />
-            </div>
-          ))}
+        <div ref={containerRef} className="overflow-x-auto no-scrollbar">
+          <div className="flex gap-4 px-5 sm:px-8 pb-4 w-max">
+            {[...testimonials, ...testimonials].map((item, index) => (
+              <TestimonialCard key={index} item={item} />
+            ))}
+          </div>
         </div>
       </div>
     </section>
