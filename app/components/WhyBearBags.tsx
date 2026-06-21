@@ -36,7 +36,7 @@ const togglePlay = () => {
       >
         <path d="M20.8 3.2c-6.4.3-10.8 2.7-13.1 7.1C6.4 12.8 6 15.5 6 18c0 .3 0 .6.1.9 2.6.1 5.3-.3 7.7-1.7 4.4-2.3 6.8-6.7 7.1-13z" />
       </svg> */}
-      <LuLeaf className="text-[#0d3b34] text-5xl" />
+      {/* <LuLeaf className="text-[#0d3b34] text-5xl" /> */}
       <div className="w-20 h-px bg-[#d6d3cc]" />
     </div>
 
@@ -49,7 +49,7 @@ const togglePlay = () => {
 
     {/* Subtitle */}
     <p className="mt-5 text-[#4d4d4d] text-base md:text-lg">
-      Around 25 microns thick. Designed for everyday household waste.
+      25 microns thick. Built for everyday household waste.
     </p>
   </div>
 
@@ -89,7 +89,7 @@ const togglePlay = () => {
 
         {/* Pill label */}
         <span className="inline-block text-[11px] font-bold tracking-[0.18em] uppercase text-[#173d36] bg-[#fde8d0] px-4 py-1.5 rounded-full mb-5 mt-4 py-[0.5rem] px-[1rem]">
-          See It In Action
+          See Bear Bags in action.
         </span>
 
         {/* Title */}

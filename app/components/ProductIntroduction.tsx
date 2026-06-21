@@ -74,9 +74,9 @@ const ProductIntroduction = () => {
               </p>
             </div>
 
-           <p className='mb-4 text-[#2F6B4F] font-medium text-[1.2rem]'>
+           {/* <p className='mb-4 text-[#2F6B4F] font-medium text-[1.2rem]'>
   {product.freeDelivery}
-</p>
+</p> */}
 
 
             <div className="border-t border-[#ddd2c2] pt-8 mb-6">
@@ -113,7 +113,7 @@ const ProductIntroduction = () => {
 
             </div>
 
-            <h3 className='mt-4 text-[#5f5f5f]'>{product.inStock}</h3>
+            {/* <h3 className='mt-4 text-[#5f5f5f]'>{product.inStock}</h3> */}
           </div>
         </div>
 
