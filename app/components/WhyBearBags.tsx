@@ -26,8 +26,8 @@ const togglePlay = () => {
   <div className="max-w-6xl mx-auto px-4 text-center">
 
     {/* Decorative divider */}
-    <div className="flex items-center justify-center gap-4">
-      <div className="w-20 h-px bg-[#d6d3cc]" />
+    {/* <div className="flex items-center justify-center gap-4">
+      <div className="w-20 h-px bg-[#d6d3cc]" /> */}
       {/* <svg
         width="24"
         height="24"
@@ -37,8 +37,8 @@ const togglePlay = () => {
         <path d="M20.8 3.2c-6.4.3-10.8 2.7-13.1 7.1C6.4 12.8 6 15.5 6 18c0 .3 0 .6.1.9 2.6.1 5.3-.3 7.7-1.7 4.4-2.3 6.8-6.7 7.1-13z" />
       </svg> */}
       {/* <LuLeaf className="text-[#0d3b34] text-5xl" /> */}
-      <div className="w-20 h-px bg-[#d6d3cc]" />
-    </div>
+      {/* <div className="w-20 h-px bg-[#d6d3cc]" />
+    </div> */}
 
     {/* Heading */}
     <h2 className="font-['Playfair_Display'] text-[#0d3b34] text-4xl md:text-6xl font-bold leading-[1.05]">
@@ -99,9 +99,9 @@ const togglePlay = () => {
         </h2>
 
         {/* Subtitle */}
-        <p className="text-base text-[#7a5c44] max-w-lg mx-auto leading-relaxed mb-16">
+        {/* <p className="text-base text-[#7a5c44] max-w-lg mx-auto leading-relaxed mb-16">
           Watch how Bear Bags handle real-world stress — stretching, soaking, and everything in between.
-        </p>
+        </p> */}
 
         {/* Video container */}
         <div className="group relative rounded-2xl overflow-hidden border-2 border-[#f2d9c0] shadow-[0_20px_60px_rgba(181,101,29,0.15)] w-full aspect-[16/9] bg-[#173d36]">

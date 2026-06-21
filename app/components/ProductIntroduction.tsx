@@ -63,7 +63,7 @@ const ProductIntroduction = () => {
               {product.description} . {product.bagSize}
             </p>
 
-            <p className='mb-4 text-[#5f5f5f] flex items-center gap-[0.5rem]'>⭐️⭐️⭐️⭐️⭐️  {product.rating}  <span className='mb-[5px]'> . </span>  {product.orders}</p>
+            {/* <p className='mb-4 text-[#5f5f5f] flex items-center gap-[0.5rem]'>⭐️⭐️⭐️⭐️⭐️  {product.rating}  <span className='mb-[5px]'> . </span>  {product.orders}</p> */}
 
 <div className="flex items-center gap-4 mb-8">
               <h3 className="text-[2.2rem] font-bold text-[#23473f]">
@@ -151,7 +151,7 @@ const ProductIntroduction = () => {
             <LiaHandHoldingHeartSolid className="text-[#23473f] shrink-0 w-[52px] h-[52px] sm:w-[64px] sm:h-[64px]" />
             <div>
               <h5 className="font-semibold text-[#23473f] text-[1.1rem] sm:text-[1.3rem] lg:text-[1.4rem] leading-tight">
-                30% Giveback
+                30% profits pledged
               </h5>
               <p className="text-[#666] mt-1 text-[0.9rem] sm:text-[1rem] lg:text-[1.1rem]">
                 Supporting community development.

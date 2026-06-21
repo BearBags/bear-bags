@@ -70,12 +70,12 @@ const Impact = () => {
         </div>
 
         {/* transparency note */}
-        <div className="flex items-center justify-center gap-2 text-gray-300 text-sm mb-10">
+        {/* <div className="flex items-center justify-center gap-2 text-gray-300 text-sm mb-10">
           <span className="text-[#C8A45D]">
             <GoShieldCheck className="inline-block w-5 h-5" />
           </span>
           Every contribution will be transparently documented.
-        </div>
+        </div> */}
 
         {/* Button */}
         <button className="bg-[#C8A45D] hover:bg-[#b8934f] text-black font-medium px-6 py-3 rounded-full transition flex items-center gap-2 mx-auto">
@@ -109,18 +109,18 @@ const Impact = () => {
       },
       {
         icon: <HiOutlineBuildingLibrary className="w-6 h-6 sm:w-7 sm:h-7  text-[#C8A45D]" />,
-        title: "Trusted Partners",
-        description: "We work with verified, impact-driven NGOs.",
+        title: "Verified NGOs",
+        description: "We support impact-driven Organizations.",
       },
       {
         icon: <BiLandscape className="w-6 h-6 sm:w-7 sm:h-7 text-[#C8A45D]" />,
         title: "On-Ground Impact",
-        description: "Real stories and photos from the communities.",
+        description: "Stories and photos from the communities.",
       },
       {
         icon: <SlCalender className="w-6 h-6 sm:w-7 sm:h-7 text-[#C8A45D]" />,
-        title: "Regular Updates",
-        description: "We share updates as impact happens.",
+        title: "Impact Updates",
+        description: "Shared as the journey grows.",
       },
     ].map((item, index) => (
       <div

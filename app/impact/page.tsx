@@ -75,7 +75,7 @@ export default function ImpactPage() {
       {/* ── Hero ── */}
       <section className="relative overflow-hidden min-h-[85vh] flex items-center px-6 md:px-16 py-24">
         <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover">
-          <source src="/videos/impact_page_unboxing_video.mp4" type="video/mp4" />
+          <source src="/vides/impact_page_unboxing_video.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-br from-[#0d2619]/85 via-[#1a3d2b]/70 to-[#0b1f11]/80" />
 
