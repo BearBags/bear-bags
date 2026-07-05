@@ -100,50 +100,101 @@ const Impact = () => {
 </p>
 
         {/* Bottom Feature Bar */}
-<div className="mt-10 sm:mt-14 rounded-2xl border border-white/10 bg-[#02362c7a] px-4 sm:px-8 py-5 sm:py-6 shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-0">
-    {[
-      {
-        icon: <HiOutlineDocumentCheck className="w-6 h-6 sm:w-7 sm:h-7  text-[#C8A45D]" />,
-        title: "Verified Receipts",
-        description: "All contributions backed by real receipts.",
-      },
-      {
-        icon: <HiOutlineBuildingLibrary className="w-6 h-6 sm:w-7 sm:h-7  text-[#C8A45D]" />,
-        title: "Verified NGOs",
-        description: "We support impact-driven Organizations.",
-      },
-      {
-        icon: <BiLandscape className="w-6 h-6 sm:w-7 sm:h-7 text-[#C8A45D]" />,
-        title: "On-Ground Impact",
-        description: "Stories and photos from the communities.",
-      },
-      {
-        icon: <SlCalender className="w-6 h-6 sm:w-7 sm:h-7 text-[#C8A45D]" />,
-        title: "Impact Updates",
-        description: "Shared as the journey grows.",
-      },
-    ].map((item, index) => (
-      <div
-        key={index}
-        className={`flex items-start gap-3 sm:gap-4 px-2 sm:px-6 py-3 sm:py-2 ${
-          index !== 3 ? "sm:border-r sm:border-white/10" : ""
-        }`}
-      >
-        {/* Icon */}
-        <div className="flex-shrink-0 mt-1">{item.icon}</div>
+<div className="mt-10 sm:mt-14">
+  {/* Mobile Layout: 2x2 Grid */}
+  <div className="sm:hidden">
+    <div className="grid grid-cols-2 gap-4">
+      {[
+        {
+          icon: <HiOutlineDocumentCheck className="w-8 h-8 text-[#C8A45D]" />,
+          title: "Verified Receipts",
+          description: "All contributions backed by real receipts.",
+        },
+        {
+          icon: <HiOutlineBuildingLibrary className="w-8 h-8 text-[#C8A45D]" />,
+          title: "Verified NGOs",
+          description: "We support impact-driven Organizations.",
+        },
+        {
+          icon: <BiLandscape className="w-8 h-8 text-[#C8A45D]" />,
+          title: "On-Ground Impact",
+          description: "Stories and photos from the communities.",
+        },
+        {
+          icon: <SlCalender className="w-8 h-8 text-[#C8A45D]" />,
+          title: "Impact Updates",
+          description: "Shared as the journey grows.",
+        },
+      ].map((item, index) => (
+        <div
+          key={index}
+          className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/8 to-white/5 p-5 backdrop-blur-sm hover:border-white/20 hover:bg-white/10 transition-all duration-300 flex flex-col items-center text-center"
+        >
+          {/* Icon */}
+          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#C8A45D]/15 mb-4">
+            {item.icon}
+          </div>
 
-        {/* Content */}
-        <div className="min-w-0">
-          <h4 className="text-white font-semibold text-sm sm:text-[15px] leading-tight">
-            {item.title}
-          </h4>
-          <p className="mt-0.5 sm:mt-1 text-xs sm:text-[13px] leading-5 text-white/70 max-w-[180px]">
-            {item.description}
-          </p>
+          {/* Content */}
+          <div>
+            <h4 className="text-white font-semibold text-sm leading-tight mb-2">
+              {item.title}
+            </h4>
+            <p className="text-xs leading-relaxed text-white/70">
+              {item.description}
+            </p>
+          </div>
         </div>
-      </div>
-    ))}
+      ))}
+    </div>
+  </div>
+
+  {/* Desktop Layout: Horizontal Bar */}
+  <div className="hidden sm:block rounded-2xl border border-white/10 bg-[#02362c7a] px-4 sm:px-8 py-5 sm:py-6 shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-0">
+      {[
+        {
+          icon: <HiOutlineDocumentCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#C8A45D]" />,
+          title: "Verified Receipts",
+          description: "All contributions backed by real receipts.",
+        },
+        {
+          icon: <HiOutlineBuildingLibrary className="w-6 h-6 sm:w-7 sm:h-7 text-[#C8A45D]" />,
+          title: "Verified NGOs",
+          description: "We support impact-driven Organizations.",
+        },
+        {
+          icon: <BiLandscape className="w-6 h-6 sm:w-7 sm:h-7 text-[#C8A45D]" />,
+          title: "On-Ground Impact",
+          description: "Stories and photos from the communities.",
+        },
+        {
+          icon: <SlCalender className="w-6 h-6 sm:w-7 sm:h-7 text-[#C8A45D]" />,
+          title: "Impact Updates",
+          description: "Shared as the journey grows.",
+        },
+      ].map((item, index) => (
+        <div
+          key={index}
+          className={`flex items-start gap-3 sm:gap-4 px-2 sm:px-6 py-3 sm:py-2 ${
+            index !== 3 ? "sm:border-r sm:border-white/10" : ""
+          }`}
+        >
+          {/* Icon */}
+          <div className="flex-shrink-0 mt-1">{item.icon}</div>
+
+          {/* Content */}
+          <div className="min-w-0">
+            <h4 className="text-white font-semibold text-sm sm:text-[15px] leading-tight">
+              {item.title}
+            </h4>
+            <p className="mt-0.5 sm:mt-1 text-xs sm:text-[13px] leading-5 text-white/70 max-w-[180px]">
+              {item.description}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
   </div>
 </div>
       </div>

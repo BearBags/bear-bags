@@ -329,7 +329,7 @@ width: 513px;
   /* section { padding: 100px 5%; } */
     #home { padding: clamp(48px, 8vw, 100px) 5%; }
     #product { padding: 100px 5%; }
-    #impact { padding: 100px 5%; }
+    /* #impact { padding: 100px 5%; } */
     #testimonials { padding: clamp(40px, 7vw, 100px) 5%; }
     #faq { padding: clamp(40px, 7vw, 100px) 5%; }
     #newsletter { padding: clamp(48px, 8vw, 100px) 5%; }
@@ -740,7 +740,15 @@ width: 513px;
   .featured .quote-mark { color: rgba(255,255,255,0.06); }
 
   /* ─── FAQ ─── */
-  .faq-section { }
+  .faq-section {
+    padding: 40px 5%;
+  }
+
+  @media (max-width: 767px) {
+    .faq-section {
+      padding: 32px 0;
+    }
+  }
 
   .faq-layout {
     display: grid;
@@ -752,10 +760,15 @@ width: 513px;
 
   @media (max-width: 767px) {
     .faq-layout {
-      display: none;
-      /* grid-template-columns: 1fr; */
-      gap: 36px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
       margin-top: 36px;
+      padding: 0 16px;
+    }
+
+    .faq-sidebar {
+      margin-bottom: 20px;
     }
   }
 
@@ -787,13 +800,28 @@ width: 513px;
     padding: 24px;
   }
 
+  @media (max-width: 767px) {
+    .faq-contact {
+      padding: 16px;
+    }
+  }
+
   .faq-contact p { font-size: 14px; color: var(--text-muted); margin-bottom: 12px; }
+
+  @media (max-width: 767px) {
+    .faq-contact p { font-size: 12px; }
+  }
 
   .faq-contact a {
     color: var(--forest);
     font-weight: 500;
     font-size: 14px;
     text-decoration: none;
+    display: block;
+  }
+
+  @media (max-width: 767px) {
+    .faq-contact a { font-size: 12px; }
   }
 
   .faq-list { display: flex; flex-direction: column; gap: 2px; }
