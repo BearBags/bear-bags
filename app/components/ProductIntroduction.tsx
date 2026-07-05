@@ -49,7 +49,7 @@ const ProductIntroduction = () => {
           </div>
 
           {/* RIGHT CONTENT */}
-          <div className="max-w-2xl">
+          <div className="max-w-2xl ml-[5rem]">
 
             <p className="uppercase tracking-[4px] text-[15px] text-[#b98a52] font-semibold mb-5 text-2xl">
               Our Product
@@ -118,10 +118,10 @@ const ProductIntroduction = () => {
         </div>
 
         {/* BOTTOM FEATURES */}
-        <div className="mt-12 rounded-2xl border border-[#e8ddd0] bg-[#faf5ef] grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#e8ddd0]">
+        <div className="mt-8 rounded-2xl border border-[#e8ddd0] bg-[#faf5ef] grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#e8ddd0]">
 
           {/* FEATURE 1 */}
-          <div className="flex items-center gap-5 sm:gap-6 px-6 sm:px-10 lg:px-14 py-6 sm:py-10">
+          <div className="flex items-center gap-5 sm:gap-6 px-6 sm:px-10 lg:px-14 py-4 sm:py-7">
             <BiLeaf className="text-[#23473f] shrink-0 w-[52px] h-[52px] sm:w-[64px] sm:h-[64px]" />
             <div>
               <h5 className="font-semibold text-[#23473f] text-[1.1rem] sm:text-[1.3rem] lg:text-[1.4rem] leading-tight">
@@ -134,7 +134,7 @@ const ProductIntroduction = () => {
           </div>
 
           {/* FEATURE 2 */}
-          <div className="flex items-center gap-5 sm:gap-6 px-6 sm:px-10 lg:px-14 py-6 sm:py-10">
+          <div className="flex items-center gap-5 sm:gap-6 px-6 sm:px-10 lg:px-14 py-4 sm:py-7">
             {WaterShieldIcon()}
             <div>
               <h5 className="font-semibold text-[#23473f] text-[1.1rem] sm:text-[1.3rem] lg:text-[1.4rem] leading-tight">
@@ -147,7 +147,7 @@ const ProductIntroduction = () => {
           </div>
 
           {/* FEATURE 3 */}
-          <div className="flex items-center gap-5 sm:gap-6 px-6 sm:px-10 lg:px-14 py-6 sm:py-10">
+          <div className="flex items-center gap-5 sm:gap-6 px-6 sm:px-10 lg:px-14 py-4 sm:py-7">
             <LiaHandHoldingHeartSolid className="text-[#23473f] shrink-0 w-[52px] h-[52px] sm:w-[64px] sm:h-[64px]" />
             <div>
               <h5 className="font-semibold text-[#23473f] text-[1.1rem] sm:text-[1.3rem] lg:text-[1.4rem] leading-tight">

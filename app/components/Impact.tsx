@@ -8,6 +8,7 @@ import { FaBuilding, FaChartBar } from "react-icons/fa6";
 import { SlCalender } from "react-icons/sl";
 import { BiLandscape } from "react-icons/bi";
 import { HiOutlineBuildingLibrary } from "react-icons/hi2";
+import Link from "next/link";
 
 const Impact = () => {
   return (
@@ -47,7 +48,7 @@ const Impact = () => {
                 <LiaHandHoldingHeartSolid className="w-7 h-7 sm:w-10 sm:h-10" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-3xl sm:text-5xl font-semibold mb-1 sm:mb-2 font-serif">₹15,000</h3>
+                <h3 className="text-3xl sm:text-5xl font-semibold mb-1 sm:mb-2 font-serif">₹35,000</h3>
                 <p className="text-xs sm:text-sm text-gray-300">contributed so far</p>
               </div>
             </div>
@@ -78,9 +79,9 @@ const Impact = () => {
         </div> */}
 
         {/* Button */}
-        <button className="bg-[#C8A45D] hover:bg-[#b8934f] text-black font-medium px-6 py-3 rounded-full transition flex items-center gap-2 mx-auto">
+        <Link href="/impact" className="inline-flex items-center justify-center gap-2 bg-[#C8A45D] hover:bg-[#b8934f] text-black font-medium px-8 sm:px-10 py-3 sm:py-4 rounded-full transition-colors w-full sm:w-auto sm:max-w-xs">
           View Impact
-        </button>
+        </Link>
 
         {/* Footer line */}
 <p className="mt-6 flex items-center justify-center gap-3 text-sm text-gray-400">

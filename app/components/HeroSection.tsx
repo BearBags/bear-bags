@@ -23,7 +23,7 @@ const HeroSection = () => {
             NO PLASTIC.
           </span>
 
-          <span className="block italic text-[#9EE37D] text-5xl sm:text-7xl md:text-8xl mt-2 font-extrabold">
+          <span className="block italic text-[#9ADDA9] text-5xl sm:text-7xl md:text-8xl mt-2 font-extrabold">
             ALL POWER.
           </span>
         </h1>
@@ -34,12 +34,12 @@ const HeroSection = () => {
 
         <div className="flex flex-wrap gap-4 sm:gap-8 mt-6 sm:mt-8">
           <div className="flex items-center gap-3 text-[#d7e9d2]">
-            <BsPatchCheckFill className="text-[#8ED973] text-lg sm:text-xl shrink-0" />
+            <BsPatchCheckFill className="text-[#9ADDA9] text-lg sm:text-xl shrink-0" />
             <span className="font-medium text-sm sm:text-base">CPCB Certified</span>
           </div>
 
           <div className="flex items-center gap-3 text-[#d7e9d2]">
-            <BsPatchCheckFill className="text-[#8ED973] text-lg sm:text-xl shrink-0" />
+            <BsPatchCheckFill className="text-[#9ADDA9] text-lg sm:text-xl shrink-0" />
             <span className="font-medium text-sm sm:text-base">TÜV Austria Industrial Compostable</span>
           </div>
         </div>

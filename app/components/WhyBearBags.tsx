@@ -49,7 +49,7 @@ const togglePlay = () => {
 
     {/* Subtitle */}
     <p className="mt-5 text-[#4d4d4d] text-base md:text-lg">
-      25 microns thick. Built for everyday household waste.
+      Designed for real use
     </p>
   </div>
 
@@ -85,7 +85,7 @@ const togglePlay = () => {
       
 
       {/* Video Block */}
-      <div className="px-4 md:px-10 py-16 md:py-20 max-w-7xl mx-auto text-center mt-4">
+      <div className="px-4 md:px-10 max-w-7xl mx-auto text-center mt-4">
 
         {/* Pill label */}
         <span className="inline-block text-[11px] font-bold tracking-[0.18em] uppercase text-[#173d36] bg-[#fde8d0] px-4 py-1.5 rounded-full mb-5 mt-4 py-[0.5rem] px-[1rem]">

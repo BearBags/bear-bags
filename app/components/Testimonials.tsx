@@ -186,7 +186,7 @@ const Testimonials = () => {
           Customer Reviews
         </p>
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-neutral-900">
-          What people are saying
+          Real reviews. Real homes.
         </h2>
       </div>
 

@@ -12,7 +12,7 @@ const FAQ = () => {
   const faqs = [
     {
       question: "Are Bear Bags approved by the government?",
-      answer: "Yes.Bear Bags are CPCB certified compostable bags and comply with applicable compostability requirements in India. Bear Bags are also TÜV Austria certified for industrial compostability, meeting internationally recognized compostability standards."
+      answer: "Yes. Bear Bags are CPCB certified compostable bags and comply with applicable compostability requirements in India. Bear Bags are also TÜV Austria certified for industrial compostability, meeting internationally recognized compostability standards."
     },
     {
       question: "How long does Bear Bags take to decompose?",
@@ -23,8 +23,8 @@ const FAQ = () => {
       answer: "Bear Bags are made from compostable materials including corn starch–based components and certified compostable polymers designed for compostability and strength."
     },
     {
-      question: "What is the strength of Bear Bags?",
-      answer: "Bear Bags are made using compostable film with a thickness of around 25 microns and engineered for real household use. Our focus is simple — strong enough for everyday garbage handling without compromising compostability."
+      question: "How strong are Bear Bags?",
+      answer: "Bear Bags are engineered for real household use. They comfortably handle everyday wet and dry waste while remaining fully compostable—because sustainability shouldn't mean compromising on strength."
     },
     {
       question: "Why should I buy this when plastic bags are cheaper? It’s garbage anyway.",
@@ -40,11 +40,11 @@ const FAQ = () => {
     },
     {
       question: "What sizes are currently available?",
-      answer: "Current offering: Medium (19 × 21 inches) — suitable for everyday household use."
+      answer: "Bear Bags are currently available in Medium (19 × 21 inches), designed to fit most everyday household bins. More sizes will be introduced as we grow."
     },
     {
       question: "Where can I buy Bear Bags?",
-      answer: "Bear Bags are available online on Amazon and through selected retail partners."
+      answer: "Bear Bags are available on Amazon and through selected retail partners. We're gradually expanding our availability across India."
     },
     {
       question: " Do Bear Bags contain plastic?",
@@ -65,10 +65,10 @@ const FAQ = () => {
   <div className="faq-layout">
     <div className="faq-sidebar">
       <div className="section-label">FAQ</div>
-      <h3>Answers to questions we get most often</h3>
-      <p>Have something else in mind? We&apos;re happy to chat.</p>
+      <h3>Questions customers ask most</h3>
+      {/* <p>Have something else in mind? We&apos;re happy to chat.</p> */}
       <div className="faq-contact">
-        <p>Get in touch directly:</p>
+        <p>Still have a question? We&apos;d be happy to help</p>
         <a href="mailto:hello@bearbags.in">hello@bearbags.in</a><br/>
         <a href="https://wa.me/919131783440">WhatsApp: +91 91317 83440</a>
       </div>
