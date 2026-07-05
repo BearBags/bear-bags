@@ -54,16 +54,16 @@ const togglePlay = () => {
   </div>
 
   {/* Full Width Image */}
-  <div className="relative mt-[-1.5rem] sm:mt-[-3rem] md:mt-[-5rem] w-full">
+  <div className="relative mt-[-0.5rem] sm:mt-[-3rem] md:mt-[-5rem] w-full">
 
-<div className="relative w-full h-[260px] sm:h-[440px] md:h-[700px] overflow-hidden mt-[30px]">
+<div className="relative w-full h-[180px] sm:h-[340px] md:h-[700px] overflow-hidden mt-[20px] sm:mt-[30px]">
   <div className="stretch-inner">
     <Image
       src="/images/Bag Stretch Image without backgorund 2.png"
       alt="No Leak. No Tear."
       fill
       priority
-      // className="object-cover"
+      className="object-contain"
     />
   </div>
 </div>

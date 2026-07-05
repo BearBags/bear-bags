@@ -18,7 +18,7 @@ const testimonials: Testimonial[] = [
     type: "image",
     name: "Avisha",
     image: "/images/review/avisha_review.jpeg",
-    quote: "100% Recommend. Very Very good quality bags, using it for my pets and kitchen, would totally recommend.",
+    quote: "100% Recommend. <strong>Very Very good quality bags</strong>, using it for my pets and kitchen, would totally recommend.",
     avatar: "A",
     rating: 5,
   },
@@ -26,7 +26,7 @@ const testimonials: Testimonial[] = [
     type: "video",
     name: "Anoop",
     video: "/videos/anoop_review.MP4",
-    quote: "I personally liked the bags. The price is a bit higher compared to the local options, but the product quality is good. The moment I first held the bag, it felt premium and sturdier than most garbage bags I have used.",
+    quote: "I personally liked the bags. The price is a bit higher compared to the local options, but the product quality is good. <strong>The moment I first held the bag, it felt premium and sturdier than most garbage bags I have used.</strong>",
     avatar: "A",
     rating: 4,
   },
@@ -34,7 +34,7 @@ const testimonials: Testimonial[] = [
     type: "image",
     name: "Mekhala",
     image: "/images/review/mekhala_review.jpeg",
-    quote: "Purchased these bear bags from Amazon, and the quality of these bags is visible, the bags are thick so do not anticipate any leakage, big enough to fit the dustbins properly and plus they are compostable.",
+    quote: "Purchased these bear bags from Amazon, and <strong>the quality of these bags is visible, the bags are thick so do not anticipate any leakage, big enough to fit the dustbins properly and plus they are compostable.</strong>",
     avatar: "M",
     rating: 4.5,
   },
@@ -42,7 +42,7 @@ const testimonials: Testimonial[] = [
     type: "image",
     name: "Sachin",
     image: "/images/review/sachin_review.jpeg",
-    quote: "Great product! The bags are sturdy and handle daily waste without tearing. Reliable and well made, glad to have found a compostable option that doesn't compromise on strength.",
+    quote: "<strong>Great product! The bags are sturdy and handle daily waste without tearing.</strong> Reliable and <strong>well made</strong>, glad to have found a compostable option that doesn't compromise on strength.",
     avatar: "S",
     rating: 5,
   },
@@ -50,7 +50,7 @@ const testimonials: Testimonial[] = [
     type: "image",
     name: "Amazon Vine Review",
     image: "/images/review/amazon_vine_review.png",
-    quote: "These compostable garbage bags exceeded my expectations. Unlike many eco-friendly bags that can feel thin or rough, these have a much more premium feel, they're soft to the touch, flexible, and well-made. Despite being soft, they're also quite sturdy and handle both dry and wet waste without tearing easily during regular use. The size is perfect for everyday household bins, and the perforations between bags are clean, making them easy to separate from the roll. It's nice to see that they're CPCB and TÜV certified, which gives confidence that they're genuinely compostable and not just marketed as eco-friendly. One thing I would have liked is a built-in drawstring or tie closure to make sealing and disposing of the waste more convenient, but that's a minor gripe given the overall quality. Overall, these bags strike a great balance between sustainability, durability, and premium feel. A solid choice for anyone looking to switch to eco-friendly garbage bags without compromising on quality.",
+    quote: "<strong>These compostable garbage bags exceeded my expectations.</strong> Unlike many eco-friendly bags that can feel thin or rough, <strong>these have a much more premium feel, they're soft to the touch, flexible, and well-made.</strong> <strong>Despite being soft, they're also quite sturdy and handle both dry and wet waste without tearing easily during regular use.</strong> The size is perfect for everyday household bins, and the perforations between bags are clean, making them easy to separate from the roll. It's nice to see that they're CPCB and TÜV certified, which gives confidence that they're genuinely compostable and not just marketed as eco-friendly. One thing I would have liked is a built-in drawstring or tie closure to make sealing and disposing of the waste more convenient, but that's a minor gripe given the overall quality. <strong>Overall, these bags strike a great balance between sustainability, durability, and premium feel.</strong> A solid choice for anyone looking to switch to eco-friendly garbage bags without compromising on quality.",
     avatar: "A",
     rating: 4,
   },
@@ -58,7 +58,7 @@ const testimonials: Testimonial[] = [
     type: "video",
     name: "Ayushi",
     video: "/videos/ayushi_review.mp4",
-    quote: "Quality is good, strength is also good, can hold the household waste with ease.",
+    quote: "<strong>Quality is good, strength is also good</strong>, can hold the household waste with ease.",
     avatar: "A",
     rating: 5,
   },
@@ -66,7 +66,7 @@ const testimonials: Testimonial[] = [
     type: "image",
     name: "Anish",
     image: "/images/review/anish_review.jpeg",
-    quote: "Bear Bag is really good, great build quality, good strength and we were able to fill it completely without it getting stretched. Would recommend it to folks interested to contribute to mother earth!",
+    quote: "I ordered this Bear Bag from amazon. The packaging was really good. I always wanted to use compostable garbage bags but always had the issue with the quality. <strong>Bear Bag is really good, great build quality, good strength and we were able to fill it completely without it getting stretched.</strong> Would recommend it to folks interested to contribute to mother earth!",
     avatar: "M",
     rating: 5,
   },
@@ -74,7 +74,7 @@ const testimonials: Testimonial[] = [
     type: "image",
     name: "Lavanya",
     image: "/images/review/lavanya_review.jpg",
-    quote: "Good Quality biodegradable bags. Strong, practical and eco-friendly.",
+    quote: "<strong>Good Quality biodegradable bags.</strong> Strong, practical and eco-friendly.",
     avatar: "L",
     rating: 5,
   },
@@ -106,7 +106,7 @@ function TestimonialCard({ item }: { item: Testimonial }) {
       )}
       <StarRating rating={item.rating} />
       <p className={`text-neutral-700 leading-5 sm:leading-6 md:leading-7 text-xs sm:text-sm md:text-base ${expanded ? '' : 'line-clamp-4 sm:line-clamp-5'}`}>
-        "{item.quote}"
+        <span dangerouslySetInnerHTML={{ __html: `"${item.quote}"` }} />
       </p>
       {item.quote.length > 180 && (
         <button
