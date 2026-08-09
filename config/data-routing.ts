@@ -4,7 +4,7 @@
  */
 export const dataRouting = {
   database: {
-    // PostgreSQL via Prisma — stores permanent records
+    // MongoDB Atlas via Mongoose — stores permanent records
     storeNewsletterSignups: true,
     storeOrders: true,            // full order: customer info + items
     storeSubscriptionPreference: true, // captured per-item as purchaseType

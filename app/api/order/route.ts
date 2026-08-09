@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Order } from '@/lib/models/Order';
 import { createZohoLead } from '@/lib/zoho';
 import { dataRouting, type PurchaseType } from '@/config/data-routing';
 
@@ -41,29 +42,26 @@ export async function POST(request: NextRequest) {
     const hasSubscription = cartItems.some((item) => item.product.option === 'subscribe');
 
     if (dataRouting.database.storeOrders) {
-      await prisma.order.create({
-        data: {
-          customerName: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          pincode: formData.pincode,
-          paymentMethod: formData.paymentMethod,
-          subtotal,
-          shipping,
-          total,
-          hasSubscription,
-          items: {
-            create: cartItems.map((item) => ({
-              productId: item.product.id,
-              productName: item.product.name,
-              price: item.product.price,
-              quantity: item.quantity,
-              purchaseType: item.product.option ?? 'oneTime',
-            })),
-          },
-        },
+      await connectToDatabase();
+      await Order.create({
+        customerName: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        pincode: formData.pincode,
+        paymentMethod: formData.paymentMethod,
+        subtotal,
+        shipping,
+        total,
+        hasSubscription,
+        items: cartItems.map((item) => ({
+          productId: item.product.id,
+          productName: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          purchaseType: item.product.option ?? 'oneTime',
+        })),
       });
     }
 

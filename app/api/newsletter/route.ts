@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { connectToDatabase } from '@/lib/mongodb';
+import { NewsletterSubscriber } from '@/lib/models/NewsletterSubscriber';
 import { createZohoLead } from '@/lib/zoho';
 import { dataRouting } from '@/config/data-routing';
 
@@ -13,11 +14,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (dataRouting.database.storeNewsletterSignups) {
-      await prisma.newsletterSubscriber.upsert({
-        where: { email },
-        update: {},
-        create: { email },
-      });
+      await connectToDatabase();
+      await NewsletterSubscriber.updateOne(
+        { email },
+        { $setOnInsert: { email } },
+        { upsert: true },
+      );
     }
 
     if (dataRouting.zohoCRM.sendNewsletterSubscribers) {

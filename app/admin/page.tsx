@@ -1,4 +1,6 @@
-import { prisma } from '@/lib/prisma';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Order } from '@/lib/models/Order';
+import { NewsletterSubscriber } from '@/lib/models/NewsletterSubscriber';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 
@@ -11,14 +13,11 @@ async function logout() {
 }
 
 async function getData() {
+  await connectToDatabase();
+  // Items are embedded in the order document, so no join/include is needed.
   const [orders, subscribers] = await Promise.all([
-    prisma.order.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: { items: true },
-    }),
-    prisma.newsletterSubscriber.findMany({
-      orderBy: { createdAt: 'desc' },
-    }),
+    Order.find().sort({ createdAt: -1 }).lean(),
+    NewsletterSubscriber.find().sort({ createdAt: -1 }).lean(),
   ]);
   return { orders, subscribers };
 }
@@ -78,7 +77,7 @@ export default async function AdminPage() {
                   </tr>
                 )}
                 {orders.map((order) => (
-                  <tr key={order.id} className="border-b border-[#f0f0e8] last:border-0 hover:bg-[#f8fcf6]">
+                  <tr key={String(order._id)} className="border-b border-[#f0f0e8] last:border-0 hover:bg-[#f8fcf6]">
                     <td className="whitespace-nowrap px-5 py-3 text-[#555]">
                       {order.createdAt.toLocaleDateString('en-IN')}
                     </td>
@@ -126,7 +125,7 @@ export default async function AdminPage() {
                   </tr>
                 )}
                 {subscribers.map((sub) => (
-                  <tr key={sub.id} className="border-b border-[#f0f0e8] last:border-0 hover:bg-[#f8fcf6]">
+                  <tr key={String(sub._id)} className="border-b border-[#f0f0e8] last:border-0 hover:bg-[#f8fcf6]">
                     <td className="whitespace-nowrap px-5 py-3 text-[#555]">
                       {sub.createdAt.toLocaleDateString('en-IN')}
                     </td>

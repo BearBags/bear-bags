@@ -2,8 +2,25 @@
 import { useState } from 'react';
 import { FiMail, FiArrowRight } from 'react-icons/fi';
 import { GoShieldCheck } from 'react-icons/go';
-import { PiLeafBold } from 'react-icons/pi';
-import { GiVines } from 'react-icons/gi';
+
+function BearPaw({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" fill="currentColor" aria-hidden className={className}>
+      {/* palm pad */}
+      <path d="M50 52 C34 52 25 62 26 74 C27 86 40 93 50 93 C60 93 73 86 74 74 C75 62 66 52 50 52 Z" />
+      {/* toe pads */}
+      <ellipse cx="24" cy="45" rx="8" ry="11" />
+      <ellipse cx="42" cy="35" rx="8" ry="12" />
+      <ellipse cx="58" cy="35" rx="8" ry="12" />
+      <ellipse cx="76" cy="45" rx="8" ry="11" />
+      {/* claws */}
+      <path d="M24 22 C21 27 21 30 24 33 C27 30 27 27 24 22 Z" />
+      <path d="M42 11 C39 16 39 19 42 22 C45 19 45 16 42 11 Z" />
+      <path d="M58 11 C55 16 55 19 58 22 C61 19 61 16 58 11 Z" />
+      <path d="M76 22 C73 27 73 30 76 33 C79 30 79 27 76 22 Z" />
+    </svg>
+  );
+}
 
 export default function Newsletter() {
   const [email, setEmail] = useState('');
@@ -30,75 +47,107 @@ export default function Newsletter() {
   };
 
   return (
-    <section
-      id="newsletter"
-      className="relative overflow-hidden bg-[#A9BC8E] border-b-[6px] border-[#102219] py-16 sm:py-20"
-    >
-      {/* Decorative branch */}
-      <GiVines
-        aria-hidden
-        className="pointer-events-none absolute -right-8 -bottom-14 text-[#102219]/15 w-[220px] h-[220px] sm:w-[320px] sm:h-[320px] rotate-12"
-      />
+    <section id="newsletter" className="bg-[#f3f0e6] px-4 py-14 sm:py-20">
+      <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[28px] border border-[#d9d3c4] px-6 py-16 sm:px-10 sm:py-24">
 
-      <div className="relative max-w-xl mx-auto text-center px-4">
-
-        {/* Decorative divider */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <span className="w-10 h-px bg-[#16302a]/40" />
-          <PiLeafBold className="text-[#16302a] w-4 h-4" />
-          <span className="w-10 h-px bg-[#16302a]/40" />
+        {/* BB monogram watermark */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-2/5 select-none overflow-hidden"
+        >
+          <span
+            className="absolute left-[-4%] top-1/2 -translate-y-1/2 font-['Playfair_Display'] font-bold leading-none text-[#16302a] opacity-[0.06]"
+            style={{ fontSize: 'clamp(220px, 30vw, 420px)' }}
+          >
+            B
+          </span>
+          <span
+            className="absolute left-[11%] top-1/2 -translate-y-[46%] font-['Playfair_Display'] font-bold leading-none text-[#16302a] opacity-[0.06]"
+            style={{ fontSize: 'clamp(220px, 30vw, 420px)' }}
+          >
+            B
+          </span>
+          {/* claw scratches over the monogram */}
+          <svg
+            viewBox="0 0 200 300"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            aria-hidden
+            className="absolute left-[-8%] top-1/2 h-[520px] -translate-y-1/2 text-[#16302a] opacity-[0.06]"
+          >
+            <path d="M20 45 Q120 90 190 72" strokeWidth="3" />
+            <path d="M10 100 Q120 145 186 125" strokeWidth="4" />
+            <path d="M8 155 Q120 200 180 180" strokeWidth="3.5" />
+            <path d="M15 210 Q120 250 176 230" strokeWidth="3" />
+          </svg>
         </div>
 
-        {/* Heading */}
-        <h2
-          className="font-['Playfair_Display'] font-bold tracking-tight mb-3 text-[#16302a]"
-          style={{ fontSize: 'clamp(26px, 4vw, 38px)' }}
-        >
-          We&apos;ll share what happens next.
-        </h2>
+        <div className="relative mx-auto max-w-2xl text-center">
 
-        {/* Subtext */}
-        <p className="text-[15px] sm:text-base leading-relaxed max-w-md mx-auto mb-8 text-[#3f5347]">
-          Contributions, projects, and future launches — whenever there&apos;s something worth sharing.
-        </p>
-
-        {/* Form / success */}
-        {submitted ? (
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium bg-[#102219] text-white">
-            ✓ Thank you for subscribing!
+          {/* Paw divider */}
+          <div className="mb-8 flex items-center justify-center gap-4">
+            <span className="h-px w-16 bg-[#16302a]/25" />
+            <BearPaw className="h-14 w-14 text-[#16302a]" />
+            <span className="h-px w-16 bg-[#16302a]/25" />
           </div>
-        ) : (
-          <form
-            onSubmit={handleSubmit}
-            className="flex items-center gap-2 max-w-md mx-auto"
+
+          {/* Heading */}
+          <h2
+            className="font-['Playfair_Display'] font-bold leading-[1.08] tracking-tight text-[#16302a]"
+            style={{ fontSize: 'clamp(32px, 5.2vw, 54px)' }}
           >
-            <div className="relative flex-1">
-              <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                className="w-full rounded-full outline-none transition-all pl-11 pr-4 py-3 text-sm bg-white text-[#1c1c1a] placeholder:text-gray-400 border-2 border-transparent focus:border-[#102219]/30"
-              />
+            We&apos;re building
+            <br className="hidden sm:block" /> more than a product.
+          </h2>
+
+          {/* Small divider */}
+          <span className="mx-auto my-6 block h-px w-16 bg-[#16302a]/25" />
+
+          {/* Subtext */}
+          <p className="mx-auto mb-10 max-w-md text-base leading-relaxed text-[#3f5347] sm:text-lg">
+            We&apos;ll share what we&apos;re building, the impact we&apos;re making, and
+            the ideas that shape Bear Bags.
+          </p>
+
+          {/* Form / success */}
+          {submitted ? (
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-[#102219] px-8 py-4 text-base font-medium text-white">
+              ✓ Thank you for subscribing!
             </div>
-            <button
-              type="submit"
-              className="flex cursor-pointer items-center gap-2 rounded-full font-medium text-sm transition-all whitespace-nowrap px-6 py-3 bg-[#102219] text-white hover:bg-[#1a3a2a]"
+          ) : (
+            <form
+              onSubmit={handleSubmit}
+              className="mx-auto flex max-w-xl flex-col gap-3 sm:flex-row sm:items-center"
             >
-              Subscribe
-              <FiArrowRight className="w-4 h-4" />
-            </button>
-          </form>
-        )}
+              <div className="relative flex-1">
+                <FiMail className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  className="w-full rounded-full border border-[#d9d3c4] bg-white/80 py-4 pl-12 pr-5 text-base text-[#1c1c1a] outline-none transition-colors placeholder:text-gray-400 focus:border-[#16302a]/40"
+                />
+              </div>
+              <button
+                type="submit"
+                className="flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[#102219] px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-[#1a3a2a]"
+              >
+                Build With Us
+                <FiArrowRight className="h-5 w-5" />
+              </button>
+            </form>
+          )}
 
-        {/* Privacy note */}
-        <p className="flex items-center justify-center gap-2 text-xs sm:text-sm mt-5 text-[#4b5d50]">
-          <GoShieldCheck className="w-4 h-4" />
-          No spam. Only occasional updates.
-        </p>
+          {/* Privacy note */}
+          <p className="mt-6 flex items-center justify-center gap-2 text-xs text-[#4b5d50] sm:text-sm">
+            <GoShieldCheck className="h-4 w-4" />
+            No spam. Only occasional updates.
+          </p>
 
+        </div>
       </div>
     </section>
   );
