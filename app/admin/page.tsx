@@ -3,6 +3,7 @@ import { Order } from '@/lib/models/Order';
 import { NewsletterSubscriber } from '@/lib/models/NewsletterSubscriber';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
+import RecoveryEmailCard from './RecoveryEmailCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -136,6 +137,8 @@ export default async function AdminPage() {
             </table>
           </div>
         </section>
+
+        <RecoveryEmailCard />
 
       </div>
     </main>

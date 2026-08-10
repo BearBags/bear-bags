@@ -17,7 +17,7 @@ const NAV_LINKS = [
 
 const Header = () => {
   const [open, setOpen] = useState(false);
-  const { cart } = useCart();
+  const { cart, openCart } = useCart();
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -43,14 +43,14 @@ const Header = () => {
             <li key={label}><Link href={href}>{label}</Link></li>
           ))}
           <li>
-            <Link href="/checkout" className="relative cursor-pointer">
+            <button onClick={openCart} aria-label="Open cart" className="relative cursor-pointer">
               <FaCartShopping size={22} />
               {cart.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#1f3a2f] text-white text-xs h-5 w-5 flex items-center justify-center rounded-full">
                   {cart.length}
                 </span>
               )}
-            </Link>
+            </button>
           </li>
         </ul>
 
@@ -120,9 +120,8 @@ const Header = () => {
             }}
             className="mt-8"
           >
-            <Link
-              href="/checkout"
-              onClick={() => setOpen(false)}
+            <button
+              onClick={() => { setOpen(false); openCart(); }}
               className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#1f3a2f] text-white text-[15px] font-semibold hover:bg-[#2d5240] active:scale-[0.98] transition-all duration-200 shadow-md"
             >
               <FaCartShopping size={16} />
@@ -132,7 +131,7 @@ const Header = () => {
                   {cart.length}
                 </span>
               )}
-            </Link>
+            </button>
           </div>
         </div>
       </div>

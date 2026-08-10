@@ -909,7 +909,7 @@ width: 513px;
 
   /* ─── FOOTER ─── */
   footer {
-    background: var(--charcoal);
+    background: #102219;
     color: rgba(255,255,255,0.6);
     padding: 60px 5% 40px;
   }

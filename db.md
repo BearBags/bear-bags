@@ -63,6 +63,9 @@ There is no migration or `generate` step — Mongo creates collections on first 
 | [`lib/mongodb.ts`](lib/mongodb.ts) | Connection helper — `connectToDatabase()` |
 | [`lib/models/Order.ts`](lib/models/Order.ts) | `Order` model, with items embedded |
 | [`lib/models/NewsletterSubscriber.ts`](lib/models/NewsletterSubscriber.ts) | `NewsletterSubscriber` model |
+| [`lib/models/Admin.ts`](lib/models/Admin.ts) | `Admin` model — recovery email + password hash + OTP |
+| [`lib/session.ts`](lib/session.ts) | Signs/verifies the admin session cookie and password-reset tokens (JWT via `jose`) |
+| [`lib/mailer.ts`](lib/mailer.ts) | Sends OTP emails via nodemailer/SMTP |
 | [`config/data-routing.ts`](config/data-routing.ts) | Flags for what is stored / sent to Zoho |
 
 Call `await connectToDatabase()` before any query. It's cheap when already connected.
@@ -97,6 +100,43 @@ Order {
 }
 
 NewsletterSubscriber { _id, email (unique), createdAt }
+
+Admin { _id, email (unique), passwordHash, otpHash, otpExpiresAt }
+```
+
+## Admin auth
+
+The admin dashboard used to check `password === process.env.ADMIN_PASSWORD` and store that
+plaintext password directly as the session cookie value. That's gone — the password now
+lives in the `Admin` document as a bcrypt hash, and the session cookie is a signed JWT
+(`lib/session.ts`, via `jose`, HS256), so `middleware.ts` can verify it on the Edge runtime
+without a database round trip.
+
+**One-time migration**: on first login after this change, if no `Admin` document exists yet,
+`app/api/admin/login/route.ts` seeds one from `ADMIN_PASSWORD` + `ADMIN_EMAIL` (hashing the
+password). After that first login, `ADMIN_PASSWORD` is no longer read — the DB is the source
+of truth, and the password can only be changed via the reset-password flow below. Keep
+`ADMIN_EMAIL` set the first time you deploy this so the seed has a recovery address to seed;
+you can change it afterwards from the dashboard's "Recovery Email" card.
+
+**Forgot password flow** (`app/api/admin/forgot-password`, `verify-otp`, `reset-password`):
+email → 6-digit OTP (bcrypt-hashed, 10 min TTL, single-use) emailed via nodemailer → a
+short-lived (10 min) signed reset JWT → new password. `forgot-password` always responds
+`{ success: true }` regardless of whether the email matched, so the endpoint can't be used to
+probe which address is the recovery email.
+
+### Required env vars
+
+```
+ADMIN_SESSION_SECRET=<random 32+ byte string>   # signs session + reset JWTs
+SMTP_HOST=smtp.zoho.in                          # or smtp.zoho.com depending on your Zoho region
+SMTP_PORT=465
+SMTP_USER=hello@bearbags.in
+SMTP_PASS=<Zoho Mail app-specific password>
+
+# Only needed once, to seed the first Admin document:
+ADMIN_PASSWORD=<old shared password>
+ADMIN_EMAIL=<initial recovery email>
 ```
 
 Consequences of embedding:

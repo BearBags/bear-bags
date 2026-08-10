@@ -105,6 +105,46 @@ export default function ImpactPage() {
         </div>
       </section>
 
+      {/* ── Journey Collage ── */}
+      <section className="bg-[#f5f2eb] py-20 sm:py-28 px-6 md:px-16 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-14 sm:mb-20">
+            <p className="uppercase tracking-[0.18em] text-xs font-semibold text-[#2d6347] mb-3">
+              From Idea to Impact
+            </p>
+            <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl md:text-5xl font-bold text-[#1a3d2b]">
+              Our Journey So Far
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-14">
+            {[
+              { src: '/images/1_prototype.jpg', caption: '1. Prototype', rotate: '-rotate-2' },
+              { src: '/images/2_barcode.jpg', caption: '2. Barcode', rotate: 'rotate-2' },
+              { src: '/images/3_final_sku.jpg', caption: '3. Final SKU', rotate: '-rotate-1' },
+              { src: '/images/4_amazon.png', caption: '4. Amazon Listing', rotate: 'rotate-2' },
+              { src: '/images/5_promotion.jpg', caption: '5. Promoting in Park', rotate: 'rotate-1' },
+              { src: '/images/6_promotion.jpg', caption: '6. Out in the World', rotate: '-rotate-2' },
+              { src: '/images/7_retail.jpg', caption: '7. In-Store Launch', rotate: 'rotate-1' },
+              { src: '/images/8_retail.jpg', caption: '8. On the Shelf', rotate: '-rotate-1' },
+              { src: '/images/9_impact.jpg', caption: '9. Impact', rotate: 'rotate-2' },
+              { src: '/images/10_blinkit.png', caption: '10. Blinkit Listing', rotate: '-rotate-2' },
+            ].map((item) => (
+              <div key={item.caption} className={`relative ${item.rotate} transition-transform duration-300 hover:rotate-0 hover:scale-[1.03]`}>
+                <div className="bg-white p-2.5 pb-8 shadow-lg rounded-sm">
+                  <div className="relative aspect-square overflow-hidden">
+                    <Image src={item.src} alt={item.caption} fill className="object-cover" />
+                  </div>
+                </div>
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rotate-1 bg-[#f3e9d2]/90 text-[#1a3d2b] text-[11px] sm:text-xs font-semibold px-3 py-1 shadow-sm whitespace-nowrap">
+                  {item.caption}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── About ── */}
       <section className="bg-[#edf4e8] py-20 sm:py-28 px-6 md:px-16">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 md:gap-20 items-center">
@@ -229,7 +269,7 @@ export default function ImpactPage() {
       </section>
 
       {/* ── NGO Partners ── */}
-      <section className="bg-[#1a3d2b] py-20 sm:py-28 px-6 md:px-16">
+      {/* <section className="bg-[#f5f2eb] py-20 sm:py-28 px-6 md:px-16">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <p className="uppercase tracking-[0.18em] text-xs font-semibold text-[#8fc4a0] mb-3">Collaboration</p>
@@ -259,7 +299,7 @@ export default function ImpactPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ── Lightbox ── */}
       {selected && (

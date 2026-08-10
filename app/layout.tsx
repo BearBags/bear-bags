@@ -1,6 +1,8 @@
 import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import CartDrawer from "./components/CartDrawer";
+import ShippingNotifications from "./components/ShippingNotifications";
 import { CartProvider } from "./context/CartContext";
 // import { Barlow_Condensed } from 'next/font/google';
 
@@ -26,6 +28,8 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
+          <CartDrawer />
+          <ShippingNotifications />
         </CartProvider>
       </body>
     </html>

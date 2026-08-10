@@ -4,14 +4,18 @@ import Checkout from '../components/Checkout';
 import { useCart } from '../context/CartContext';
 
 export default function CheckoutPage() {
-  const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { cart, buyNowItem, updateQuantity, removeFromCart, clearCart, clearBuyNowItem } = useCart();
+
+  const isBuyNow = buyNowItem !== null;
+  const cartItems = isBuyNow ? [buyNowItem] : cart ?? [];
 
   return (
     <Checkout
-      cartItems={cart ?? []} // prevents undefined error
+      cartItems={cartItems}
+      isBuyNow={isBuyNow}
       onUpdateQuantity={updateQuantity}
       onRemoveItem={removeFromCart}
-      onClearCart={clearCart}
+      onClearCart={isBuyNow ? clearBuyNowItem : clearCart}
     />
   );
 }

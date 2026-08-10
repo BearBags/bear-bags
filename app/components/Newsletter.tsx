@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import { FiMail, FiArrowRight } from 'react-icons/fi';
 import { GoShieldCheck } from 'react-icons/go';
 
@@ -50,47 +51,27 @@ export default function Newsletter() {
     <section id="newsletter" className="bg-[#f3f0e6] px-4 py-14 sm:py-20">
       <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[28px] border border-[#d9d3c4] px-6 py-16 sm:px-10 sm:py-24">
 
-        {/* BB monogram watermark */}
+        {/* Logo watermark */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-y-0 left-0 w-2/5 select-none overflow-hidden"
         >
-          <span
-            className="absolute left-[-4%] top-1/2 -translate-y-1/2 font-['Playfair_Display'] font-bold leading-none text-[#16302a] opacity-[0.06]"
-            style={{ fontSize: 'clamp(220px, 30vw, 420px)' }}
-          >
-            B
-          </span>
-          <span
-            className="absolute left-[11%] top-1/2 -translate-y-[46%] font-['Playfair_Display'] font-bold leading-none text-[#16302a] opacity-[0.06]"
-            style={{ fontSize: 'clamp(220px, 30vw, 420px)' }}
-          >
-            B
-          </span>
-          {/* claw scratches over the monogram */}
-          <svg
-            viewBox="0 0 200 300"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            aria-hidden
-            className="absolute left-[-8%] top-1/2 h-[520px] -translate-y-1/2 text-[#16302a] opacity-[0.06]"
-          >
-            <path d="M20 45 Q120 90 190 72" strokeWidth="3" />
-            <path d="M10 100 Q120 145 186 125" strokeWidth="4" />
-            <path d="M8 155 Q120 200 180 180" strokeWidth="3.5" />
-            <path d="M15 210 Q120 250 176 230" strokeWidth="3" />
-          </svg>
+          <Image
+            src="/images/BearBagsLogoWatermark.png"
+            alt=""
+            fill
+            className="object-contain object-left opacity-[0.34]"
+          />
         </div>
 
         <div className="relative mx-auto max-w-2xl text-center">
 
           {/* Paw divider */}
-          <div className="mb-8 flex items-center justify-center gap-4">
+          {/* <div className="mb-8 flex items-center justify-center gap-4">
             <span className="h-px w-16 bg-[#16302a]/25" />
             <BearPaw className="h-14 w-14 text-[#16302a]" />
             <span className="h-px w-16 bg-[#16302a]/25" />
-          </div>
+          </div> */}
 
           {/* Heading */}
           <h2

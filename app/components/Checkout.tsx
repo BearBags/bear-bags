@@ -1,5 +1,49 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
+import { FREE_SHIPPING_THRESHOLD } from '@/lib/shipping';
+
+interface RazorpayHandlerResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  order_id: string;
+  name: string;
+  description?: string;
+  prefill?: { name?: string; email?: string; contact?: string };
+  theme?: { color?: string };
+  handler: (response: RazorpayHandlerResponse) => void;
+  modal?: { ondismiss?: () => void };
+}
+
+interface RazorpayInstance {
+  open: () => void;
+}
+
+declare global {
+  interface Window {
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+  }
+}
+
+const loadRazorpayScript = (): Promise<boolean> =>
+  new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
 
 interface Product {
   id: number;
@@ -11,17 +55,23 @@ interface Product {
   count?: number;
   option?: string;
   features?: string[];
+  discountPercent?: number;
 }
 
 interface CheckoutProps {
   cartItems: { product: Product; quantity: number }[];
+  isBuyNow?: boolean;
   onUpdateQuantity: (productId: number, quantity: number, option?: string) => void;
   onRemoveItem: (productId: number, option?: string) => void;
   onClearCart: () => void;
 }
 
-export default function Checkout({ cartItems, onUpdateQuantity, onRemoveItem, onClearCart }: CheckoutProps) {
+export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity, onRemoveItem, onClearCart }: CheckoutProps) {
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [confirmedTotal, setConfirmedTotal] = useState<number | null>(null);
+  const [confirmedDiscountPercent, setConfirmedDiscountPercent] = useState<number | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -33,35 +83,126 @@ export default function Checkout({ cartItems, onUpdateQuantity, onRemoveItem, on
   });
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  const shipping = subtotal > 500 ? 0 : 50;
+  const shipping = subtotal > FREE_SHIPPING_THRESHOLD ? 0 : 50;
   const total = subtotal + shipping;
   const impact = Math.round(total * 0.3);
+  const discountPercent = cartItems[0]?.product.discountPercent;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await fetch('/api/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formData, cartItems, subtotal, shipping, total }),
-      });
-    } catch {
-      // Non-blocking: proceed with order confirmation even if CRM save fails
-    }
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      pincode: '',
+      paymentMethod: 'cod'
+    });
+  };
+
+  // The server re-checks order history by email and applies the authoritative
+  // first-time/returning discount, which may differ from the client's
+  // localStorage-based guess, so the confirmation reflects what was actually charged.
+  const finalizeOrder = (data: { total?: number; discountPercent?: number }) => {
+    if (typeof data?.total === 'number') setConfirmedTotal(data.total);
+    if (typeof data?.discountPercent === 'number') setConfirmedDiscountPercent(data.discountPercent);
     setOrderPlaced(true);
     setTimeout(() => {
       onClearCart();
       setOrderPlaced(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        address: '',
-        city: '',
-        pincode: '',
-        paymentMethod: 'cod'
-      });
+      setConfirmedTotal(null);
+      setConfirmedDiscountPercent(null);
+      resetForm();
     }, 4000);
+  };
+
+  const handleCodSubmit = async () => {
+    try {
+      const res = await fetch('/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formData, cartItems }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPaymentError(data?.error ?? 'Could not place your order. Please try again.');
+        return;
+      }
+      finalizeOrder(data);
+    } catch {
+      setPaymentError('Could not place your order. Please check your connection and try again.');
+    }
+  };
+
+  const handleOnlinePayment = async () => {
+    setIsProcessingPayment(true);
+    try {
+      const createRes = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formData, cartItems }),
+      });
+      const createData = await createRes.json();
+      if (!createRes.ok) {
+        setPaymentError(createData?.error ?? 'Could not start payment. Please try Cash on Delivery.');
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        setPaymentError('Could not load the payment window. Check your connection and try again.');
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      const razorpay = new window.Razorpay({
+        key: createData.keyId,
+        amount: createData.amount,
+        currency: createData.currency,
+        order_id: createData.razorpayOrderId,
+        name: 'Bear Bags',
+        description: 'Order payment',
+        prefill: { name: formData.name, email: formData.email, contact: formData.phone },
+        theme: { color: '#1a3a2a' },
+        handler: async (response) => {
+          try {
+            const verifyRes = await fetch('/api/payment/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ formData, cartItems, ...response }),
+            });
+            const verifyData = await verifyRes.json();
+            setIsProcessingPayment(false);
+            if (!verifyRes.ok) {
+              setPaymentError(verifyData?.error ?? 'Payment verification failed. Please contact support.');
+              return;
+            }
+            finalizeOrder(verifyData);
+          } catch {
+            setIsProcessingPayment(false);
+            setPaymentError('Payment succeeded but confirming the order failed. Please contact support with your payment ID.');
+          }
+        },
+        modal: {
+          ondismiss: () => setIsProcessingPayment(false),
+        },
+      });
+      razorpay.open();
+    } catch {
+      setPaymentError('Something went wrong starting the payment. Please try again.');
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPaymentError(null);
+    if (formData.paymentMethod === 'online') {
+      handleOnlinePayment();
+    } else {
+      handleCodSubmit();
+    }
   };
 
   if (cartItems.length === 0 && !orderPlaced) {
@@ -98,9 +239,15 @@ export default function Checkout({ cartItems, onUpdateQuantity, onRemoveItem, on
           <p className="text-base md:text-lg mb-4" style={{ color: 'var(--text-muted)' }}>
             Thank you for choosing Bear Bags. Your order will be delivered soon.
           </p>
-          <p className="text-sm mb-8" style={{ color: 'var(--forest-light)' }}>
+          <p className="text-sm mb-4" style={{ color: 'var(--forest-light)' }}>
             You are helping us make a difference. 30% of your purchase goes to community development.
           </p>
+          {confirmedTotal !== null && (
+            <p className="text-base font-medium" style={{ color: 'var(--forest)' }}>
+              Total charged: ₹{confirmedTotal}
+              {confirmedDiscountPercent ? ` (${confirmedDiscountPercent}% discount applied)` : ''}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -124,14 +271,24 @@ export default function Checkout({ cartItems, onUpdateQuantity, onRemoveItem, on
                 Your Items
               </h2>
 
+              {!!discountPercent && (
+                <p className="mb-4 text-sm font-medium" style={{ color: 'var(--forest-light)' }}>
+                  🎉 {discountPercent}% off applied ({discountPercent === 7 ? 'first order' : 'welcome back'})
+                </p>
+              )}
+
               <div className="space-y-3 md:space-y-4">
                 {cartItems.map((item) => (
                   <div key={`${item.product.id}-${item.product.option ?? 'default'}`}
                        className="flex gap-3 md:gap-4 p-3 md:p-4 rounded-xl border"
                        style={{ borderColor: 'rgba(26,58,42,0.08)' }}>
-                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg flex items-center justify-center text-2xl md:text-3xl flex-shrink-0"
+                    <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-lg flex items-center justify-center text-2xl md:text-3xl flex-shrink-0 overflow-hidden"
                          style={{ background: 'var(--cream-dark)' }}>
-                      {item.product.icon}
+                      {item.product.icon.startsWith('/') ? (
+                        <Image src={item.product.icon} alt={item.product.name} fill sizes="80px" className="object-contain" />
+                      ) : (
+                        item.product.icon
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium mb-1 text-sm md:text-base" style={{ color: 'var(--forest)' }}>
@@ -140,36 +297,42 @@ export default function Checkout({ cartItems, onUpdateQuantity, onRemoveItem, on
                       <p className="text-xs md:text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
                         {(item.product.size ?? item.product.option ?? 'Bag')} • {item.product.count ?? item.quantity} bags
                       </p>
-                      <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                        <div className="flex items-center gap-2 rounded-lg overflow-hidden border"
-                             style={{ borderColor: 'rgba(26,58,42,0.15)' }}>
+                      {isBuyNow ? (
+                        <p className="text-sm md:text-base font-medium" style={{ color: 'var(--forest)' }}>
+                          Qty: {item.quantity}
+                        </p>
+                      ) : (
+                        <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                          <div className="flex items-center gap-2 rounded-lg overflow-hidden border"
+                               style={{ borderColor: 'rgba(26,58,42,0.15)' }}>
+                            <button
+                              type="button"
+                              onClick={() => onUpdateQuantity(item.product.id, Math.max(1, item.quantity - 1), item.product.option)}
+                              className="px-2 md:px-3 py-1 cursor-pointer hover:bg-black/5 transition-colors text-sm md:text-base"
+                              style={{ color: 'var(--forest)' }}>
+                              −
+                            </button>
+                            <span className="font-medium min-w-[24px] md:min-w-[30px] text-center text-sm md:text-base"
+                                  style={{ color: 'var(--forest)' }}>
+                              {item.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1, item.product.option)}
+                              className="px-2 md:px-3 cursor-pointer py-1 hover:bg-black/5 transition-colors text-sm md:text-base"
+                              style={{ color: 'var(--forest)' }}>
+                              +
+                            </button>
+                          </div>
                           <button
                             type="button"
-                            onClick={() => onUpdateQuantity(item.product.id, Math.max(1, item.quantity - 1), item.product.option)}
-                            className="px-2 md:px-3 py-1 hover:bg-black/5 transition-colors text-sm md:text-base"
-                            style={{ color: 'var(--forest)' }}>
-                            −
-                          </button>
-                          <span className="font-medium min-w-[24px] md:min-w-[30px] text-center text-sm md:text-base"
-                                style={{ color: 'var(--forest)' }}>
-                            {item.quantity}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1, item.product.option)}
-                            className="px-2 md:px-3 py-1 hover:bg-black/5 transition-colors text-sm md:text-base"
-                            style={{ color: 'var(--forest)' }}>
-                            +
+                            onClick={() => onRemoveItem(item.product.id, item.product.option)}
+                            className="text-xs md:text-sm opacity-60 hover:opacity-100 transition-opacity"
+                            style={{ color: 'var(--destructive)' }}>
+                            Remove
                           </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => onRemoveItem(item.product.id, item.product.option)}
-                          className="text-xs md:text-sm opacity-60 hover:opacity-100 transition-opacity"
-                          style={{ color: 'var(--destructive)' }}>
-                          Remove
-                        </button>
-                      </div>
+                      )}
                     </div>
                     <div className="text-right flex-shrink-0">
                       <div className="font-['Playfair_Display'] text-[18px] md:text-[20px] font-bold"
@@ -334,11 +497,22 @@ export default function Checkout({ cartItems, onUpdateQuantity, onRemoveItem, on
                   </div>
                 </div>
 
+                {paymentError && (
+                  <p className="text-sm mt-2" style={{ color: 'var(--destructive, #b3261e)' }}>
+                    {paymentError}
+                  </p>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full px-8 py-4 rounded-full font-medium text-base transition-all hover:-translate-y-0.5 hover:shadow-lg mt-6"
+                  disabled={isProcessingPayment}
+                  className="w-full px-8 py-4 cursor-pointer rounded-full font-medium text-base transition-all hover:-translate-y-0.5 hover:shadow-lg mt-6 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
                   style={{ background: 'var(--forest)', color: 'white' }}>
-                  Place Order - ₹{total}
+                  {isProcessingPayment
+                    ? 'Processing payment…'
+                    : formData.paymentMethod === 'online'
+                      ? `Pay ₹${total}`
+                      : `Place Order - ₹${total}`}
                 </button>
               </form>
             </div>
@@ -366,7 +540,7 @@ export default function Checkout({ cartItems, onUpdateQuantity, onRemoveItem, on
                 </div>
                 {shipping === 0 && (
                   <p className="text-xs" style={{ color: 'var(--forest-light)' }}>
-                    ✓ Free shipping on orders above ₹500
+                    ✓ Free shipping on orders above ₹{FREE_SHIPPING_THRESHOLD}
                   </p>
                 )}
                 <div className="pt-3 border-t flex justify-between"
