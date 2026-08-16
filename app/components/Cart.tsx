@@ -2,14 +2,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '../context/CartContext';
-import { FREE_SHIPPING_THRESHOLD } from '@/lib/shipping';
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart } = useCart();
   const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const discountPercent = cart[0]?.product.discountPercent;
-  const remainingForFreeShipping = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
-  const shippingProgress = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
 
   if (cart.length === 0) {
     return (
@@ -44,22 +41,10 @@ export default function CartPage() {
           {cart.length} {cart.length === 1 ? 'item' : 'items'} in your cart
         </p>
 
-        <div className="rounded-2xl p-4 md:p-5 mb-6" style={{ background: 'white', border: '1px solid rgba(26,58,42,0.08)' }}>
-          {remainingForFreeShipping > 0 ? (
-            <p className="text-sm mb-3" style={{ color: 'var(--forest)' }}>
-              🚚 Add <strong>₹{remainingForFreeShipping}</strong> more to unlock <strong>free shipping</strong>
-            </p>
-          ) : (
-            <p className="text-sm mb-3 font-medium" style={{ color: 'var(--forest)' }}>
-              🎉 You&apos;ve unlocked free shipping!
-            </p>
-          )}
-          <div className="h-2 w-full rounded-full overflow-hidden" style={{ background: 'var(--cream-dark)' }}>
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${shippingProgress}%`, background: 'var(--forest-light)' }}
-            />
-          </div>
+        <div className="rounded-2xl p-4 md:p-5 mb-6 text-center" style={{ background: 'white', border: '1px solid rgba(26,58,42,0.08)' }}>
+          <p className="text-sm font-medium" style={{ color: 'var(--forest)' }}>
+            🚚 Free shipping on all orders
+          </p>
         </div>
 
         {!!discountPercent && (

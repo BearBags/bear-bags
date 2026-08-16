@@ -9,12 +9,12 @@ import { getProductBySlug } from '@/lib/products';
 import { getClientDiscountPercent, applyDiscount } from '@/lib/discount';
 
 const GALLERY_IMAGES = [
-  '/images/shop1.jpeg',
+  '/images/shop1.jpg',
   '/images/shop2.jpg',
   '/images/shop3.jpg',
   '/images/shop4.jpg',
   '/images/shop5.jpg',
-  '/images/shop6.jpg',
+  '/images/shop6.png',
 ];
 
 const page = () => {

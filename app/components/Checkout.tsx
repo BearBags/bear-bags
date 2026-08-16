@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
-import { FREE_SHIPPING_THRESHOLD } from '@/lib/shipping';
 
 interface RazorpayHandlerResponse {
   razorpay_order_id: string;
@@ -79,11 +78,11 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
     address: '',
     city: '',
     pincode: '',
-    paymentMethod: 'cod'
+    paymentMethod: 'online'
   });
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  const shipping = subtotal > FREE_SHIPPING_THRESHOLD ? 0 : 50;
+  const shipping = 0; // free shipping on all orders
   const total = subtotal + shipping;
   const impact = Math.round(total * 0.3);
   const discountPercent = cartItems[0]?.product.discountPercent;
@@ -96,7 +95,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
       address: '',
       city: '',
       pincode: '',
-      paymentMethod: 'cod'
+      paymentMethod: 'online'
     });
   };
 
@@ -116,24 +115,6 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
     }, 4000);
   };
 
-  const handleCodSubmit = async () => {
-    try {
-      const res = await fetch('/api/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formData, cartItems }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setPaymentError(data?.error ?? 'Could not place your order. Please try again.');
-        return;
-      }
-      finalizeOrder(data);
-    } catch {
-      setPaymentError('Could not place your order. Please check your connection and try again.');
-    }
-  };
-
   const handleOnlinePayment = async () => {
     setIsProcessingPayment(true);
     try {
@@ -144,7 +125,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
       });
       const createData = await createRes.json();
       if (!createRes.ok) {
-        setPaymentError(createData?.error ?? 'Could not start payment. Please try Cash on Delivery.');
+        setPaymentError(createData?.error ?? 'Could not start payment. Please try again.');
         setIsProcessingPayment(false);
         return;
       }
@@ -198,11 +179,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPaymentError(null);
-    if (formData.paymentMethod === 'online') {
-      handleOnlinePayment();
-    } else {
-      handleCodSubmit();
-    }
+    handleOnlinePayment();
   };
 
   if (cartItems.length === 0 && !orderPlaced) {
@@ -453,47 +430,10 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs md:text-sm font-medium mb-3" style={{ color: 'var(--forest)' }}>
-                    Payment Method
-                  </label>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors"
-                           style={{
-                             borderColor: formData.paymentMethod === 'cod' ? 'var(--forest)' : 'rgba(26,58,42,0.15)',
-                             background: formData.paymentMethod === 'cod' ? 'rgba(26,58,42,0.03)' : 'transparent'
-                           }}>
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="cod"
-                        checked={formData.paymentMethod === 'cod'}
-                        onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
-                        className="w-4 h-4"
-                      />
-                      <div className="flex-1">
-                        <div className="font-medium" style={{ color: 'var(--forest)' }}>Cash on Delivery</div>
-                        <div className="text-xs opacity-60">Pay when you receive</div>
-                      </div>
-                    </label>
-                    <label className="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors"
-                           style={{
-                             borderColor: formData.paymentMethod === 'online' ? 'var(--forest)' : 'rgba(26,58,42,0.15)',
-                             background: formData.paymentMethod === 'online' ? 'rgba(26,58,42,0.03)' : 'transparent'
-                           }}>
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="online"
-                        checked={formData.paymentMethod === 'online'}
-                        onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
-                        className="w-4 h-4"
-                      />
-                      <div className="flex-1">
-                        <div className="font-medium" style={{ color: 'var(--forest)' }}>Online Payment</div>
-                        <div className="text-xs opacity-60">UPI, Cards, Net Banking</div>
-                      </div>
-                    </label>
+                <div className="flex items-center gap-3 p-4 rounded-xl border" style={{ borderColor: 'rgba(26,58,42,0.15)' }}>
+                  <div className="flex-1">
+                    <div className="font-medium" style={{ color: 'var(--forest)' }}>Online Payment</div>
+                    <div className="text-xs opacity-60">UPI, Cards, Net Banking — secured by Razorpay</div>
                   </div>
                 </div>
 
@@ -508,11 +448,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                   disabled={isProcessingPayment}
                   className="w-full px-8 py-4 cursor-pointer rounded-full font-medium text-base transition-all hover:-translate-y-0.5 hover:shadow-lg mt-6 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
                   style={{ background: 'var(--forest)', color: 'white' }}>
-                  {isProcessingPayment
-                    ? 'Processing payment…'
-                    : formData.paymentMethod === 'online'
-                      ? `Pay ₹${total}`
-                      : `Place Order - ₹${total}`}
+                  {isProcessingPayment ? 'Processing payment…' : `Pay ₹${total}`}
                 </button>
               </form>
             </div>
@@ -534,15 +470,11 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                 </div>
                 <div className="flex justify-between text-sm">
                   <span style={{ color: 'var(--text-muted)' }}>Shipping</span>
-                  <span style={{ color: 'var(--forest)' }}>
-                    {shipping === 0 ? 'FREE' : `₹${shipping}`}
-                  </span>
+                  <span style={{ color: 'var(--forest)' }}>FREE</span>
                 </div>
-                {shipping === 0 && (
-                  <p className="text-xs" style={{ color: 'var(--forest-light)' }}>
-                    ✓ Free shipping on orders above ₹{FREE_SHIPPING_THRESHOLD}
-                  </p>
-                )}
+                <p className="text-xs" style={{ color: 'var(--forest-light)' }}>
+                  ✓ Free shipping on all orders
+                </p>
                 <div className="pt-3 border-t flex justify-between"
                      style={{ borderColor: 'rgba(26,58,42,0.1)' }}>
                   <span className="font-medium" style={{ color: 'var(--forest)' }}>Total</span>

@@ -75,7 +75,7 @@ export default function ImpactPage() {
       {/* ── Hero ── */}
       <section className="relative overflow-hidden min-h-[85vh] flex items-center px-6 md:px-16 py-24">
         <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover">
-          <source src="/vides/impact_page_unboxing_video.mp4" type="video/mp4" />
+          <source src="/videos/impact_bg_video.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-br from-[#0d2619]/85 via-[#1a3d2b]/70 to-[#0b1f11]/80" />
 
@@ -123,8 +123,8 @@ export default function ImpactPage() {
               { src: '/images/2_barcode.jpg', caption: '2. Barcode', rotate: 'rotate-2' },
               { src: '/images/3_final_sku.jpg', caption: '3. Final SKU', rotate: '-rotate-1' },
               { src: '/images/4_amazon.png', caption: '4. Amazon Listing', rotate: 'rotate-2' },
-              { src: '/images/5_promotion.jpg', caption: '5. Promoting in Park', rotate: 'rotate-1' },
-              { src: '/images/6_promotion.jpg', caption: '6. Out in the World', rotate: '-rotate-2' },
+              { src: '/images/6_promotion.jpg', caption: '5. Promoting in Park', rotate: 'rotate-1' },
+              { src: '/images/6_dispatch.jpg', caption: '6. Dispatch', rotate: '-rotate-2' },
               { src: '/images/7_retail.jpg', caption: '7. In-Store Launch', rotate: 'rotate-1' },
               { src: '/images/8_retail.jpg', caption: '8. On the Shelf', rotate: '-rotate-1' },
               { src: '/images/9_impact.jpg', caption: '9. Impact', rotate: 'rotate-2' },
@@ -146,7 +146,7 @@ export default function ImpactPage() {
       </section>
 
       {/* ── About ── */}
-      <section className="bg-[#edf4e8] py-20 sm:py-28 px-6 md:px-16">
+      {/* <section className="bg-[#edf4e8] py-20 sm:py-28 px-6 md:px-16">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 md:gap-20 items-center">
           <div className="relative aspect-[4/3] sm:aspect-square rounded-3xl overflow-hidden shadow-xl order-2 md:order-1">
             <Image src="/images/about-impact.jpg" alt="Bear Bags Story" fill className="object-cover" />
@@ -166,7 +166,7 @@ export default function ImpactPage() {
             </p>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ── NGO Acknowledgements ── */}
       <section className="py-20 sm:py-28 px-6 md:px-16 bg-[#f5f2eb]">

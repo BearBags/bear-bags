@@ -53,8 +53,8 @@ const CERTIFICATIONS = [
 ];
 
 const SOCIALS = [
-  { Icon: FaInstagram, href: '#' },
-  { Icon: FaLinkedin, href: '#' },
+  { Icon: FaInstagram, href: 'https://www.instagram.com/bearbags.in?utm_source=qr&igsh=MXFhdjl6M2htY2RsMw==' },
+  { Icon: FaLinkedin, href: 'https://www.linkedin.com/company/bearbags/posts/?feedView=all' },
   { Icon: FaWhatsapp, href: 'https://wa.me/919131783440' },
 ];
 

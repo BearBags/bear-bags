@@ -1,7 +1,6 @@
 import { applyDiscount } from './discount';
 import { getDiscountPercentForEmail } from './discount-server';
 import { getProductById } from './products';
-import { FREE_SHIPPING_THRESHOLD } from './shipping';
 import type { PurchaseType } from '@/config/data-routing';
 
 export interface CartProduct {
@@ -59,7 +58,7 @@ export async function computeOrderPricing(cartItems: CartItem[], email: string):
   }));
 
   const subtotal = pricedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const shipping = subtotal > FREE_SHIPPING_THRESHOLD ? 0 : 50;
+  const shipping = 0; // free shipping on all orders
   const total = subtotal + shipping;
   const discountAmount = pricedItems.reduce(
     (sum, item) => sum + (getBasePrice(item) - item.unitPrice) * item.quantity,
