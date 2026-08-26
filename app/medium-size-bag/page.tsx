@@ -9,12 +9,12 @@ import { getProductBySlug } from '@/lib/products';
 import { getClientDiscountPercent, applyDiscount } from '@/lib/discount';
 
 const GALLERY_IMAGES = [
-  '/images/shop1.jpg',
-  '/images/shop2.jpg',
-  '/images/shop3.jpg',
+  '/images/Box_Roll_Edited_White.png',
+  '/images/shop2.png',
+  '/images/shop3.png',
   '/images/shop4.jpg',
   '/images/shop5.jpg',
-  '/images/shop6.png',
+  '/images/shop6.jpg',
 ];
 
 const page = () => {
@@ -84,47 +84,48 @@ const page = () => {
   };
 
   return (
-    <main className="bg-[#f4f4ec] min-h-screen py-16">
+    <main className="bg-[#f4f4ec] min-h-screen py-8 sm:py-12 lg:py-16">
       <div className="mx-auto max-w-[1600px] px-4 sm:px-8 lg:px-16">
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-[1.05fr_0.95fr] items-start">
+        <div className="grid grid-cols-1 gap-8 lg:gap-16 lg:grid-cols-[1.05fr_0.95fr] items-start">
 
           {/* Left image + thumbnails */}
-          <section className="space-y-6">
-            <div className="overflow-hidden rounded-[34px] border border-[#d3e5c9] bg-white/90 p-6 shadow-[0_22px_56px_rgba(36,71,63,0.12)]">
+          <section className="space-y-4 sm:space-y-6">
+            <div className="overflow-hidden rounded-[24px] sm:rounded-[34px] border border-[#d3e5c9] bg-white/90 p-3 sm:p-6 shadow-[0_22px_56px_rgba(36,71,63,0.12)]">
               <button
                 type="button"
                 onClick={() => setIsLightboxOpen(true)}
                 aria-label="View full screen"
-                className="relative mx-auto block h-[600px] w-full cursor-zoom-in overflow-hidden rounded-[28px]"
+                className="relative mx-auto block aspect-square h-auto w-full cursor-zoom-in overflow-hidden rounded-[20px] sm:rounded-[28px] lg:aspect-auto lg:h-[600px]"
               >
                 <Image
                   src={GALLERY_IMAGES[activeImage]}
                   alt={`${product.imageAlt} — view ${activeImage + 1}`}
                   fill
-                  sizes="(max-width: 1024px) 90vw, 45vw"
-                  className="object-cover shadow-xl"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 45vw"
+                  className="object-contain"
                   priority
                 />
               </button>
             </div>
 
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center gap-2 sm:justify-center sm:gap-3">
               <button
                 type="button"
                 onClick={handlePrevImage}
                 aria-label="Previous image"
-                className="grid h-11 w-11 flex-shrink-0 cursor-pointer place-items-center rounded-full bg-[#dbe9d7] text-[#23473f] shadow-sm transition hover:bg-[#c9ddc4]">
+                className="hidden h-11 w-11 flex-shrink-0 cursor-pointer place-items-center rounded-full bg-[#dbe9d7] text-[#23473f] shadow-sm transition hover:bg-[#c9ddc4] sm:grid">
                 <FiChevronLeft size={20} />
               </button>
 
-              <div className="flex flex-wrap items-center justify-center gap-3">
+              {/* Scrolls horizontally on mobile so six thumbnails stay on one row */}
+              <div className="-mx-4 flex snap-x snap-mandatory items-center gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:justify-center sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0">
                 {GALLERY_IMAGES.map((src, index) => (
                   <button
                     key={src}
                     type="button"
                     onClick={() => setActiveImage(index)}
                     aria-label={`View image ${index + 1}`}
-                    className={`relative h-20 w-20 cursor-pointer overflow-hidden rounded-2xl border bg-white shadow-sm transition ${
+                    className={`relative h-16 w-16 flex-shrink-0 snap-start cursor-pointer overflow-hidden rounded-xl border bg-white shadow-sm transition sm:h-20 sm:w-20 sm:rounded-2xl ${
                       activeImage === index ? 'border-[#23473f] ring-2 ring-[#23473f]/40' : 'border-[#cfe2cf]'
                     }`}
                   >
@@ -132,8 +133,8 @@ const page = () => {
                       src={src}
                       alt={`Thumbnail ${index + 1}`}
                       fill
-                      sizes="80px"
-                      className="object-cover"
+                      sizes="(max-width: 640px) 64px, 80px"
+                      className="object-contain"
                     />
                   </button>
                 ))}
@@ -143,24 +144,24 @@ const page = () => {
                 type="button"
                 onClick={handleNextImage}
                 aria-label="Next image"
-                className="grid h-11 w-11 flex-shrink-0 cursor-pointer place-items-center rounded-full bg-[#dbe9d7] text-[#23473f] shadow-sm transition hover:bg-[#c9ddc4]">
+                className="hidden h-11 w-11 flex-shrink-0 cursor-pointer place-items-center rounded-full bg-[#dbe9d7] text-[#23473f] shadow-sm transition hover:bg-[#c9ddc4] sm:grid">
                 <FiChevronRight size={20} />
               </button>
             </div>
           </section>
 
           {/* Right details */}
-          <section className="space-y-6">
+          <section className="space-y-5 sm:space-y-6">
             <div className="space-y-3">
               <span className="inline-block rounded-full bg-[#23473f] px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white">
                 {product.highlight}
               </span>
 
-              <h1 className="text-4xl font-semibold tracking-tight text-[#134632] sm:text-5xl">
+              <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-[#134632] sm:text-4xl lg:text-5xl">
                 {product.title}
               </h1>
 
-              {(product.rating || product.orders) && (
+              {/* {(product.rating || product.orders) && (
                 <div className="flex flex-wrap items-center gap-3 text-sm text-[#555]">
                   {product.rating && (
                     <span className="flex items-center gap-1 font-medium text-[#23473f]">
@@ -172,10 +173,10 @@ const page = () => {
                   {product.rating && product.orders && <span className="text-[#c7d7c7]">|</span>}
                   {product.orders && <span>{product.orders}</span>}
                 </div>
-              )}
+              )} */}
 
-              <div className="flex items-center gap-3">
-                <p className="text-3xl font-bold text-[#c82b2d]">₹{selectedPrice}</p>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <p className="text-2xl font-bold text-[#c82b2d] sm:text-3xl">₹{selectedPrice}</p>
                 {activeDiscountPercent > 0 && (
                   <>
                     <p className="text-base text-[#999] line-through">₹{baseSelectedPrice}</p>
@@ -186,7 +187,7 @@ const page = () => {
                 )}
               </div>
 
-              <p className="text-sm text-[#555]">
+              <p className="text-m text-[#555]">
                 {product.bagSize} · {product.bagCount} bags per pack
                 {product.perBag && <span className="text-[#999]"> · {product.perBag}</span>}
               </p>
@@ -237,18 +238,18 @@ const page = () => {
             </div> */}
 
             <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center">
-              <div className="flex items-center gap-1 rounded-3xl border border-[#d1ddcf] bg-white px-3 py-2 shadow-sm">
+              <div className="flex items-center justify-between gap-1 rounded-3xl border border-[#d1ddcf] bg-white px-3 py-2 shadow-sm sm:justify-start">
                 <button
                   type="button"
                   onClick={handleDecrease}
-                  className="h-10 w-10 rounded-2xl border border-[#c7d7c7] bg-[#f8fcf6] text-xl font-semibold text-[#23473f] cursor-pointer">
+                  className="h-11 w-11 flex-shrink-0 rounded-2xl border border-[#c7d7c7] bg-[#f8fcf6] text-xl font-semibold text-[#23473f] cursor-pointer">
                   −
                 </button>
                 <span className="min-w-[48px] text-center text-lg font-semibold text-[#23473f]">{quantity}</span>
                 <button
                   type="button"
                   onClick={handleIncrease}
-                  className="h-10 w-10 rounded-2xl border border-[#c7d7c7] bg-[#f8fcf6] text-xl font-semibold text-[#23473f] cursor-pointer">
+                  className="h-11 w-11 flex-shrink-0 rounded-2xl border border-[#c7d7c7] bg-[#f8fcf6] text-xl font-semibold text-[#23473f] cursor-pointer">
                   +
                 </button>
               </div>
@@ -269,13 +270,13 @@ const page = () => {
               </div>
             </div>
 
-            <div className="rounded-[30px] border border-[#dbe7d2] bg-white p-6 shadow-sm">
+            <div className="rounded-[24px] border border-[#dbe7d2] bg-white p-4 shadow-sm sm:rounded-[30px] sm:p-6">
               <button className="text-sm font-semibold text-[#23473f] underline underline-offset-4">
                 Description
               </button>
-              <p className="mt-4 text-sm leading-7 text-[#555]">
+              {/* <p className="mt-4 text-sm leading-7 text-[#555]">
                 {product.summary}
-              </p>
+              </p> */}
               <ul className="mt-4 space-y-3 text-sm text-[#555]">
                 {product.details.map((detail) => (
                   <li key={detail} className="flex gap-3">
@@ -319,14 +320,14 @@ const page = () => {
             type="button"
             onClick={(e) => { e.stopPropagation(); handlePrevImage(); }}
             aria-label="Previous image"
-            className="absolute left-4 grid h-12 w-12 cursor-pointer place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+            className="absolute bottom-6 left-6 z-10 grid h-12 w-12 cursor-pointer place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20 sm:bottom-auto sm:left-4"
           >
             <FiChevronLeft size={24} />
           </button>
 
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative h-[80vh] w-full max-w-4xl"
+            className="relative h-[70vh] w-full max-w-4xl sm:h-[80vh]"
           >
             <Image
               src={GALLERY_IMAGES[activeImage]}
@@ -342,7 +343,7 @@ const page = () => {
             type="button"
             onClick={(e) => { e.stopPropagation(); handleNextImage(); }}
             aria-label="Next image"
-            className="absolute right-4 grid h-12 w-12 cursor-pointer place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+            className="absolute bottom-6 right-6 z-10 grid h-12 w-12 cursor-pointer place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20 sm:bottom-auto sm:right-4"
           >
             <FiChevronRight size={24} />
           </button>

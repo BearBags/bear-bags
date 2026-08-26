@@ -5,6 +5,21 @@ const VISITED_KEY = 'bb_has_shopped_before';
 export const FIRST_TIME_DISCOUNT_PERCENT = 7;
 export const RETURNING_DISCOUNT_PERCENT = 5;
 
+// Coupon codes name the discount tiers the customer already qualifies for
+// automatically. Entering one never changes the price -- it only confirms the
+// rate, and an code that doesn't match the buyer's order history is rejected.
+export const FIRST_TIME_COUPON = 'WELCOME7';
+export const RETURNING_COUPON = 'BEARBAGS5';
+
+export const COUPON_FOR_PERCENT: Record<number, string> = {
+  [FIRST_TIME_DISCOUNT_PERCENT]: FIRST_TIME_COUPON,
+  [RETURNING_DISCOUNT_PERCENT]: RETURNING_COUPON,
+};
+
+export function normalizeCoupon(code: string): string {
+  return code.trim().toUpperCase();
+}
+
 export function getClientDiscountPercent(): number {
   if (typeof window === 'undefined') return RETURNING_DISCOUNT_PERCENT;
 

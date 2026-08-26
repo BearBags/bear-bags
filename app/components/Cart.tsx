@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '../context/CartContext';
+import { TiShoppingCart } from "react-icons/ti";
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart } = useCart();
@@ -12,7 +13,7 @@ export default function CartPage() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--cream)' }}>
         <div className="text-center">
-          <div className="text-[60px] md:text-[80px] mb-6">🛒</div>
+          <div className="flex justify-center text-[60px] md:text-[80px] mb-6"><TiShoppingCart /></div>
           <h2 className="font-['Playfair_Display'] text-[28px] md:text-[36px] font-bold mb-4" style={{ color: 'var(--forest)' }}>
             Your cart is empty
           </h2>

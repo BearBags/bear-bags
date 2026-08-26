@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FiX } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
+import { TiShoppingCart } from "react-icons/ti";
 
 export default function CartDrawer() {
   const { cart, isCartOpen, closeCart, updateQuantity, removeFromCart } = useCart();
@@ -45,7 +46,7 @@ export default function CartDrawer() {
         <div className="flex-1 overflow-y-auto px-5 py-4 mt-[2rem]">
           {cart.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center gap-3">
-              <div className="text-5xl">🛒</div>
+              <div className="text-5xl"><TiShoppingCart /></div>
               <p className="text-[#555]">Your cart is empty</p>
             </div>
           ) : (

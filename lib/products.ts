@@ -27,9 +27,9 @@ export const products: ProductProfile[] = [
     id: 2,
     slug: 'medium-size-bag',
     title: 'Bear Bags — Medium',
-    price: 279,
+    price: 259,
     description: '30 compostable garbage bags',
-    bagSize: '19x21 inch',
+    bagSize: '19 x 21 inches',
     bagCount: 30,
     imageSrc: '/images/Box_Roll_Edited_White.png',
     imageAlt: 'Bear Bags — Medium',
@@ -40,8 +40,9 @@ export const products: ProductProfile[] = [
     subscriptionDetails: '3 month subscription with 10% discount',
     oneTimeLabel: 'One-Time Purchase',
     details: [
-      'Our handle bags open extra wide so they can handle any size mess. Easy-tie handles make picking up and carrying used bags a clean and smooth experience.',
-      'Stash a roll in your pocket, front pouch, backpack, car, or stroller and never be caught without one.',
+      'Extra-strong compostable garbage bags engineered for strength without conventional plastic.',
+      'CPCB Certified | TÜV Austria – OK Compost Industrial',
+      'Designed for wet and dry household waste'
     ],
     icon: '/images/Box_Roll_Edited_White.png',
     rating: 4.5,

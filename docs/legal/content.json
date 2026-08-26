@@ -1,0 +1,215 @@
+{
+  "meta": {
+    "company": "Bear Bags",
+    "email": "hello@bearbags.in",
+    "phone": "+91 91317 83440",
+    "website": "bearbags.in",
+    "lastUpdated": "26 August 2026",
+    "placeholders": [
+      "[Legal entity name] — the registered company/LLP/proprietorship name",
+      "[Registered address] — full registered office address",
+      "[City] — city whose courts have jurisdiction (Terms of Service only)"
+    ]
+  },
+  "documents": [
+    {
+      "file": "Bear-Bags-Privacy-Policy",
+      "title": "Privacy Policy",
+      "intro": "What we collect when you shop with Bear Bags, why we collect it, and what you can ask us to do about it.",
+      "sections": [
+        {
+          "heading": "Who we are",
+          "paragraphs": [
+            "Bear Bags (“Bear Bags”, “we”, “us”) sells compostable garbage bags in India through this website and through marketplaces such as Amazon and Blinkit. This policy explains what we do with the personal information you give us on this website.",
+            "Registered entity: [Legal entity name], [Registered address]. Contact: hello@bearbags.in."
+          ]
+        },
+        {
+          "heading": "Information we collect",
+          "paragraphs": ["We only collect what we need to take and deliver your order:"],
+          "bullets": [
+            "Order details — your name, email address, phone number, delivery address, city and pincode, the items and quantities you ordered, and your chosen payment method.",
+            "Payment references — if you pay online, we store the Razorpay order and payment identifiers so we can match a payment to your order. We never see or store your card, UPI, or bank credentials.",
+            "Newsletter email — if you subscribe, we store the email address you enter.",
+            "Local browser storage — your cart and any discount applied to it are kept in your own browser so the cart survives a page refresh. This stays on your device."
+          ],
+          "closing": ["We do not ask for and do not want sensitive personal data such as government ID numbers or health information."]
+        },
+        {
+          "heading": "How we use it",
+          "bullets": [
+            "To process, pack, and deliver your order and to handle returns or refunds.",
+            "To contact you about that order — confirmation, delivery updates, or a problem with the address.",
+            "To manage a Subscribe & Save plan, if you choose one.",
+            "To send occasional product news, but only to the email addresses that subscribed to our newsletter.",
+            "To keep our own records for accounting and tax purposes."
+          ]
+        },
+        {
+          "heading": "Who we share it with",
+          "paragraphs": ["We do not sell your personal information. We share it only with the services that make an order work:"],
+          "bullets": [
+            "Razorpay — our payment gateway, for online payments. Your payment details go directly to Razorpay and are handled under their privacy policy.",
+            "Zoho CRM — where we record orders and enquiries so our team can follow up on them.",
+            "MongoDB Atlas — our database host, where order and subscriber records are stored.",
+            "Delivery partners — the courier gets your name, address and phone number so they can deliver the parcel."
+          ],
+          "closing": ["We may also disclose information where the law requires it, or to protect our legal rights."]
+        },
+        {
+          "heading": "How long we keep it",
+          "paragraphs": ["Order records are kept for as long as we need them for warranty, accounting and tax purposes — normally eight years, as Indian tax law requires. Newsletter subscriptions are kept until you unsubscribe. Cart data in your browser clears when you clear your browser storage."]
+        },
+        {
+          "heading": "Your choices",
+          "paragraphs": ["You can ask us to:"],
+          "bullets": [
+            "show you the personal information we hold about you;",
+            "correct anything that is wrong;",
+            "delete it, where we are not required to keep it for legal or accounting reasons;",
+            "stop sending you marketing email — every newsletter also has an unsubscribe link."
+          ],
+          "closing": ["Email hello@bearbags.in and we will respond within 30 days."]
+        },
+        {
+          "heading": "Security",
+          "paragraphs": ["Traffic to this site is encrypted over HTTPS, payments run through Razorpay’s PCI-DSS compliant gateway, and access to our order database is restricted to authorised staff. No system is perfectly secure, but we take reasonable steps to protect your data and will tell you if a breach affects it."]
+        },
+        {
+          "heading": "Children",
+          "paragraphs": ["This site is not intended for anyone under 18. We do not knowingly collect information from children. If you believe a child has given us their details, write to us and we will delete them."]
+        },
+        {
+          "heading": "Changes to this policy",
+          "paragraphs": ["We may update this policy as our business changes. The date at the top always shows the current version, and material changes will be highlighted on this page."]
+        }
+      ]
+    },
+    {
+      "file": "Bear-Bags-Terms-of-Service",
+      "title": "Terms of Service",
+      "intro": "The rules that apply when you browse this site and buy Bear Bags compostable garbage bags.",
+      "sections": [
+        {
+          "heading": "Agreement to these terms",
+          "paragraphs": [
+            "These terms apply to everything you do on bearbags.in — browsing, placing an order, or subscribing to our newsletter. By using the site you accept them. If you do not agree with them, please do not use the site.",
+            "The site is operated by [Legal entity name], [Registered address], India."
+          ]
+        },
+        {
+          "heading": "Eligibility",
+          "paragraphs": ["You must be at least 18 years old and able to enter into a contract under Indian law to place an order. We currently ship only within India."]
+        },
+        {
+          "heading": "Products and descriptions",
+          "paragraphs": [
+            "We describe our bags — sizes, bag counts, and compostability certifications — as accurately as we can. Product photographs are illustrative; slight variation in colour, print, or packaging is normal and is not a defect.",
+            "Our bags are certified compostable by CPCB, India and to TÜV Austria industrial compostable standards. They compost properly under the conditions those certifications describe; they are not designed for long-term storage of wet waste or for use as sealed airtight containers."
+          ]
+        },
+        {
+          "heading": "Prices and payment",
+          "paragraphs": ["All prices are in Indian Rupees (₹) and include applicable taxes unless stated otherwise. Shipping is free on all orders placed through this site."],
+          "bullets": [
+            "You can pay online through Razorpay (card, UPI, net banking, and wallets) or choose Cash on Delivery where it is offered.",
+            "An online order is confirmed only once Razorpay confirms the payment to us. If a payment is debited but the order does not confirm, contact us and we will trace it or refund it.",
+            "We may correct an obvious pricing error even after you order. If the corrected price is higher, we will ask you to confirm or we will cancel and refund the order in full."
+          ]
+        },
+        {
+          "heading": "Discounts and coupons",
+          "paragraphs": ["Discount codes apply to the order they were used on, cannot be exchanged for cash, and cannot be combined unless we say so. First-time and returning-customer offers are limited to genuine first-time and returning customers, and we may cancel an order where a code has clearly been misused."]
+        },
+        {
+          "heading": "Subscribe & Save",
+          "paragraphs": ["If you choose a Subscribe & Save plan, you are agreeing to a recurring order at the stated interval and discounted price. We will confirm the schedule with you before the first repeat delivery. You can pause, change, or cancel a subscription at any time by writing to hello@bearbags.in before the next dispatch; charges already made for a dispatched order follow the refund policy."]
+        },
+        {
+          "heading": "Orders, delivery and cancellation",
+          "paragraphs": ["We aim to dispatch orders within 2 working days and deliver within 5–7 working days, depending on your pincode. These are estimates, not guarantees. Delivery timelines, cancellation, returns and refunds are set out in full in our Shipping & Refund Policy, which forms part of these terms."]
+        },
+        {
+          "heading": "Acceptable use",
+          "bullets": [
+            "Do not use the site for any unlawful purpose, or to place fraudulent or fictitious orders.",
+            "Do not attempt to gain unauthorised access to the site, its admin area, or its underlying systems.",
+            "Do not scrape, copy, or resell our content, photographs, or product listings without our written permission."
+          ]
+        },
+        {
+          "heading": "Intellectual property",
+          "paragraphs": ["The Bear Bags name, logo, photographs, copy, and site design belong to us and are protected by Indian intellectual property law. You may not use them without our prior written consent."]
+        },
+        {
+          "heading": "Third-party services and links",
+          "paragraphs": ["We link to marketplaces such as Amazon and Blinkit and use third-party services including Razorpay for payments. Those services have their own terms and privacy policies, and we are not responsible for their content or conduct."]
+        },
+        {
+          "heading": "Liability",
+          "paragraphs": ["We are responsible for supplying the products you ordered. To the extent Indian law allows, our total liability for any claim connected with an order is limited to the amount you paid for that order, and we are not liable for indirect or consequential loss. Nothing here limits liability that cannot lawfully be limited, including liability under the Consumer Protection Act, 2019."]
+        },
+        {
+          "heading": "Governing law and disputes",
+          "paragraphs": ["These terms are governed by the laws of India. Any dispute will be subject to the exclusive jurisdiction of the courts at [City], India. We would much rather sort things out directly — email us first."]
+        },
+        {
+          "heading": "Changes to these terms",
+          "paragraphs": ["We may update these terms from time to time. The version shown on this page at the moment you place an order is the one that applies to that order."]
+        }
+      ]
+    },
+    {
+      "file": "Bear-Bags-Shipping-and-Refund-Policy",
+      "title": "Shipping & Refund Policy",
+      "intro": "How and when your order reaches you, and what happens if you need to cancel, return, or get your money back.",
+      "sections": [
+        {
+          "heading": "Shipping",
+          "bullets": [
+            "Shipping is free on every order placed on this site. We ship across India.",
+            "Orders are usually dispatched within 2 working days of confirmation.",
+            "Delivery normally takes 5–7 working days from dispatch, depending on your pincode. Remote pincodes can take longer.",
+            "We share tracking details by email or WhatsApp once the parcel is handed to the courier.",
+            "Please give a complete address and a reachable phone number. If a parcel returns to us because the address was wrong or nobody was available across delivery attempts, we can re-ship it once you cover the return cost, or refund the order less that cost."
+          ]
+        },
+        {
+          "heading": "Cancelling an order",
+          "paragraphs": ["You can cancel any order before it is dispatched by emailing hello@bearbags.in or calling +91 91317 83440 with your order details. If you paid online, we refund the full amount. Once a parcel has been dispatched it cannot be cancelled — treat it as a return instead."]
+        },
+        {
+          "heading": "Returns",
+          "paragraphs": ["Tell us within 7 days of delivery if there is a problem with your order. We accept returns where:"],
+          "bullets": [
+            "the product arrived damaged, torn, or leaking;",
+            "you received the wrong product, size, or quantity;",
+            "the product is defective — for example the bags tear in normal use."
+          ],
+          "closing": [
+            "Because these are hygiene-related consumable products, we cannot accept a return of a pack that has been opened or used, unless it is defective. Unopened packs in their original packaging can be returned within 7 days of delivery.",
+            "To start a return, email hello@bearbags.in with your order number and a photo of the product and packaging. We will arrange a pickup where the courier serves your pincode, at no cost to you for damaged, wrong, or defective items."
+          ]
+        },
+        {
+          "heading": "Refunds",
+          "bullets": [
+            "Once we receive the returned item, or approve a claim from your photos, we process the refund within 3 working days.",
+            "Online payments are refunded to the original payment method through Razorpay and typically reach you within 5–7 working days, depending on your bank.",
+            "Cash on Delivery orders are refunded by bank transfer or UPI to an account you confirm to us.",
+            "Where an order used a discount code, we refund the amount you actually paid.",
+            "If you would rather have a replacement than a refund, tell us and we will ship one instead."
+          ]
+        },
+        {
+          "heading": "Subscriptions",
+          "paragraphs": ["Pause, change, or cancel a Subscribe & Save plan any time before the next dispatch by writing to hello@bearbags.in. A dispatch that has already gone out follows the return and refund rules above."]
+        },
+        {
+          "heading": "Payments that fail or go missing",
+          "paragraphs": ["If money is debited but your order is not confirmed, the payment was most likely not captured and your bank will reverse it automatically, usually within 5–7 working days. Send us the transaction reference and we will trace it with Razorpay and make sure you are not left out of pocket."]
+        }
+      ]
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FaCartShopping } from "react-icons/fa6";
 import { useCart } from '../context/CartContext';
 import Image from 'next/image';
+import { TiShoppingCart } from "react-icons/ti";
 
 const NAV_LINKS = [
   { label: 'Home',    href: '/#home' },
@@ -44,7 +45,7 @@ const Header = () => {
           ))}
           <li>
             <button onClick={openCart} aria-label="Open cart" className="relative cursor-pointer">
-              <FaCartShopping size={22} />
+              <TiShoppingCart size={22}/>
               {cart.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#1f3a2f] text-white text-xs h-5 w-5 flex items-center justify-center rounded-full">
                   {cart.length}

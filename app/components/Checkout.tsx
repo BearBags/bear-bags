@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
+import { TiShoppingCart } from "react-icons/ti";
+import { COUPON_FOR_PERCENT } from '@/lib/discount';
 
 interface RazorpayHandlerResponse {
   razorpay_order_id: string;
@@ -86,6 +88,10 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
   const total = subtotal + shipping;
   const impact = Math.round(total * 0.3);
   const discountPercent = cartItems[0]?.product.discountPercent;
+
+  // The buyer's tier already decides the discount, so the matching coupon is
+  // shown pre-filled and read-only -- there is nothing for them to type or apply.
+  const couponCode = discountPercent ? COUPON_FOR_PERCENT[discountPercent] : undefined;
 
   const resetForm = () => {
     setFormData({
@@ -186,7 +192,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--cream)' }}>
         <div className="text-center">
-          <div className="text-[60px] md:text-[80px] mb-6">🛒</div>
+          <div className="flex justify-center text-[60px] md:text-[80px] mb-6"><TiShoppingCart /></div>
           <h2 className="font-['Playfair_Display'] text-[28px] md:text-[36px] font-bold mb-4"
               style={{ color: 'var(--forest)' }}>
             Your cart is empty
@@ -475,6 +481,30 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                 <p className="text-xs" style={{ color: 'var(--forest-light)' }}>
                   ✓ Free shipping on all orders
                 </p>
+                <div className="pt-3 border-t" style={{ borderColor: 'rgba(26,58,42,0.1)' }}>
+                  <label htmlFor="coupon" className="mb-2 block text-sm" style={{ color: 'var(--text-muted)' }}>
+                    Coupon code
+                  </label>
+                  <input
+                    id="coupon"
+                    type="text"
+                    value={couponCode ?? '—'}
+                    readOnly
+                    aria-describedby="coupon-note"
+                    className="w-full cursor-not-allowed rounded-xl border px-3 py-2 text-sm font-medium uppercase tracking-wide outline-none"
+                    style={{
+                      borderColor: 'rgba(26,58,42,0.15)',
+                      background: 'rgba(26,58,42,0.04)',
+                      color: 'var(--forest)',
+                    }}
+                  />
+                  <p id="coupon-note" className="mt-2 text-xs" style={{ color: 'var(--forest-light)' }}>
+                    {couponCode
+                      ? `✓ ${couponCode} applied automatically — your ${discountPercent}% discount is already reflected in the prices above.`
+                      : 'No coupon applies to this order.'}
+                  </p>
+                </div>
+
                 <div className="pt-3 border-t flex justify-between"
                      style={{ borderColor: 'rgba(26,58,42,0.1)' }}>
                   <span className="font-medium" style={{ color: 'var(--forest)' }}>Total</span>
@@ -485,7 +515,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                 </div>
               </div>
 
-              <div className="rounded-xl p-4 mb-6"
+              {/* <div className="rounded-xl p-4 mb-6"
                    style={{ background: 'var(--cream-dark)' }}>
                 <div className="flex gap-3 items-start">
                   <div className="text-2xl">❤️</div>
@@ -498,7 +528,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               <div className="space-y-2 text-xs" style={{ color: 'var(--text-muted)' }}>
                 <div className="flex items-center gap-2">
