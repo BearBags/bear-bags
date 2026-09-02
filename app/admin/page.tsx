@@ -40,11 +40,9 @@ export default async function AdminPage() {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4">
           {[
             { label: 'Total Orders', value: orders.length },
-            { label: 'Subscriptions', value: orders.filter((o) => o.hasSubscription).length },
-            { label: 'One-Time', value: orders.filter((o) => !o.hasSubscription).length },
             { label: 'Newsletter', value: subscribers.length },
           ].map(({ label, value }) => (
             <div key={label} className="rounded-[20px] border border-[#dbe7d2] bg-white p-5 shadow-sm">
@@ -65,7 +63,6 @@ export default async function AdminPage() {
                   <th className="px-5 py-3">Customer</th>
                   <th className="px-5 py-3">Email</th>
                   <th className="px-5 py-3">City</th>
-                  <th className="px-5 py-3">Type</th>
                   <th className="px-5 py-3">Total</th>
                   <th className="px-5 py-3">Payment</th>
                   <th className="px-5 py-3">Zoho</th>
@@ -74,7 +71,7 @@ export default async function AdminPage() {
               <tbody>
                 {orders.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-5 py-8 text-center text-[#888]">No orders yet</td>
+                    <td colSpan={7} className="px-5 py-8 text-center text-[#888]">No orders yet</td>
                   </tr>
                 )}
                 {orders.map((order) => (
@@ -85,15 +82,6 @@ export default async function AdminPage() {
                     <td className="px-5 py-3 font-medium text-[#1f3a2d]">{order.customerName}</td>
                     <td className="px-5 py-3 text-[#555]">{order.email}</td>
                     <td className="px-5 py-3 text-[#555]">{order.city}</td>
-                    <td className="px-5 py-3">
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                        order.hasSubscription
-                          ? 'bg-[#d4edda] text-[#134632]'
-                          : 'bg-[#f0f0e8] text-[#555]'
-                      }`}>
-                        {order.hasSubscription ? 'Subscribe & Save' : 'One-Time'}
-                      </span>
-                    </td>
                     <td className="px-5 py-3 font-semibold text-[#134632]">₹{order.total}</td>
                     <td className="px-5 py-3 capitalize text-[#555]">{order.paymentMethod}</td>
                     <td className="px-5 py-3">

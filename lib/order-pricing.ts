@@ -1,13 +1,11 @@
 import { applyDiscount } from './discount';
 import { getDiscountPercentForEmail } from './discount-server';
 import { getProductById } from './products';
-import type { PurchaseType } from '@/config/data-routing';
 
 export interface CartProduct {
   id: number;
   name: string;
   price: number;
-  option?: PurchaseType;
 }
 
 export interface CartItem {
@@ -36,13 +34,12 @@ export interface OrderPricing {
   total: number;
   discountPercent: number;
   discountAmount: number;
-  hasSubscription: boolean;
 }
 
 const getBasePrice = (item: CartItem): number => {
   const product = getProductById(item.product.id);
   if (!product) return item.product.price; // fallback for products not in the catalog
-  return item.product.option === 'subscribe' ? Math.round(product.price * 0.9) : product.price;
+  return product.price;
 };
 
 // Recomputes pricing server-side from known product base prices rather than
@@ -50,7 +47,6 @@ const getBasePrice = (item: CartItem): number => {
 // vs returning-customer (5%) discount based on this email's order history.
 export async function computeOrderPricing(cartItems: CartItem[], email: string): Promise<OrderPricing> {
   const discountPercent = await getDiscountPercentForEmail(email);
-  const hasSubscription = cartItems.some((item) => item.product.option === 'subscribe');
 
   const pricedItems = cartItems.map((item) => ({
     ...item,
@@ -65,5 +61,5 @@ export async function computeOrderPricing(cartItems: CartItem[], email: string):
     0,
   );
 
-  return { pricedItems, subtotal, shipping, total, discountPercent, discountAmount, hasSubscription };
+  return { pricedItems, subtotal, shipping, total, discountPercent, discountAmount };
 }

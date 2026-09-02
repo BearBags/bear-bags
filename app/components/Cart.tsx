@@ -73,11 +73,6 @@ export default function CartPage() {
                 <h3 className="font-medium text-base md:text-lg" style={{ color: 'var(--forest)' }}>
                   {item.product.name}
                 </h3>
-                {item.product.option && (
-                  <p className="text-xs md:text-sm mt-0.5" style={{ color: 'var(--forest-light)' }}>
-                    {item.product.option === 'subscribe' ? 'Subscribe & Save' : 'One-Time Purchase'}
-                  </p>
-                )}
                 {(item.product.size || item.product.count) && (
                   <p className="text-xs md:text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
                     {item.product.size ?? ''}

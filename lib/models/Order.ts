@@ -8,7 +8,6 @@ const orderItemSchema = new Schema(
     productName: { type: String, required: true },
     price: { type: Number, required: true },
     quantity: { type: Number, required: true },
-    purchaseType: { type: String, enum: ['subscribe', 'oneTime'], required: true },
   },
   { _id: false },
 );
@@ -28,7 +27,6 @@ const orderSchema = new Schema(
     subtotal: { type: Number, required: true },
     shipping: { type: Number, required: true },
     total: { type: Number, required: true },
-    hasSubscription: { type: Boolean, default: false },
     discountPercent: { type: Number, default: 0 },
     discountAmount: { type: Number, default: 0 },
     zohoSynced: { type: Boolean, default: false },

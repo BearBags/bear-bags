@@ -94,9 +94,10 @@ so they are one document. This replaced the relational `Order → OrderItem` joi
 ```
 Order {
   _id, customerName, email, phone, address, city, pincode,
-  paymentMethod, subtotal, shipping, total,
-  hasSubscription, zohoSynced, createdAt,
-  items: [{ productId, productName, price, quantity, purchaseType }]
+  paymentMethod, paymentStatus, razorpayOrderId, razorpayPaymentId,
+  subtotal, shipping, total, discountPercent, discountAmount,
+  zohoSynced, createdAt,
+  items: [{ productId, productName, price, quantity }]
 }
 
 NewsletterSubscriber { _id, email (unique), createdAt }

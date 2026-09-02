@@ -1,8 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { TiShoppingCart } from "react-icons/ti";
 import { COUPON_FOR_PERCENT } from '@/lib/discount';
+
+const SHIPPING_DETAILS_KEY = 'bearbags_shipping_details';
 
 interface RazorpayHandlerResponse {
   razorpay_order_id: string;
@@ -83,6 +85,32 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
     paymentMethod: 'online'
   });
 
+  // Shipping details persist across visits so a returning buyer does not retype
+  // them. Restored on mount rather than in useState so server and first client
+  // render agree; cleared once an order is placed.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SHIPPING_DETAILS_KEY);
+      if (saved) setFormData((prev) => ({ ...prev, ...JSON.parse(saved) }));
+    } catch {
+      // corrupt or unavailable storage -- fall back to an empty form
+    }
+  }, []);
+
+  useEffect(() => {
+    // Skip a blank form so the post-order reset does not re-save what
+    // resetForm just cleared.
+    const hasDetails = Object.entries(formData).some(
+      ([key, value]) => key !== 'paymentMethod' && value !== '',
+    );
+    if (!hasDetails) return;
+    try {
+      localStorage.setItem(SHIPPING_DETAILS_KEY, JSON.stringify(formData));
+    } catch {
+      // storage full or blocked -- persistence is a convenience, not required
+    }
+  }, [formData]);
+
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   const shipping = 0; // free shipping on all orders
   const total = subtotal + shipping;
@@ -94,6 +122,11 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
   const couponCode = discountPercent ? COUPON_FOR_PERCENT[discountPercent] : undefined;
 
   const resetForm = () => {
+    try {
+      localStorage.removeItem(SHIPPING_DETAILS_KEY);
+    } catch {
+      // storage unavailable -- the state reset below is what actually matters
+    }
     setFormData({
       name: '',
       email: '',
@@ -278,7 +311,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                         {item.product.name}
                       </h3>
                       <p className="text-xs md:text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
-                        {(item.product.size ?? item.product.option ?? 'Bag')} • {item.product.count ?? item.quantity} bags
+                        {(item.product.size ?? 'Bag')} • {item.product.count ?? item.quantity} bags
                       </p>
                       {isBuyNow ? (
                         <p className="text-sm md:text-base font-medium" style={{ color: 'var(--forest)' }}>

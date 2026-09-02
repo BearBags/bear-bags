@@ -69,15 +69,6 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
-    heading: 'Subscriptions',
-    body: (
-      <p>
-        Pause, change, or cancel a Subscribe &amp; Save plan any time before the next dispatch by writing to
-        hello@bearbags.in. A dispatch that has already gone out follows the return and refund rules above.
-      </p>
-    ),
-  },
-  {
     heading: 'Payments that fail or go missing',
     body: (
       <p>

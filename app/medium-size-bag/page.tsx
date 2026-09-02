@@ -21,7 +21,6 @@ const page = () => {
   const product = getProductBySlug('medium-size-bag');
   const { addToCart, setBuyNowItem } = useCart();
   const router = useRouter();
-  const [selectedOption, setSelectedOption] = useState<'subscribe' | 'oneTime'>('subscribe');
   const [quantity, setQuantity] = useState(1);
   const [discountPercent, setDiscountPercent] = useState<number | null>(null);
   const [activeImage, setActiveImage] = useState(0);
@@ -50,10 +49,8 @@ const page = () => {
     return null;
   }
 
-  const subscribePrice = Math.round(product.price * 0.9);
-  const baseSelectedPrice = selectedOption === 'subscribe' ? subscribePrice : product.price;
   const activeDiscountPercent = discountPercent ?? 0;
-  const selectedPrice = applyDiscount(baseSelectedPrice, activeDiscountPercent);
+  const selectedPrice = applyDiscount(product.price, activeDiscountPercent);
 
   const handleDecrease = () => setQuantity((value) => Math.max(value - 1, 1));
   const handleIncrease = () => setQuantity((value) => value + 1);
@@ -68,7 +65,6 @@ const page = () => {
     description: product.description,
     price: selectedPrice,
     icon: product.icon,
-    option: selectedOption,
     size: product.bagSize,
     count: product.bagCount,
     discountPercent: activeDiscountPercent,
@@ -179,7 +175,7 @@ const page = () => {
                 <p className="text-2xl font-bold text-[#c82b2d] sm:text-3xl">₹{selectedPrice}</p>
                 {activeDiscountPercent > 0 && (
                   <>
-                    <p className="text-base text-[#999] line-through">₹{baseSelectedPrice}</p>
+                    <p className="text-base text-[#999] line-through">₹{product.price}</p>
                     <span className="rounded-full bg-[#dbe9d7] px-3 py-1 text-xs font-semibold text-[#23473f]">
                       {activeDiscountPercent}% off
                     </span>
@@ -205,37 +201,6 @@ const page = () => {
                 )}
               </div>
             </div>
-
-            {/* Purchase option toggle */}
-            {/* <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setSelectedOption('subscribe')}
-                className={`cursor-pointer rounded-2xl border p-4 text-left transition ${
-                  selectedOption === 'subscribe'
-                    ? 'border-[#23473f] bg-[#eef6ea] shadow-sm'
-                    : 'border-[#d1ddcf] bg-white'
-                }`}
-              >
-                <div className="text-sm font-semibold text-[#134632]">{product.subscriptionLabel}</div>
-                <div className="mt-1 text-xs text-[#666]">{product.subscriptionDetails}</div>
-                <div className="mt-2 text-sm font-semibold text-[#23473f]">₹{subscribePrice}</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedOption('oneTime')}
-                className={`cursor-pointer rounded-2xl border p-4 text-left transition ${
-                  selectedOption === 'oneTime'
-                    ? 'border-[#23473f] bg-[#eef6ea] shadow-sm'
-                    : 'border-[#d1ddcf] bg-white'
-                }`}
-              >
-                <div className="text-sm font-semibold text-[#134632]">{product.oneTimeLabel}</div>
-                <div className="mt-1 text-xs text-[#666]">No commitment, order whenever you like.</div>
-                <div className="mt-2 text-sm font-semibold text-[#23473f]">₹{product.price}</div>
-              </button>
-            </div> */}
 
             <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center">
               <div className="flex items-center justify-between gap-1 rounded-3xl border border-[#d1ddcf] bg-white px-3 py-2 shadow-sm sm:justify-start">

@@ -10,9 +10,6 @@ export interface ProductProfile {
   imageAlt: string;
   highlight: string;
   summary: string;
-  subscriptionLabel: string;
-  subscriptionDetails: string;
-  oneTimeLabel: string;
   details: string[];
   icon: string;
   rating?: number;
@@ -36,9 +33,6 @@ export const products: ProductProfile[] = [
     highlight: 'Strong. Compostable.',
     summary:
       'Compact, convenient, and easy to use! Our bags with handles tear smoothly from the roll and open extra wide for mess-free handling.',
-    subscriptionLabel: 'Subscribe & Save',
-    subscriptionDetails: '3 month subscription with 10% discount',
-    oneTimeLabel: 'One-Time Purchase',
     details: [
       'Extra-strong compostable garbage bags engineered for strength without conventional plastic.',
       'CPCB Certified | TÜV Austria – OK Compost Industrial',

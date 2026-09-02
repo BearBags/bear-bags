@@ -40,7 +40,6 @@
           "bullets": [
             "To process, pack, and deliver your order and to handle returns or refunds.",
             "To contact you about that order — confirmation, delivery updates, or a problem with the address.",
-            "To manage a Subscribe & Save plan, if you choose one.",
             "To send occasional product news, but only to the email addresses that subscribed to our newsletter.",
             "To keep our own records for accounting and tax purposes."
           ]
@@ -122,10 +121,6 @@
           "paragraphs": ["Discount codes apply to the order they were used on, cannot be exchanged for cash, and cannot be combined unless we say so. First-time and returning-customer offers are limited to genuine first-time and returning customers, and we may cancel an order where a code has clearly been misused."]
         },
         {
-          "heading": "Subscribe & Save",
-          "paragraphs": ["If you choose a Subscribe & Save plan, you are agreeing to a recurring order at the stated interval and discounted price. We will confirm the schedule with you before the first repeat delivery. You can pause, change, or cancel a subscription at any time by writing to hello@bearbags.in before the next dispatch; charges already made for a dispatched order follow the refund policy."]
-        },
-        {
           "heading": "Orders, delivery and cancellation",
           "paragraphs": ["We aim to dispatch orders within 2 working days and deliver within 5–7 working days, depending on your pincode. These are estimates, not guarantees. Delivery timelines, cancellation, returns and refunds are set out in full in our Shipping & Refund Policy, which forms part of these terms."]
         },
@@ -200,10 +195,6 @@
             "Where an order used a discount code, we refund the amount you actually paid.",
             "If you would rather have a replacement than a refund, tell us and we will ship one instead."
           ]
-        },
-        {
-          "heading": "Subscriptions",
-          "paragraphs": ["Pause, change, or cancel a Subscribe & Save plan any time before the next dispatch by writing to hello@bearbags.in. A dispatch that has already gone out follows the return and refund rules above."]
         },
         {
           "heading": "Payments that fail or go missing",

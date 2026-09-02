@@ -67,10 +67,6 @@ const SECTIONS: LegalSection[] = [
         </li>
         <li>
           <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#23473f]" />
-          <span>To manage a Subscribe &amp; Save plan, if you choose one.</span>
-        </li>
-        <li>
-          <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#23473f]" />
           <span>To send occasional product news, but only to the email addresses that subscribed to our newsletter.</span>
         </li>
         <li>

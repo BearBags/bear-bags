@@ -7,14 +7,12 @@ export const dataRouting = {
     // MongoDB Atlas via Mongoose — stores permanent records
     storeNewsletterSignups: true,
     storeOrders: true,            // full order: customer info + items
-    storeSubscriptionPreference: true, // captured per-item as purchaseType
   },
 
   zohoCRM: {
     // Leads created in Zoho CRM free plan
     sendNewsletterSubscribers: true,
-    sendAllOrders: true,          // one-time AND subscribe & save
-    sendSubscriptionOrdersOnly: false, // overridden by sendAllOrders = true
+    sendAllOrders: true,
   },
 
   admin: {
@@ -23,5 +21,3 @@ export const dataRouting = {
     sessionMaxAgeSeconds: 60 * 60 * 8, // 8 hours
   },
 } as const;
-
-export type PurchaseType = 'subscribe' | 'oneTime';

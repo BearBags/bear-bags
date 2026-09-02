@@ -19,7 +19,7 @@ export async function saveOrder({
   razorpayOrderId,
   razorpayPaymentId,
 }: SaveOrderOptions): Promise<void> {
-  const { pricedItems, subtotal, shipping, total, discountPercent, discountAmount, hasSubscription } = pricing;
+  const { pricedItems, subtotal, shipping, total, discountPercent, discountAmount } = pricing;
 
   if (dataRouting.database.storeOrders) {
     await connectToDatabase();
@@ -37,7 +37,6 @@ export async function saveOrder({
       subtotal,
       shipping,
       total,
-      hasSubscription,
       discountPercent,
       discountAmount,
       items: pricedItems.map((item) => ({
@@ -45,28 +44,21 @@ export async function saveOrder({
         productName: item.product.name,
         price: item.unitPrice,
         quantity: item.quantity,
-        purchaseType: item.product.option ?? 'oneTime',
       })),
     });
   }
 
-  const shouldSendToZoho =
-    dataRouting.zohoCRM.sendAllOrders ||
-    (dataRouting.zohoCRM.sendSubscriptionOrdersOnly && hasSubscription);
-
-  if (shouldSendToZoho) {
+  if (dataRouting.zohoCRM.sendAllOrders) {
     const nameParts = formData.name.trim().split(' ');
     const lastName = nameParts.pop() ?? formData.name;
     const firstName = nameParts.join(' ') || undefined;
 
-    const itemLines = pricedItems.map((item) => {
-      const type = item.product.option === 'subscribe' ? 'Subscribe & Save' : 'One-Time Purchase';
-      return `- ${item.product.name} x${item.quantity} [${type}] — ₹${item.unitPrice * item.quantity}`;
-    });
+    const itemLines = pricedItems.map(
+      (item) => `- ${item.product.name} x${item.quantity} — ₹${item.unitPrice * item.quantity}`,
+    );
 
     const description = [
       `Order Date: ${new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })}`,
-      `Order Type: ${hasSubscription ? 'Subscription (Subscribe & Save)' : 'One-Time Purchase'}`,
       `Payment: ${paymentStatus === 'paid' ? 'Online Payment (paid)' : 'Cash on Delivery'}`,
       `Subtotal: ₹${subtotal}  Shipping: ₹${shipping}  Total: ₹${total}`,
       '',

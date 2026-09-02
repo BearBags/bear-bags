@@ -79,17 +79,6 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
-    heading: 'Subscribe & Save',
-    body: (
-      <p>
-        If you choose a Subscribe &amp; Save plan, you are agreeing to a recurring order at the stated interval and
-        discounted price. We will confirm the schedule with you before the first repeat delivery. You can pause, change,
-        or cancel a subscription at any time by writing to hello@bearbags.in before the next dispatch; charges already
-        made for a dispatched order follow the refund policy.
-      </p>
-    ),
-  },
-  {
     heading: 'Orders, delivery and cancellation',
     body: (
       <p>
