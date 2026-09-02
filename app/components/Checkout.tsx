@@ -2,9 +2,19 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { TiShoppingCart } from "react-icons/ti";
-import { COUPON_FOR_PERCENT } from '@/lib/discount';
+import { COUPON_FOR_PERCENT, applyDiscount } from '@/lib/discount';
 
 const SHIPPING_DETAILS_KEY = 'bearbags_shipping_details';
+
+interface ServerPricing {
+  subtotal: number;
+  shipping: number;
+  total: number;
+  discountPercent: number;
+  discountAmount: number;
+}
+
+const isCompleteEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
 interface RazorpayHandlerResponse {
   razorpay_order_id: string;
@@ -75,6 +85,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
   const [confirmedDiscountPercent, setConfirmedDiscountPercent] = useState<number | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [serverPricing, setServerPricing] = useState<ServerPricing | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -111,11 +122,55 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
     }
   }, [formData]);
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  // Debounced so typing an email address does not fire a request per keystroke.
+  useEffect(() => {
+    if (!isCompleteEmail(formData.email) || cartItems.length === 0) {
+      setServerPricing(null);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/pricing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: formData.email, cartItems }),
+        });
+        if (!res.ok) return;
+        const data: ServerPricing = await res.json();
+        if (!cancelled) setServerPricing(data);
+      } catch {
+        // Leave the local estimate in place; the order routes still price
+        // authoritatively server-side when the buyer pays.
+      }
+    }, 500);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [formData.email, cartItems]);
+
+  // Cart prices carry the discount guessed from localStorage when the item was
+  // added. The server decides the real tier from this email's order history, so
+  // once a valid email is entered we show its figures instead -- otherwise the
+  // summary and the Razorpay modal disagree.
+  const localSubtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   const shipping = 0; // free shipping on all orders
-  const total = subtotal + shipping;
+  const subtotal = serverPricing?.subtotal ?? localSubtotal;
+  const total = serverPricing?.total ?? localSubtotal + shipping;
   const impact = Math.round(total * 0.3);
-  const discountPercent = cartItems[0]?.product.discountPercent;
+  const discountPercent = serverPricing?.discountPercent ?? cartItems[0]?.product.discountPercent;
+
+  // Cart prices already have the guessed rate baked in, so undo it before
+  // applying the authoritative one rather than discounting twice.
+  const unitPriceFor = (item: (typeof cartItems)[number]): number => {
+    if (!serverPricing) return item.product.price;
+    const guessedPercent = item.product.discountPercent ?? 0;
+    const basePrice = Math.round(item.product.price / (1 - guessedPercent / 100));
+    return applyDiscount(basePrice, serverPricing.discountPercent);
+  };
 
   // The buyer's tier already decides the discount, so the matching coupon is
   // shown pre-filled and read-only -- there is nothing for them to type or apply.
@@ -353,9 +408,9 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                     <div className="text-right flex-shrink-0">
                       <div className="font-['Playfair_Display'] text-[18px] md:text-[20px] font-bold"
                            style={{ color: 'var(--forest)' }}>
-                        ₹{item.product.price * item.quantity}
+                        ₹{unitPriceFor(item) * item.quantity}
                       </div>
-                      <div className="text-xs opacity-60">₹{item.product.price} each</div>
+                      <div className="text-xs opacity-60">₹{unitPriceFor(item)} each</div>
                     </div>
                   </div>
                 ))}

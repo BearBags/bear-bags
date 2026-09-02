@@ -28,7 +28,7 @@ const Header = () => {
   return (
     <>
       {/* ── NAVBAR ── sits above the overlay via z-50 */}
-      <nav className="flex justify-between items-center px-6 py-4 bg-white shadow-sm relative z-50 text-[1rem] md:text-[1.2rem] font-semibold">
+      <nav className="flex justify-between items-center px-6 py-4 bg-white shadow-sm relative z-[90] text-[1rem] md:text-[1.2rem] font-semibold">
 
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-2">
@@ -71,9 +71,10 @@ const Header = () => {
         </button>
       </nav>
 
-      {/* ── FULL-PAGE OVERLAY ── fades in behind the navbar */}
+      {/* ── FULL-PAGE OVERLAY ── fades in behind the navbar, above the cart
+          drawer (z-70) which stays mounted off-screen at all times. */}
       <div
-        className={`md:hidden fixed inset-0 z-40 bg-white flex flex-col transition-opacity duration-300 ease-in-out
+        className={`md:hidden fixed inset-0 z-[80] bg-white flex flex-col transition-opacity duration-300 ease-in-out
           ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
       >
         {/* Offset so links start below the navbar (~72 px tall) */}

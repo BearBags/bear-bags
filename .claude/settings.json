@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -rf app/api/checkout && ls app/api/)",
+      "Bash(echo \"tsc-exit=$?\")",
+      "Bash(node -e ' *)"
+    ],
+    "additionalDirectories": [
+      "/home/vanshika/internships/freelance/bear-bags/app/api/checkout"
+    ]
+  }
+}

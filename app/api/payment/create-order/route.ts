@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { computeOrderPricing, type CartItem, type OrderFormData } from '@/lib/order-pricing';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
+
+// Creating a Razorpay order is the one unauthenticated endpoint that calls a
+// paid third-party API, so it is capped per IP.
+const MAX_ORDERS_PER_WINDOW = 10;
+const WINDOW_MS = 60_000;
 
 export async function POST(request: NextRequest) {
   try {
+    const { allowed, retryAfterSeconds } = rateLimit(
+      `create-order:${getClientIp(request)}`,
+      MAX_ORDERS_PER_WINDOW,
+      WINDOW_MS,
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many payment attempts. Please wait a moment and try again.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } },
+      );
+    }
+
     const body = await request.json();
     const formData: OrderFormData = body?.formData;
     const cartItems: CartItem[] = body?.cartItems ?? [];
