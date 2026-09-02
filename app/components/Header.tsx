@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { FaCartShopping } from "react-icons/fa6";
 import { useCart } from '../context/CartContext';
 import Image from 'next/image';
@@ -19,6 +20,13 @@ const NAV_LINKS = [
 const Header = () => {
   const [open, setOpen] = useState(false);
   const { cart, openCart } = useCart();
+  const pathname = usePathname();
+
+  // Covers the routes the per-link onClick misses: the browser back button, and
+  // a hash link to the page we are already on.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';

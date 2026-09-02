@@ -1,5 +1,6 @@
 'use client';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface Product {
   id: number;
@@ -47,6 +48,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [buyNowItem, setBuyNowItemState] = useState<CartItem | null>(null);
+  const pathname = usePathname();
+
+  // The provider lives in the root layout and survives client-side navigation,
+  // so an open drawer would otherwise stay pinned over the page the user just
+  // navigated to -- the URL changes but the overlay never lifts.
+  useEffect(() => {
+    setIsCartOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     const stored = localStorage.getItem('cart');
