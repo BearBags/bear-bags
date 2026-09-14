@@ -57,6 +57,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setIsCartOpen(false);
   }, [pathname]);
 
+  // A Buy Now item is scoped to the single checkout it was started for. Leaving
+  // /checkout abandons it, otherwise it outlives the visit and every later
+  // checkout renders that stale item instead of the real cart.
+  useEffect(() => {
+    if (pathname !== '/checkout') setBuyNowItemState(null);
+  }, [pathname]);
+
   useEffect(() => {
     const stored = localStorage.getItem('cart');
     if (stored) {
