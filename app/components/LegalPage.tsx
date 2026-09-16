@@ -11,7 +11,7 @@ interface LegalPageProps {
   lastUpdated: string;
   sections: LegalSection[];
 }
-
+ 
 const LegalPage = ({ title, intro, lastUpdated, sections }: LegalPageProps) => {
   return (
     <main className="bg-[#f4f4ec] min-h-screen py-10 sm:py-14 lg:py-20">
