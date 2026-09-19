@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { FiChevronDown, FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
 import { getProductBySlug } from '@/lib/products';
-import { getClientDiscountPercent, applyDiscount } from '@/lib/discount';
+import { FIRST_TIME_COUPON, RETURNING_COUPON } from '@/lib/discount';
+import CopyableCode from '../components/CopyableCode';
 
 const GALLERY_IMAGES = [
   '/images/Box_Roll_Edited_White.png',
@@ -22,13 +23,8 @@ const page = () => {
   const { addToCart, setBuyNowItem } = useCart();
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
-  const [discountPercent, setDiscountPercent] = useState<number | null>(null);
   const [activeImage, setActiveImage] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-
-  useEffect(() => {
-    setDiscountPercent(getClientDiscountPercent());
-  }, []);
 
   useEffect(() => {
     if (!isLightboxOpen) return;
@@ -49,8 +45,9 @@ const page = () => {
     return null;
   }
 
-  const activeDiscountPercent = discountPercent ?? 0;
-  const selectedPrice = applyDiscount(product.price, activeDiscountPercent);
+  // Full price. Discounts are earned at checkout by applying a coupon, so the
+  // cart must not carry a pre-applied rate.
+  const selectedPrice = product.price;
 
   const handleDecrease = () => setQuantity((value) => Math.max(value - 1, 1));
   const handleIncrease = () => setQuantity((value) => value + 1);
@@ -67,7 +64,6 @@ const page = () => {
     icon: product.icon,
     size: product.bagSize,
     count: product.bagCount,
-    discountPercent: activeDiscountPercent,
   });
 
   const handleAddToCart = () => {
@@ -172,33 +168,68 @@ const page = () => {
               )} */}
 
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <p className="text-2xl font-bold text-[#c82b2d] sm:text-3xl">₹{selectedPrice}</p>
-                {activeDiscountPercent > 0 && (
-                  <>
-                    <p className="text-base text-[#999] line-through">₹{product.price}</p>
-                    <span className="rounded-full bg-[#dbe9d7] px-3 py-1 text-xs font-semibold text-[#23473f]">
-                      {activeDiscountPercent}% off
-                    </span>
-                  </>
-                )}
+                <p className="text-[32px] font-bold leading-none text-[#134632] sm:text-[40px]">₹{selectedPrice}</p>
               </div>
 
-              <p className="text-m text-[#555]">
-                {product.bagSize} · {product.bagCount} bags per pack
-                {product.perBag && <span className="text-[#999]"> · {product.perBag}</span>}
+              <p className="text-[15px] text-[#555]">
+                {product.bagSize} · {product.bagCount} bags per roll
+                {product.perBag && <span> · {product.perBag}</span>}
               </p>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2.5">
                 {product.inStock && (
-                  <span className="rounded-full border border-[#d3e5c9] bg-white px-3 py-1.5 text-xs font-medium text-[#23473f]">
-                     {product.inStock}
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[#eaf2e6] px-3.5 py-2 text-[13px] font-medium text-[#23473f]">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
+                         className="h-[17px] w-[17px] flex-shrink-0">
+                      <path d="M1 3h13v13H1z" />
+                      <path d="M14 8h4l3 3v5h-7z" />
+                      <circle cx="5.5" cy="18.5" r="2" />
+                      <circle cx="17.5" cy="18.5" r="2" />
+                    </svg>
+                    {product.inStock}
                   </span>
                 )}
                 {product.freeDelivery && (
-                  <span className="rounded-full border border-[#d3e5c9] bg-white px-3 py-1.5 text-xs font-medium text-[#23473f]">
-                     {product.freeDelivery}
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[#eaf2e6] px-3.5 py-2 text-[13px] font-medium text-[#23473f]">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
+                         className="h-[17px] w-[17px] flex-shrink-0">
+                      <path d="M20 12v8H4v-8" />
+                      <path d="M2 7h20v5H2z" />
+                      <path d="M12 22V7" />
+                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Z" />
+                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z" />
+                    </svg>
+                    {product.freeDelivery}
                   </span>
                 )}
+              </div>
+
+              {/* Names the codes up front so the saving reads as something to
+                  claim at checkout rather than a price that was never full. */}
+              <div className="flex items-start gap-3 text-[15px] leading-[1.6] text-[#3a5a4a]">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mt-1 h-5 w-5 flex-shrink-0 text-[#23473f]"
+                >
+                  {/* Mirrored so the tag points down-right, hole at top-right. */}
+                  <g transform="translate(24 0) scale(-1 1)">
+                    <path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z" />
+                    <circle cx="7.5" cy="7.5" r="1.3" fill="currentColor" stroke="none" />
+                  </g>
+                </svg>
+                <span>
+                  First order? Use <CopyableCode code={FIRST_TIME_COUPON} className="text-[#134632]" /> at checkout.
+                  <br />
+                  Coming back? Use <CopyableCode code={RETURNING_COUPON} className="text-[#134632]" /> at checkout.
+                </span>
               </div>
             </div>
 
@@ -224,7 +255,7 @@ const page = () => {
                   type="button"
                   onClick={handleAddToCart}
                   className="inline-flex cursor-pointer h-14 w-full items-center justify-center rounded-full bg-[#f7d843] px-6 text-base font-semibold text-[#1f3a2d] shadow-md transition hover:bg-[#f7dd54]">
-                  Add to Cart - ₹{selectedPrice * quantity}
+                  Add to Cart – ₹{selectedPrice * quantity}
                 </button>
                 <button
                   type="button"
@@ -245,7 +276,7 @@ const page = () => {
               <ul className="mt-4 space-y-3 text-sm text-[#555]">
                 {product.details.map((detail) => (
                   <li key={detail} className="flex gap-3">
-                    <span className="mt-1 h-2.5 w-2.5 rounded-full bg-[#23473f]" />
+                    <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-[#23473f]" />
                     {detail}
                   </li>
                 ))}

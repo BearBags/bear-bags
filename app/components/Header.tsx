@@ -41,7 +41,7 @@ const Header = () => {
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-2">
           <div className="w-10 h-10 relative">
-            <Image src="/images/BearBagsLogo.png" alt="Bear Bags Logo" fill className="object-contain" />
+            <Image src="/images/BearBagsLogo.png" alt="Bear Bags Logo" fill sizes="40px" className="object-contain" />
           </div>
           <span className="font-semibold text-[#1f3a2f]">Bear Bags</span>
         </Link>

@@ -2,7 +2,9 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { TiShoppingCart } from "react-icons/ti";
-import { COUPON_FOR_PERCENT, applyDiscount } from '@/lib/discount';
+import { FiLock, FiCheckCircle, FiCheck, FiTruck, FiPackage, FiInfo, FiTag } from "react-icons/fi";
+import { normalizeCoupon, type Coupon } from '@/lib/discount';
+import CopyableCode from './CopyableCode';
 
 const SHIPPING_DETAILS_KEY = 'bearbags_shipping_details';
 
@@ -12,9 +14,43 @@ interface ServerPricing {
   total: number;
   discountPercent: number;
   discountAmount: number;
+  appliedCoupon: string | null;
+  eligibleTierPercent: number;
+  eligibleCoupons: Coupon[];
 }
 
 const isCompleteEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+const iconProps = { 'aria-hidden': true, className: 'h-[22px] w-[22px]' };
+
+const TRUST_BADGES = [
+  {
+    title: 'Free Delivery',
+    subtitle: 'On all orders',
+    icon: <FiTruck {...iconProps} />,
+  },
+  {
+    title: 'Secure Payments',
+    subtitle: 'Powered by Razorpay',
+    icon: <FiLock {...iconProps} />,
+  },
+  {
+    title: 'Refunds & Replacements',
+    subtitle: 'For eligible order issues',
+    icon: <FiPackage {...iconProps} />,
+  },
+];
+
+// Numbered badge that heads each checkout step.
+function StepNumber({ n }: { n: number }) {
+  return (
+    <span
+      className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-white"
+      style={{ background: 'var(--forest)' }}>
+      {n}
+    </span>
+  );
+}
 
 interface RazorpayHandlerResponse {
   razorpay_order_id: string;
@@ -86,6 +122,13 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [serverPricing, setServerPricing] = useState<ServerPricing | null>(null);
+  // The coupon the buyer has actually applied. Nothing is discounted until this
+  // is set, and it is what gets sent with the order.
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [couponInput, setCouponInput] = useState('');
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponPending, setCouponPending] = useState(false);
+  const [justApplied, setJustApplied] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -135,11 +178,19 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
         const res = await fetch('/api/pricing', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: formData.email, cartItems }),
+          body: JSON.stringify({ email: formData.email, cartItems, couponCode: appliedCoupon }),
         });
         if (!res.ok) return;
         const data: ServerPricing = await res.json();
-        if (!cancelled) setServerPricing(data);
+        if (cancelled) return;
+        setServerPricing(data);
+        // The server has the final say on eligibility: if it declined the code
+        // (wrong tier for this email, or an expired campaign), drop it so the
+        // summary never shows a saving that will not be charged.
+        if (appliedCoupon && !data.appliedCoupon) {
+          setAppliedCoupon(null);
+          setCouponError('That coupon isn’t available for this email.');
+        }
       } catch {
         // Leave the local estimate in place; the order routes still price
         // authoritatively server-side when the buyer pays.
@@ -150,31 +201,63 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [formData.email, cartItems]);
+  }, [formData.email, cartItems, appliedCoupon]);
 
-  // Cart prices carry the discount guessed from localStorage when the item was
-  // added. The server decides the real tier from this email's order history, so
-  // once a valid email is entered we show its figures instead -- otherwise the
-  // summary and the Razorpay modal disagree.
+  // Cart prices are full price. A discount exists only once the buyer applies a
+  // coupon, at which point the server's figures drive the summary so it always
+  // matches what Razorpay will charge.
   const localSubtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   const shipping = 0; // free shipping on all orders
   const subtotal = serverPricing?.subtotal ?? localSubtotal;
   const total = serverPricing?.total ?? localSubtotal + shipping;
-  const impact = Math.round(total * 0.3);
-  const discountPercent = serverPricing?.discountPercent ?? cartItems[0]?.product.discountPercent;
+  const discountPercent = serverPricing?.discountPercent ?? 0;
+  const discountAmount = serverPricing?.discountAmount ?? 0;
+  const eligibleCoupons = serverPricing?.eligibleCoupons ?? [];
 
-  // Cart prices already have the guessed rate baked in, so undo it before
-  // applying the authoritative one rather than discounting twice.
-  const unitPriceFor = (item: (typeof cartItems)[number]): number => {
-    if (!serverPricing) return item.product.price;
-    const guessedPercent = item.product.discountPercent ?? 0;
-    const basePrice = Math.round(item.product.price / (1 - guessedPercent / 100));
-    return applyDiscount(basePrice, serverPricing.discountPercent);
+  const unitPriceFor = (item: (typeof cartItems)[number]): number => item.product.price;
+
+  const applyCouponCode = async (rawCode: string) => {
+    const code = normalizeCoupon(rawCode);
+    if (!code) {
+      setCouponError('Enter a coupon code.');
+      return;
+    }
+    if (!isCompleteEmail(formData.email)) {
+      setCouponError('Enter your email above before applying a coupon.');
+      return;
+    }
+
+    setCouponPending(true);
+    setCouponError(null);
+    try {
+      const res = await fetch('/api/coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, code, cartItems }),
+      });
+      const data = await res.json();
+      if (!data?.valid) {
+        setCouponError(data?.error ?? 'Could not apply that coupon.');
+        setCouponPending(false);
+        return;
+      }
+      setAppliedCoupon(data.code);
+      setCouponInput(data.code);
+      // Briefly flag the success so the saving reads as a result of their action.
+      setJustApplied(true);
+      setTimeout(() => setJustApplied(false), 2500);
+    } catch {
+      setCouponError('Could not reach the server. Please try again.');
+    } finally {
+      setCouponPending(false);
+    }
   };
 
-  // The buyer's tier already decides the discount, so the matching coupon is
-  // shown pre-filled and read-only -- there is nothing for them to type or apply.
-  const couponCode = discountPercent ? COUPON_FOR_PERCENT[discountPercent] : undefined;
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput('');
+    setCouponError(null);
+  };
 
   const resetForm = () => {
     try {
@@ -215,7 +298,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
       const createRes = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formData, cartItems }),
+        body: JSON.stringify({ formData, cartItems, couponCode: appliedCoupon }),
       });
       const createData = await createRes.json();
       if (!createRes.ok) {
@@ -245,7 +328,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
             const verifyRes = await fetch('/api/payment/verify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ formData, cartItems, ...response }),
+              body: JSON.stringify({ formData, cartItems, couponCode: appliedCoupon, ...response }),
             });
             const verifyData = await verifyRes.json();
             setIsProcessingPayment(false);
@@ -302,7 +385,9 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--cream)' }}>
         <div className="text-center max-w-[500px] px-4 md:px-6">
-          <div className="text-[60px] md:text-[80px] mb-6">✓</div>
+          <div className="flex justify-center text-[60px] md:text-[80px] mb-6" style={{ color: 'var(--forest-light)' }}>
+            <FiCheckCircle aria-hidden="true" />
+          </div>
           <h2 className="font-['Playfair_Display'] text-[28px] md:text-[36px] font-bold mb-4"
               style={{ color: 'var(--forest)' }}>
             Order Placed Successfully!
@@ -327,70 +412,106 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
   return (
     <div className="min-h-screen py-8 md:py-16 px-4 md:px-[5%]" style={{ background: 'var(--cream)' }}>
       <div className="max-w-[1200px] mx-auto">
-        <h1 className="font-['Playfair_Display'] text-[32px] md:text-[48px] font-bold mb-8 md:mb-12 text-center"
-            style={{ color: 'var(--forest)' }}>
-          Checkout
-        </h1>
+        {/* Header: title on the left, reassurance on the right */}
+        <div className="mb-6 flex flex-col gap-5 md:mb-8 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h1 className="font-['Playfair_Display'] text-[32px] md:text-[42px] font-bold leading-none"
+                style={{ color: 'var(--forest)' }}>
+              Checkout
+            </h1>
+            <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+              A cleaner home. A greener tomorrow.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-5 sm:gap-7">
+            {TRUST_BADGES.map(({ title, subtitle, icon }) => (
+              <div key={title} className="flex items-start gap-2.5">
+                <span className="mt-0.5 flex-shrink-0" style={{ color: 'var(--forest)' }}>{icon}</span>
+                <div className="leading-tight">
+                  <div className="text-[13px] font-semibold" style={{ color: 'var(--forest)' }}>{title}</div>
+                  <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{subtitle}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-          {/* Cart Items */}
+          {/* Steps */}
           <div className="lg:col-span-2">
-            <div className="rounded-[24px] p-4 md:p-8 mb-6 md:mb-8"
+            <div className="rounded-[24px] p-4 md:p-7"
                  style={{ background: 'white', border: '1px solid rgba(26,58,42,0.08)' }}>
-              <h2 className="font-['Playfair_Display'] text-[20px] md:text-[24px] font-bold mb-4 md:mb-6"
-                  style={{ color: 'var(--forest)' }}>
-                Your Items
-              </h2>
 
-              {!!discountPercent && (
-                <p className="mb-4 text-sm font-medium" style={{ color: 'var(--forest-light)' }}>
-                  🎉 {discountPercent}% off applied ({discountPercent === 7 ? 'first order' : 'welcome back'})
+              {/* 1 — Your Items */}
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <StepNumber n={1} />
+                  <h2 className="text-[17px] font-semibold" style={{ color: 'var(--forest)' }}>
+                    Your Items
+                  </h2>
+                </div>
+                <a href="/cart" className="text-[13px] underline underline-offset-2"
+                   style={{ color: 'var(--forest)' }}>
+                  Edit
+                </a>
+              </div>
+
+              {!!appliedCoupon && discountPercent > 0 && (
+                <p className="mb-3 flex items-center gap-1.5 text-sm font-medium"
+                   style={{ color: 'var(--forest-light)' }}>
+                  <FiCheckCircle aria-hidden="true" className="h-4 w-4 flex-shrink-0" />
+                  {appliedCoupon} applied — {discountPercent}% off this order
                 </p>
               )}
 
-              <div className="space-y-3 md:space-y-4">
+              <div className="space-y-2.5">
                 {cartItems.map((item) => (
                   <div key={`${item.product.id}-${item.product.option ?? 'default'}`}
-                       className="flex gap-3 md:gap-4 p-3 md:p-4 rounded-xl border"
-                       style={{ borderColor: 'rgba(26,58,42,0.08)' }}>
-                    <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-lg flex items-center justify-center text-2xl md:text-3xl flex-shrink-0 overflow-hidden"
+                       className="flex items-center gap-3.5 rounded-2xl p-3"
+                       style={{ background: '#f4f6f1' }}>
+                    <div className="relative h-[60px] w-[60px] flex-shrink-0 overflow-hidden rounded-xl"
                          style={{ background: 'var(--cream-dark)' }}>
-                      {item.product.icon.startsWith('/') ? (
-                        <Image src={item.product.icon} alt={item.product.name} fill sizes="80px" className="object-contain" />
+                      {item.product.icon?.startsWith('/') ? (
+                        <Image src={item.product.icon} alt={item.product.name} fill sizes="60px" className="object-contain" />
                       ) : (
-                        item.product.icon
+                        <span className="flex h-full w-full items-center justify-center text-2xl">{item.product.icon}</span>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium mb-1 text-sm md:text-base" style={{ color: 'var(--forest)' }}>
+
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-[15px] font-semibold" style={{ color: 'var(--forest)' }}>
                         {item.product.name}
                       </h3>
-                      <p className="text-xs md:text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
-                        {(item.product.size ?? 'Bag')} • {item.product.count ?? item.quantity} bags
+                      <p className="mt-0.5 text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                        {(item.product.size ?? 'Bag')} · {item.product.count ?? item.quantity} bags per roll
                       </p>
+
                       {isBuyNow ? (
-                        <p className="text-sm md:text-base font-medium" style={{ color: 'var(--forest)' }}>
+                        <p className="mt-1 text-[13px] font-semibold" style={{ color: 'var(--forest)' }}>
                           Qty: {item.quantity}
                         </p>
                       ) : (
-                        <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                          <div className="flex items-center gap-2 rounded-lg overflow-hidden border"
+                        <div className="mt-1.5 flex flex-wrap items-center gap-2.5">
+                          <div className="flex items-center overflow-hidden rounded-lg border bg-white"
                                style={{ borderColor: 'rgba(26,58,42,0.15)' }}>
                             <button
                               type="button"
+                              aria-label="Decrease quantity"
                               onClick={() => onUpdateQuantity(item.product.id, Math.max(1, item.quantity - 1), item.product.option)}
-                              className="px-2 md:px-3 py-1 cursor-pointer hover:bg-black/5 transition-colors text-sm md:text-base"
+                              className="cursor-pointer px-2.5 py-0.5 text-sm transition-colors hover:bg-black/5"
                               style={{ color: 'var(--forest)' }}>
                               −
                             </button>
-                            <span className="font-medium min-w-[24px] md:min-w-[30px] text-center text-sm md:text-base"
+                            <span className="min-w-[26px] text-center text-[13px] font-semibold"
                                   style={{ color: 'var(--forest)' }}>
                               {item.quantity}
                             </span>
                             <button
                               type="button"
+                              aria-label="Increase quantity"
                               onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1, item.product.option)}
-                              className="px-2 md:px-3 cursor-pointer py-1 hover:bg-black/5 transition-colors text-sm md:text-base"
+                              className="cursor-pointer px-2.5 py-0.5 text-sm transition-colors hover:bg-black/5"
                               style={{ color: 'var(--forest)' }}>
                               +
                             </button>
@@ -398,136 +519,218 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                           <button
                             type="button"
                             onClick={() => onRemoveItem(item.product.id, item.product.option)}
-                            className="text-xs md:text-sm opacity-60 hover:opacity-100 transition-opacity"
+                            className="text-[12px] opacity-60 transition-opacity hover:opacity-100"
                             style={{ color: 'var(--destructive)' }}>
                             Remove
                           </button>
                         </div>
                       )}
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="font-['Playfair_Display'] text-[18px] md:text-[20px] font-bold"
-                           style={{ color: 'var(--forest)' }}>
+
+                    <div className="flex-shrink-0 text-right">
+                      <div className="text-[15px] font-bold" style={{ color: 'var(--forest)' }}>
                         ₹{unitPriceFor(item) * item.quantity}
                       </div>
-                      <div className="text-xs opacity-60">₹{unitPriceFor(item)} each</div>
+                      <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                        ₹{unitPriceFor(item)} each
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
 
-            {/* Shipping Form */}
-            <div className="rounded-[24px] p-4 md:p-8"
-                 style={{ background: 'white', border: '1px solid rgba(26,58,42,0.08)' }}>
-              <h2 className="font-['Playfair_Display'] text-[20px] md:text-[24px] font-bold mb-4 md:mb-6"
-                  style={{ color: 'var(--forest)' }}>
-                Shipping Details
-              </h2>
-
-              <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
-                <div>
-                  <label className="block text-xs md:text-sm font-medium mb-2" style={{ color: 'var(--forest)' }}>
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl border outline-none transition-colors text-sm md:text-base"
-                    style={{ borderColor: 'rgba(26,58,42,0.15)' }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--forest)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)'}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+              <form onSubmit={handleSubmit}>
+                {/* 2 — Contact Details */}
+                <div className="mt-7 flex items-center gap-3">
+                  <StepNumber n={2} />
                   <div>
-                    <label className="block text-xs md:text-sm font-medium mb-2" style={{ color: 'var(--forest)' }}>
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl border outline-none transition-colors text-sm md:text-base"
-                      style={{ borderColor: 'rgba(26,58,42,0.15)' }}
-                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--forest)'}
-                      onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)'}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs md:text-sm font-medium mb-2" style={{ color: 'var(--forest)' }}>
-                      Phone
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl border outline-none transition-colors text-sm md:text-base"
-                      style={{ borderColor: 'rgba(26,58,42,0.15)' }}
-                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--forest)'}
-                      onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)'}
-                    />
+                    <h2 className="text-[17px] font-semibold" style={{ color: 'var(--forest)' }}>
+                      Contact Details
+                    </h2>
+                    <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                      We&apos;ll use this to check for available offers and keep you updated on your order.
+                    </p>
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs md:text-sm font-medium mb-2" style={{ color: 'var(--forest)' }}>
-                    Address
-                  </label>
-                  <textarea
-                    required
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    rows={3}
-                    className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl border outline-none transition-colors resize-none text-sm md:text-base"
-                    style={{ borderColor: 'rgba(26,58,42,0.15)' }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--forest)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)'}
-                  />
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="email" className="mb-1.5 block text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                      Email address
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="email"
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full rounded-xl border px-3.5 py-2.5 pr-9 text-sm outline-none transition-colors"
+                        style={{ borderColor: 'rgba(26,58,42,0.15)' }}
+                        onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--forest)')}
+                        onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)')}
+                      />
+                      {isCompleteEmail(formData.email) && (
+                        <FiCheck aria-hidden="true"
+                                 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2"
+                                 style={{ color: 'var(--forest-light)' }} />
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="mb-1.5 block text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                      Phone number
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="phone"
+                        type="tel"
+                        required
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        className="w-full rounded-xl border px-3.5 py-2.5 pr-9 text-sm outline-none transition-colors"
+                        style={{ borderColor: 'rgba(26,58,42,0.15)' }}
+                        onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--forest)')}
+                        onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)')}
+                      />
+                      {formData.phone.replace(/\D/g, '').length >= 10 && (
+                        <FiCheck aria-hidden="true"
+                                 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2"
+                                 style={{ color: 'var(--forest-light)' }} />
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {/* Recognised returning buyer: the tier coupon is theirs to claim. */}
+                {isCompleteEmail(formData.email) && serverPricing && (
+                  <div className="mt-3 flex items-start gap-2.5 rounded-xl p-3"
+                       style={{ background: 'rgba(45,106,79,0.08)' }}>
+                    <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-white"
+                          style={{ background: 'var(--forest-light)' }}>
+                      <FiCheck aria-hidden="true" className="h-3 w-3" />
+                    </span>
+                    <div className="leading-tight">
+                      <div className="text-[13px] font-semibold" style={{ color: 'var(--forest)' }}>
+                        {serverPricing.eligibleTierPercent === 7 ? 'Welcome!' : 'Welcome back!'}
+                      </div>
+                      <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                        {serverPricing.eligibleTierPercent === 7
+                          ? 'Your first-order offer is ready below.'
+                          : 'We found your past orders — your returning offer is ready below.'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3 — Shipping Details */}
+                <div className="mt-7 flex items-center gap-3">
+                  <StepNumber n={3} />
+                  <h2 className="text-[17px] font-semibold" style={{ color: 'var(--forest)' }}>
+                    Shipping Details
+                  </h2>
+                </div>
+
+                <div className="mt-3 space-y-3">
                   <div>
-                    <label className="block text-xs md:text-sm font-medium mb-2" style={{ color: 'var(--forest)' }}>
-                      City
+                    <label htmlFor="name" className="mb-1.5 block text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                      Full name
                     </label>
                     <input
+                      id="name"
                       type="text"
                       required
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl border outline-none transition-colors text-sm md:text-base"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition-colors"
                       style={{ borderColor: 'rgba(26,58,42,0.15)' }}
-                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--forest)'}
-                      onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)'}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--forest)')}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)')}
                     />
                   </div>
+
                   <div>
-                    <label className="block text-xs md:text-sm font-medium mb-2" style={{ color: 'var(--forest)' }}>
-                      Pincode
+                    <label htmlFor="address" className="mb-1.5 block text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                      Address
                     </label>
                     <input
+                      id="address"
                       type="text"
                       required
-                      value={formData.pincode}
-                      onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                      className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl border outline-none transition-colors text-sm md:text-base"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      className="w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition-colors"
                       style={{ borderColor: 'rgba(26,58,42,0.15)' }}
-                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--forest)'}
-                      onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)'}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--forest)')}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)')}
                     />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="city" className="mb-1.5 block text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                        City
+                      </label>
+                      <input
+                        id="city"
+                        type="text"
+                        required
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        className="w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition-colors"
+                        style={{ borderColor: 'rgba(26,58,42,0.15)' }}
+                        onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--forest)')}
+                        onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)')}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="pincode" className="mb-1.5 block text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                        Pincode
+                      </label>
+                      <input
+                        id="pincode"
+                        type="text"
+                        required
+                        value={formData.pincode}
+                        onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                        className="w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition-colors"
+                        style={{ borderColor: 'rgba(26,58,42,0.15)' }}
+                        onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--forest)')}
+                        onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)')}
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-4 rounded-xl border" style={{ borderColor: 'rgba(26,58,42,0.15)' }}>
-                  <div className="flex-1">
-                    <div className="font-medium" style={{ color: 'var(--forest)' }}>Online Payment</div>
-                    <div className="text-xs opacity-60">UPI, Cards, Net Banking — secured by Razorpay</div>
+                {/* 4 — Payment Method */}
+                <div className="mt-7 flex items-center gap-3">
+                  <StepNumber n={4} />
+                  <div>
+                    <h2 className="text-[17px] font-semibold" style={{ color: 'var(--forest)' }}>
+                      Payment Method
+                    </h2>
+                    <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                      Secure and encrypted payments powered by Razorpay.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center gap-3 rounded-xl border p-3.5"
+                     style={{ borderColor: 'var(--forest)' }}>
+                  <span className="flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full border-[2px]"
+                        style={{ borderColor: 'var(--forest)' }}>
+                    <span className="h-2 w-2 rounded-full" style={{ background: 'var(--forest)' }} />
+                  </span>
+                  <div className="flex-1 leading-tight">
+                    <div className="text-[14px] font-semibold" style={{ color: 'var(--forest)' }}>Online Payment</div>
+                    <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>UPI, Cards, Net Banking</div>
+                  </div>
+                  <div className="hidden flex-shrink-0 items-center gap-2 text-[11px] font-bold sm:flex"
+                       style={{ color: 'var(--text-muted)' }}>
+                    <span style={{ color: '#0c2451' }}>UPI</span>
+                    <span style={{ color: '#1a1f71' }}>VISA</span>
+                    <span style={{ color: '#eb001b' }}>●●</span>
+                    <span style={{ color: '#0f4a8a' }}>RuPay</span>
                   </div>
                 </div>
 
@@ -540,9 +743,19 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                 <button
                   type="submit"
                   disabled={isProcessingPayment}
-                  className="w-full px-8 py-4 cursor-pointer rounded-full font-medium text-base transition-all hover:-translate-y-0.5 hover:shadow-lg mt-6 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                  className="mt-5 w-full cursor-pointer rounded-full px-8 py-3.5 transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                   style={{ background: 'var(--forest)', color: 'white' }}>
-                  {isProcessingPayment ? 'Processing payment…' : `Pay ₹${total}`}
+                  {isProcessingPayment ? (
+                    <span className="text-[15px] font-semibold">Processing payment…</span>
+                  ) : (
+                    <>
+                      <span className="block text-[15px] font-semibold leading-tight">Pay ₹{total}</span>
+                      <span className="mt-0.5 flex items-center justify-center gap-1 text-[11px] font-normal opacity-80">
+                        <FiLock aria-hidden="true" className="h-3 w-3" />
+                        Secure Checkout
+                      </span>
+                    </>
+                  )}
                 </button>
               </form>
             </div>
@@ -562,38 +775,22 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                   <span style={{ color: 'var(--text-muted)' }}>Subtotal</span>
                   <span style={{ color: 'var(--forest)' }}>₹{subtotal}</span>
                 </div>
+
+                {/* The saving gets its own line, in green, so it reads as money
+                    the buyer claimed rather than a price that was never full. */}
+                {!!appliedCoupon && discountAmount > 0 && (
+                  <div className="flex justify-between text-sm font-medium" style={{ color: 'var(--forest-light)' }}>
+                    <span>{appliedCoupon} ({discountPercent}%)</span>
+                    <span>−₹{discountAmount}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between text-sm">
                   <span style={{ color: 'var(--text-muted)' }}>Shipping</span>
-                  <span style={{ color: 'var(--forest)' }}>FREE</span>
-                </div>
-                <p className="text-xs" style={{ color: 'var(--forest-light)' }}>
-                  ✓ Free shipping on all orders
-                </p>
-                <div className="pt-3 border-t" style={{ borderColor: 'rgba(26,58,42,0.1)' }}>
-                  <label htmlFor="coupon" className="mb-2 block text-sm" style={{ color: 'var(--text-muted)' }}>
-                    Coupon code
-                  </label>
-                  <input
-                    id="coupon"
-                    type="text"
-                    value={couponCode ?? '—'}
-                    readOnly
-                    aria-describedby="coupon-note"
-                    className="w-full cursor-not-allowed rounded-xl border px-3 py-2 text-sm font-medium uppercase tracking-wide outline-none"
-                    style={{
-                      borderColor: 'rgba(26,58,42,0.15)',
-                      background: 'rgba(26,58,42,0.04)',
-                      color: 'var(--forest)',
-                    }}
-                  />
-                  <p id="coupon-note" className="mt-2 text-xs" style={{ color: 'var(--forest-light)' }}>
-                    {couponCode
-                      ? `✓ ${couponCode} applied automatically — your ${discountPercent}% discount is already reflected in the prices above.`
-                      : 'No coupon applies to this order.'}
-                  </p>
+                  <span className="font-medium" style={{ color: 'var(--forest-light)' }}>FREE</span>
                 </div>
 
-                <div className="pt-3 border-t flex justify-between"
+                <div className="pt-3 border-t flex justify-between items-center"
                      style={{ borderColor: 'rgba(26,58,42,0.1)' }}>
                   <span className="font-medium" style={{ color: 'var(--forest)' }}>Total</span>
                   <span className="font-['Playfair_Display'] text-[24px] font-bold"
@@ -601,37 +798,158 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                     ₹{total}
                   </span>
                 </div>
-              </div>
 
-              {/* <div className="rounded-xl p-4 mb-6"
-                   style={{ background: 'var(--cream-dark)' }}>
-                <div className="flex gap-3 items-start">
-                  <div className="text-2xl">❤️</div>
-                  <div>
-                    <div className="font-medium text-sm mb-1" style={{ color: 'var(--forest)' }}>
-                      Your Impact
-                    </div>
-                    <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                      ₹{impact} from this order will support community development programs
-                    </p>
+                {/* Available for you */}
+                <div className="pt-4 border-t" style={{ borderColor: 'rgba(26,58,42,0.1)' }}>
+                  <div className="mb-3 flex items-center gap-1.5">
+                    <h3 className="text-sm font-semibold" style={{ color: 'var(--forest)' }}>
+                      Available for you
+                    </h3>
+                    <span
+                      title="Offers you qualify for, based on your email and any running promotions."
+                      aria-label="Offers you qualify for, based on your email and any running promotions."
+                      className="flex cursor-help items-center justify-center"
+                      style={{ color: 'var(--forest)' }}>
+                      <FiInfo aria-hidden="true" className="h-4 w-4" />
+                    </span>
                   </div>
-                </div>
-              </div> */}
 
-              <div className="space-y-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-                <div className="flex items-center gap-2">
-                  <span>✓</span>
-                  <span>100% Compostable Materials</span>
+                  {!isCompleteEmail(formData.email) ? (
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      Enter your email to see the offers you qualify for.
+                    </p>
+                  ) : eligibleCoupons.length === 0 ? (
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      No offers available on this order right now.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {eligibleCoupons.map((coupon) => {
+                        const isApplied = appliedCoupon === coupon.code;
+                        return (
+                          <div
+                            key={coupon.code}
+                            className="flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors"
+                            style={{
+                              borderColor: isApplied ? 'var(--forest-light)' : 'rgba(26,58,42,0.12)',
+                              background: isApplied ? 'rgba(45,106,79,0.06)' : 'white',
+                            }}>
+                            <div className="flex min-w-0 items-start gap-2.5">
+                              <FiTag
+                                aria-hidden="true"
+                                className="mt-0.5 h-[18px] w-[18px] flex-shrink-0"
+                                style={{ color: 'var(--forest)' }} />
+                              <div className="min-w-0">
+                                <div className="text-sm font-semibold" style={{ color: 'var(--forest)' }}>
+                                  <CopyableCode code={coupon.code} /> · {coupon.percent}% off
+                                </div>
+                                <p className="mt-0.5 text-xs leading-snug" style={{ color: 'var(--text-muted)' }}>
+                                  {coupon.blurb}
+                                </p>
+                              </div>
+                            </div>
+
+                            {isApplied ? (
+                              <span
+                                className="flex flex-shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                                style={{ background: 'rgba(45,106,79,0.12)', color: 'var(--forest-light)' }}>
+                                <FiCheck aria-hidden="true" className="h-3.5 w-3.5" />
+                                Applied
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => applyCouponCode(coupon.code)}
+                                disabled={couponPending}
+                                className="flex-shrink-0 cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                                style={{ background: 'var(--forest)', color: 'white' }}>
+                                Use code
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <span>✓</span>
-                  <span>Secure Checkout</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>✓</span>
-                  <span>Easy Returns & Refunds</span>
+
+                {/* Coupon code entry */}
+                <div className="pt-4 border-t" style={{ borderColor: 'rgba(26,58,42,0.1)' }}>
+                  <label htmlFor="coupon" className="mb-2 block text-sm font-medium" style={{ color: 'var(--forest)' }}>
+                    Coupon code
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      id="coupon"
+                      type="text"
+                      value={couponInput}
+                      placeholder="Enter code"
+                      readOnly={!!appliedCoupon}
+                      aria-describedby="coupon-note"
+                      aria-invalid={!!couponError}
+                      onChange={(e) => {
+                        setCouponInput(e.target.value.toUpperCase());
+                        if (couponError) setCouponError(null);
+                      }}
+                      onKeyDown={(e) => {
+                        // Enter would otherwise submit the checkout form.
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (!appliedCoupon) applyCouponCode(couponInput);
+                        }
+                      }}
+                      className="min-w-0 flex-1 rounded-xl border px-3 py-2 text-sm font-medium uppercase tracking-wide outline-none transition-colors focus:border-[color:var(--forest-light)]"
+                      style={{
+                        borderColor: couponError ? '#c82b2d' : 'rgba(26,58,42,0.15)',
+                        background: appliedCoupon ? 'rgba(45,106,79,0.06)' : 'white',
+                        color: 'var(--forest)',
+                      }}
+                    />
+                    {appliedCoupon ? (
+                      <button
+                        type="button"
+                        onClick={removeCoupon}
+                        className="flex-shrink-0 cursor-pointer rounded-xl border px-3 py-2 text-sm font-medium transition-colors hover:bg-[rgba(26,58,42,0.04)]"
+                        style={{ borderColor: 'rgba(26,58,42,0.15)', color: 'var(--text-muted)' }}>
+                        Remove
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => applyCouponCode(couponInput)}
+                        disabled={couponPending || !couponInput.trim()}
+                        className="flex-shrink-0 cursor-pointer rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+                        style={{ background: 'var(--forest)', color: 'white' }}>
+                        {couponPending ? '…' : 'Apply'}
+                      </button>
+                    )}
+                  </div>
+
+                  <p
+                    id="coupon-note"
+                    role={couponError ? 'alert' : undefined}
+                    aria-live="polite"
+                    className="mt-2 flex items-start gap-1.5 text-xs"
+                    style={{ color: couponError ? '#c82b2d' : 'var(--forest-light)' }}>
+                    {couponError ? (
+                      couponError
+                    ) : appliedCoupon && discountAmount > 0 ? (
+                      <>
+                        <FiCheck aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                        <span>
+                          Coupon applied. You saved ₹{discountAmount}.
+                          {justApplied && <strong className="ml-1 font-semibold">Nice one!</strong>}
+                        </span>
+                      </>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        Have a code? Enter it above to save on this order.
+                      </span>
+                    )}
+                  </p>
                 </div>
               </div>
+
             </div>
           </div>
         </div>

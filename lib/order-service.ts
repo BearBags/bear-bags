@@ -19,7 +19,7 @@ export async function saveOrder({
   razorpayOrderId,
   razorpayPaymentId,
 }: SaveOrderOptions): Promise<void> {
-  const { pricedItems, subtotal, shipping, total, discountPercent, discountAmount } = pricing;
+  const { pricedItems, subtotal, shipping, total, discountPercent, discountAmount, appliedCoupon } = pricing;
 
   if (dataRouting.database.storeOrders) {
     await connectToDatabase();
@@ -39,6 +39,7 @@ export async function saveOrder({
       total,
       discountPercent,
       discountAmount,
+      couponCode: appliedCoupon,
       items: pricedItems.map((item) => ({
         productId: item.product.id,
         productName: item.product.name,

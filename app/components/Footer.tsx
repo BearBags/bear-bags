@@ -62,7 +62,7 @@ const Footer = () => {
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 relative shrink-0">
-              <Image src="/images/BearBagsLogo.png" alt="Bear Bags Logo" fill className="object-contain" />
+              <Image src="/images/BearBagsLogo.png" alt="Bear Bags Logo" fill sizes="40px" className="object-contain" />
             </div>
             <span className="font-['Playfair_Display'] text-xl font-bold text-white">Bear Bags</span>
           </div>

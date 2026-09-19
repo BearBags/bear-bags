@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { computeOrderPricing, type CartItem } from '@/lib/order-pricing';
+import { getEligibleCoupons } from '@/lib/discount';
+import { getCampaignCoupons } from '@/lib/coupon-server';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
 
 // Read-only preview of what this cart will actually cost this email. The
@@ -26,12 +28,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const email: string = body?.email ?? '';
     const cartItems: CartItem[] = body?.cartItems ?? [];
+    const couponCode: string | null = body?.couponCode ?? null;
 
     if (!email.trim() || cartItems.length === 0) {
       return NextResponse.json({ error: 'Email and cart items are required' }, { status: 400 });
     }
 
-    const pricing = await computeOrderPricing(cartItems, email);
+    const [pricing, campaigns] = await Promise.all([
+      computeOrderPricing(cartItems, email, couponCode),
+      getCampaignCoupons(),
+    ]);
 
     return NextResponse.json({
       subtotal: pricing.subtotal,
@@ -39,6 +45,9 @@ export async function POST(request: NextRequest) {
       total: pricing.total,
       discountPercent: pricing.discountPercent,
       discountAmount: pricing.discountAmount,
+      appliedCoupon: pricing.appliedCoupon,
+      eligibleTierPercent: pricing.eligibleTierPercent,
+      eligibleCoupons: getEligibleCoupons(pricing.eligibleTierPercent, campaigns),
     });
   } catch (error) {
     console.error('[pricing] failed:', error);

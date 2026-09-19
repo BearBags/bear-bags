@@ -41,8 +41,8 @@ export const products: ProductProfile[] = [
     icon: '/images/Box_Roll_Edited_White.png',
     rating: 4.5,
     freeDelivery: 'Free delivery on all orders',
-    inStock: 'In stock . Ships within 1 business day',
-    perBag: '₹9.3 per bag',
+    inStock: 'In stock. Ships within 1 business day',
+    perBag: '₹8.63 per bag',
     orders: " 230+ orders"
   },
 ];

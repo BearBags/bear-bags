@@ -8,6 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const formData: OrderFormData = body?.formData;
     const cartItems: CartItem[] = body?.cartItems ?? [];
+    const couponCode: string | null = body?.couponCode ?? null;
     const razorpay_order_id: string | undefined = body?.razorpay_order_id;
     const razorpay_payment_id: string | undefined = body?.razorpay_payment_id;
     const razorpay_signature: string | undefined = body?.razorpay_signature;
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Payment verification failed' }, { status: 400 });
     }
 
-    const pricing = await computeOrderPricing(cartItems, formData.email);
+    const pricing = await computeOrderPricing(cartItems, formData.email, couponCode);
     await saveOrder({
       formData,
       pricing,

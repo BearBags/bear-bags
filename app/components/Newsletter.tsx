@@ -41,6 +41,7 @@ export default function Newsletter() {
             src="/images/BearBagsLogoWatermark.png"
             alt=""
             fill
+            sizes="(min-width: 1024px) 46vw, 0px"
             className="object-contain object-left opacity-[0.55]"
           />
         </div>

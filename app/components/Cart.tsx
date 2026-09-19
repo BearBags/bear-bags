@@ -62,7 +62,7 @@ export default function CartPage() {
               style={{ background: 'white', border: '1px solid rgba(26,58,42,0.08)' }}
             >
               <div className="relative h-20 w-20 md:h-24 md:w-24 flex-shrink-0 overflow-hidden rounded-xl text-3xl" style={{ background: 'var(--cream-dark)' }}>
-                {item.product.icon.startsWith('/') ? (
+                {item.product.icon?.startsWith('/') ? (
                   <Image src={item.product.icon} alt={item.product.name} fill sizes="96px" className="object-contain" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">{item.product.icon}</div>

@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const formData: OrderFormData = body?.formData;
     const cartItems: CartItem[] = body?.cartItems ?? [];
+    const couponCode: string | null = body?.couponCode ?? null;
 
     if (!formData?.name || !formData?.email) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const pricing = await computeOrderPricing(cartItems, formData.email);
+    const pricing = await computeOrderPricing(cartItems, formData.email, couponCode);
 
     const razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,

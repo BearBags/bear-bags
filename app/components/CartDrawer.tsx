@@ -60,8 +60,14 @@ export default function CartDrawer() {
                   key={`${item.product.id}-${item.product.option ?? 'default'}`}
                   className="flex gap-4 border-b border-[#f0ebe4] pb-5"
                 >
-                  <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-[#f4f4ec]">
-                    <Image src={item.product.icon} alt={item.product.name} fill sizes="96px" className="object-contain" />
+                  {/* Older carts saved in localStorage can hold an emoji here
+                      rather than an image path, which next/image rejects. */}
+                  <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-[#f4f4ec] text-3xl">
+                    {item.product.icon?.startsWith('/') ? (
+                      <Image src={item.product.icon} alt={item.product.name} fill sizes="96px" className="object-contain" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">{item.product.icon}</div>
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0">
