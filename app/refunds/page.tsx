@@ -17,15 +17,16 @@ const SECTIONS: LegalSection[] = [
       <ul>
         <li><Bullet /><span>Shipping is free on every order placed on this site. We ship across India.</span></li>
         <li><Bullet /><span>Orders are usually dispatched within 2 working days of confirmation.</span></li>
-        <li><Bullet /><span>Delivery normally takes 5–7 working days from dispatch, depending on your pincode. Remote pincodes can take longer.</span></li>
+        <li><Bullet /><span>Delivery normally takes 5–7 working days from dispatch, depending on your pincode. Remote pincodes may take longer.</span></li>
+        <li><Bullet /><span>Delivery times are estimates and may be affected by courier delays, weather, public holidays, or circumstances outside our reasonable control.</span></li>
         <li><Bullet /><span>We share tracking details by email or WhatsApp once the parcel is handed to the courier.</span></li>
-        <li><Bullet /><span>Please give a complete address and a reachable phone number. If a parcel returns to us because the address was wrong or nobody was available across delivery attempts, we can re-ship it once you cover the return cost, or refund the order less that cost.</span></li>
+        <li><Bullet /><span>Please provide a complete delivery address and a reachable phone number. If a parcel is returned to us because the address provided was incorrect or delivery could not be completed after reasonable attempts, we can re-ship the order once you cover the additional shipping cost, or refund the amount paid less the shipping costs incurred.</span></li>
       </ul>
     ),
   },
   {
     heading: 'Cancelling an order',
-    body: (
+    body: ( 
       <p>
         You can cancel any order before it is dispatched by emailing hello@bearbags.in or calling +91 91317 83440 with
         your order details. If you paid online, we refund the full amount. Once a parcel has been dispatched it cannot be

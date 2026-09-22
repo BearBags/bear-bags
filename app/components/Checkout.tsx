@@ -129,6 +129,9 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
   const [couponError, setCouponError] = useState<string | null>(null);
   const [couponPending, setCouponPending] = useState(false);
   const [justApplied, setJustApplied] = useState(false);
+  // True when the form was filled from a previous visit's saved details, so the
+  // buyer is told why rather than finding their email already there.
+  const [usingSavedDetails, setUsingSavedDetails] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -145,7 +148,10 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
   useEffect(() => {
     try {
       const saved = localStorage.getItem(SHIPPING_DETAILS_KEY);
-      if (saved) setFormData((prev) => ({ ...prev, ...JSON.parse(saved) }));
+      if (saved) {
+        setFormData((prev) => ({ ...prev, ...JSON.parse(saved) }));
+        setUsingSavedDetails(true);
+      }
     } catch {
       // corrupt or unavailable storage -- fall back to an empty form
     }
@@ -165,6 +171,14 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
     }
   }, [formData]);
 
+  // The parent builds `cartItems` inline, so it is a new array on every render
+  // and cannot be an effect dependency -- the pricing effect would re-run and
+  // cancel its own in-flight request forever, and the applied coupon would
+  // never show. Key off the contents instead.
+  const cartSignature = JSON.stringify(
+    cartItems.map((item) => [item.product.id, item.product.option ?? '', item.quantity]),
+  );
+
   // Debounced so typing an email address does not fire a request per keystroke.
   useEffect(() => {
     if (!isCompleteEmail(formData.email) || cartItems.length === 0) {
@@ -173,12 +187,15 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
     }
 
     let cancelled = false;
+    // The code this request is asking about, so a response that arrives after
+    // the buyer changed the coupon is not mistaken for a verdict on the new one.
+    const requestedCoupon = appliedCoupon;
     const timer = setTimeout(async () => {
       try {
         const res = await fetch('/api/pricing', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: formData.email, cartItems, couponCode: appliedCoupon }),
+          body: JSON.stringify({ email: formData.email, cartItems, couponCode: requestedCoupon }),
         });
         if (!res.ok) return;
         const data: ServerPricing = await res.json();
@@ -187,7 +204,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
         // The server has the final say on eligibility: if it declined the code
         // (wrong tier for this email, or an expired campaign), drop it so the
         // summary never shows a saving that will not be charged.
-        if (appliedCoupon && !data.appliedCoupon) {
+        if (requestedCoupon && !data.appliedCoupon) {
           setAppliedCoupon(null);
           setCouponError('That coupon isn’t available for this email.');
         }
@@ -201,7 +218,9 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [formData.email, cartItems, appliedCoupon]);
+    // cartItems is intentionally not a dependency -- see cartSignature above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.email, cartSignature, appliedCoupon]);
 
   // Cart prices are full price. A discount exists only once the buyer applies a
   // coupon, at which point the server's figures drive the summary so it always
@@ -243,6 +262,21 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
       }
       setAppliedCoupon(data.code);
       setCouponInput(data.code);
+      // The coupon route already priced this cart, so show the saving now
+      // rather than leaving the summary stale until the debounced pricing
+      // request catches up.
+      setServerPricing((prev) =>
+        prev
+          ? {
+              ...prev,
+              subtotal: data.subtotal ?? prev.subtotal,
+              total: data.total ?? prev.total,
+              discountPercent: data.discountPercent ?? 0,
+              discountAmount: data.discountAmount ?? 0,
+              appliedCoupon: data.code,
+            }
+          : prev,
+      );
       // Briefly flag the success so the saving reads as a result of their action.
       setJustApplied(true);
       setTimeout(() => setJustApplied(false), 2500);
@@ -260,6 +294,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
   };
 
   const resetForm = () => {
+    setUsingSavedDetails(false);
     try {
       localStorage.removeItem(SHIPPING_DETAILS_KEY);
     } catch {
@@ -419,9 +454,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                 style={{ color: 'var(--forest)' }}>
               Checkout
             </h1>
-            <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-              A cleaner home. A greener tomorrow.
-            </p>
+         
           </div>
 
           <div className="flex flex-wrap gap-5 sm:gap-7">
@@ -552,6 +585,25 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                     </p>
                   </div>
                 </div>
+
+                {/* Says why the form came back filled in, and offers a way out. */}
+                {usingSavedDetails && (
+                  <div className="mt-3 flex items-center justify-between gap-3 rounded-xl px-3 py-2.5"
+                       style={{ background: 'rgba(26,58,42,0.04)' }}>
+                    <span className="flex items-center gap-2 text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                      <FiCheck aria-hidden="true" className="h-3.5 w-3.5 flex-shrink-0"
+                               style={{ color: 'var(--forest-light)' }} />
+                      Using the details you saved last time.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={resetForm}
+                      className="flex-shrink-0 cursor-pointer text-[12px] font-medium underline underline-offset-2"
+                      style={{ color: 'var(--forest)' }}>
+                      Clear
+                    </button>
+                  </div>
+                )}
 
                 <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
@@ -826,30 +878,58 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                     <div className="space-y-2">
                       {eligibleCoupons.map((coupon) => {
                         const isApplied = appliedCoupon === coupon.code;
+                        // Shown so the buyer can see both standing offers, but
+                        // not theirs to use yet -- the server refuses it too.
+                        const isLocked = !!coupon.locked;
                         return (
                           <div
                             key={coupon.code}
                             className="flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors"
                             style={{
                               borderColor: isApplied ? 'var(--forest-light)' : 'rgba(26,58,42,0.12)',
-                              background: isApplied ? 'rgba(45,106,79,0.06)' : 'white',
+                              background: isApplied
+                                ? 'rgba(45,106,79,0.06)'
+                                : isLocked
+                                  ? 'rgba(26,58,42,0.02)'
+                                  : 'white',
+                              opacity: isLocked ? 0.55 : 1,
                             }}>
                             <div className="flex min-w-0 items-start gap-2.5">
-                              <FiTag
-                                aria-hidden="true"
-                                className="mt-0.5 h-[18px] w-[18px] flex-shrink-0"
-                                style={{ color: 'var(--forest)' }} />
+                              {isLocked ? (
+                                <FiLock
+                                  aria-hidden="true"
+                                  className="mt-0.5 h-[18px] w-[18px] flex-shrink-0"
+                                  style={{ color: 'var(--text-muted)' }} />
+                              ) : (
+                                <FiTag
+                                  aria-hidden="true"
+                                  className="mt-0.5 h-[18px] w-[18px] flex-shrink-0"
+                                  style={{ color: 'var(--forest)' }} />
+                              )}
                               <div className="min-w-0">
-                                <div className="text-sm font-semibold" style={{ color: 'var(--forest)' }}>
-                                  <CopyableCode code={coupon.code} /> · {coupon.percent}% off
+                                <div
+                                  className="text-sm font-semibold"
+                                  style={{ color: isLocked ? 'var(--text-muted)' : 'var(--forest)' }}>
+                                  {isLocked ? (
+                                    <span>{coupon.code}</span>
+                                  ) : (
+                                    <CopyableCode code={coupon.code} />
+                                  )}{' '}
+                                  · {coupon.percent}% off
                                 </div>
                                 <p className="mt-0.5 text-xs leading-snug" style={{ color: 'var(--text-muted)' }}>
-                                  {coupon.blurb}
+                                  {isLocked ? (coupon.lockedBlurb ?? coupon.blurb) : coupon.blurb}
                                 </p>
                               </div>
                             </div>
 
-                            {isApplied ? (
+                            {isLocked ? (
+                              <span
+                                className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                                style={{ background: 'rgba(26,58,42,0.06)', color: 'var(--text-muted)' }}>
+                                Locked
+                              </span>
+                            ) : isApplied ? (
                               <span
                                 className="flex flex-shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
                                 style={{ background: 'rgba(45,106,79,0.12)', color: 'var(--forest-light)' }}>
