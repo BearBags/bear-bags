@@ -15,8 +15,7 @@
     {
       "file": "Bear-Bags-Privacy-Policy",
       "title": "Privacy Policy",
-      "intro": "What we collect when you shop with Bear Bags, why we collect it, and what you can ask us to do about it.",
-      "sections": [
+     "sections": [
         {
           "heading": "Who we are",
           "paragraphs": [
@@ -87,8 +86,7 @@
     {
       "file": "Bear-Bags-Terms-of-Service",
       "title": "Terms of Service",
-      "intro": "The rules that apply when you browse this site and buy Bear Bags compostable garbage bags.",
-      "sections": [
+    "sections": [
         {
           "heading": "Agreement to these terms",
           "paragraphs": [
@@ -157,8 +155,7 @@
     {
       "file": "Bear-Bags-Shipping-and-Refund-Policy",
       "title": "Shipping & Refund Policy",
-      "intro": "How and when your order reaches you, and what happens if you need to cancel, return, or get your money back.",
-      "sections": [
+     "sections": [
         {
           "heading": "Shipping",
           "bullets": [

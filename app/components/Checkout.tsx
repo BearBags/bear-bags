@@ -406,7 +406,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
           <p className="text-base md:text-lg mb-8" style={{ color: 'var(--text-muted)' }}>
             Add some Bear Bags to get started!
           </p>
-          <a href="/products"
+          <a href="/medium-size-bag"
              className="inline-flex items-center gap-2 px-6 md:px-8 py-3 md:py-3.5 rounded-full no-underline font-medium text-sm md:text-[15px] transition-all hover:-translate-y-0.5 hover:shadow-lg"
              style={{ background: 'var(--forest)', color: 'white' }}>
             Browse Products
