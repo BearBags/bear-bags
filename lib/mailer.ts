@@ -2,12 +2,15 @@ import nodemailer from 'nodemailer';
 
 let transporter: nodemailer.Transporter | null = null;
 
+// OTP emails are sent through the hello@bearbags.in mailbox on Titan Email.
+// SMTP_HOST and SMTP_PORT default to Titan's server, so only the mailbox
+// login needs to be set.
 function getTransporter() {
   if (transporter) return transporter;
 
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
-    throw new Error('SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS must be set — see db.md.');
+  const { SMTP_HOST = 'smtp.titan.email', SMTP_PORT = '465', SMTP_USER, SMTP_PASS } = process.env;
+  if (!SMTP_USER || !SMTP_PASS) {
+    throw new Error('SMTP_USER and SMTP_PASS must be set — see db.md.');
   }
 
   transporter = nodemailer.createTransport({
@@ -22,7 +25,7 @@ function getTransporter() {
 
 export async function sendOtpEmail(to: string, otp: string) {
   await getTransporter().sendMail({
-    from: process.env.SMTP_USER,
+    from: `Bear Bags Admin <${process.env.SMTP_USER}>`,
     to,
     subject: 'Bear Bags Admin — Password Reset Code',
     text: `Your password reset code is ${otp}. It expires in 10 minutes. If you didn't request this, ignore this email.`,

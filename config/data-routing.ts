@@ -19,5 +19,9 @@ export const dataRouting = {
     routePrefix: '/admin',
     sessionCookieName: 'bear_admin_session',
     sessionMaxAgeSeconds: 60 * 60 * 8, // 8 hours
+    // Password-reset codes always go here. Fixed in code on purpose: there is
+    // no way to change it from the dashboard, so a stolen session cannot
+    // redirect recovery to an attacker's inbox.
+    recoveryEmail: 'hello@bearbags.in',
   },
 } as const;

@@ -14,17 +14,17 @@ const MAX_ATTEMPTS_PER_WINDOW = 5;
 const WINDOW_MS = 300_000; // 5 minutes
 
 // One-time migration: the admin used to be a single password in ADMIN_PASSWORD.
-// If no Admin document exists yet, seed one from ADMIN_PASSWORD/ADMIN_EMAIL so
-// existing deployments keep working without a manual migration step.
+// If no Admin document exists yet, seed one from ADMIN_PASSWORD so existing
+// deployments keep working without a manual migration step.
 async function seedAdminIfMissing() {
   const existing = await Admin.findOne();
   if (existing) return;
 
-  const { ADMIN_PASSWORD, ADMIN_EMAIL } = process.env;
-  if (!ADMIN_PASSWORD || !ADMIN_EMAIL) return;
+  const { ADMIN_PASSWORD } = process.env;
+  if (!ADMIN_PASSWORD) return;
 
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
-  await Admin.create({ email: ADMIN_EMAIL, passwordHash });
+  await Admin.create({ email: dataRouting.admin.recoveryEmail, passwordHash });
 }
 
 export async function POST(request: NextRequest) {

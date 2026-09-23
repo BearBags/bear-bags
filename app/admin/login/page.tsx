@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { dataRouting } from '@/config/data-routing';
 
-type Mode = 'login' | 'forgot-email' | 'forgot-otp' | 'forgot-password' | 'forgot-done';
+const RECOVERY_EMAIL = dataRouting.admin.recoveryEmail;
+
+type Mode = 'login' | 'forgot-send' | 'forgot-otp' | 'forgot-password' | 'forgot-done';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -13,7 +16,6 @@ export default function AdminLogin() {
 
   const [password, setPassword] = useState('');
 
-  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -42,13 +44,13 @@ export default function AdminLogin() {
     setLoading(true);
     setError('');
 
-    await fetch('/api/admin/forgot-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-    // Always advance — the API responds the same way whether or not the email matched.
-    setMode('forgot-otp');
+    const res = await fetch('/api/admin/forgot-password', { method: 'POST' });
+    if (res.ok) {
+      setMode('forgot-otp');
+    } else {
+      const data = await res.json().catch(() => null);
+      setError(data?.error ?? 'Could not send the code. Please try again.');
+    }
     setLoading(false);
   };
 
@@ -60,7 +62,7 @@ export default function AdminLogin() {
     const res = await fetch('/api/admin/verify-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, otp }),
+      body: JSON.stringify({ otp }),
     });
     const data = await res.json();
 
@@ -97,7 +99,6 @@ export default function AdminLogin() {
     setMode('login');
     setError('');
     setPassword('');
-    setEmail('');
     setOtp('');
     setResetToken('');
     setNewPassword('');
@@ -128,7 +129,7 @@ export default function AdminLogin() {
             </button>
             <button
               type="button"
-              onClick={() => { setMode('forgot-email'); setError(''); }}
+              onClick={() => { setMode('forgot-send'); setError(''); }}
               className="w-full text-center text-sm text-[#555] hover:text-[#134632]"
             >
               Forgot password?
@@ -136,17 +137,11 @@ export default function AdminLogin() {
           </form>
         )}
 
-        {mode === 'forgot-email' && (
+        {mode === 'forgot-send' && (
           <form onSubmit={handleSendOtp} className="space-y-4">
-            <p className="text-sm text-[#555]">Enter the admin recovery email — we&apos;ll send a code to reset the password.</p>
-            <input
-              type="email"
-              placeholder="Recovery email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-[#d1ddcf] bg-[#f8fcf6] px-4 py-3 text-sm text-[#1f3a2d] outline-none focus:border-[#23473f]"
-            />
+            <p className="text-sm text-[#555]">
+              We&apos;ll send a code to <strong className="text-[#134632]">{RECOVERY_EMAIL}</strong> to reset the password.
+            </p>
             {error && <p className="text-sm text-[#c82b2d]">{error}</p>}
             <button
               type="submit"
@@ -162,7 +157,7 @@ export default function AdminLogin() {
 
         {mode === 'forgot-otp' && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <p className="text-sm text-[#555]">If that email is on file, a 6-digit code was sent to it. Enter it below.</p>
+            <p className="text-sm text-[#555]">A 6-digit code was sent to {RECOVERY_EMAIL}. Enter it below.</p>
             <input
               type="text"
               inputMode="numeric"

@@ -1,30 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import { dataRouting } from '@/config/data-routing';
 import { connectToDatabase } from '@/lib/mongodb';
 import { Admin } from '@/lib/models/Admin';
 import { sendOtpEmail } from '@/lib/mailer';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
 
 const OTP_TTL_MS = 10 * 60 * 1000;
 
+// Each request sends an email to the business inbox, so cap it per IP to stop
+// the button being used to flood hello@bearbags.in.
+const MAX_REQUESTS_PER_WINDOW = 3;
+const WINDOW_MS = 15 * 60 * 1000;
+
+// The code always goes to the fixed recovery address -- the caller does not
+// supply one.
 export async function POST(request: NextRequest) {
-  const { email } = await request.json();
-  if (!email || typeof email !== 'string') {
-    return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+  const { allowed, retryAfterSeconds } = rateLimit(
+    `admin-forgot:${getClientIp(request)}`,
+    MAX_REQUESTS_PER_WINDOW,
+    WINDOW_MS,
+  );
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait and try again.' },
+      { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } },
+    );
   }
 
   await connectToDatabase();
-  const admin = await Admin.findOne({ email: email.toLowerCase().trim() });
-
-  // Respond the same way whether or not the email matched, so the endpoint
-  // can't be used to check which address is the recovery email.
-  if (admin) {
-    const otp = crypto.randomInt(100000, 1000000).toString();
-    admin.otpHash = await bcrypt.hash(otp, 10);
-    admin.otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
-    await admin.save();
-    await sendOtpEmail(admin.email, otp);
+  const admin = await Admin.findOne();
+  if (!admin) {
+    return NextResponse.json({ error: 'No admin account found' }, { status: 404 });
   }
+
+  const otp = crypto.randomInt(100000, 1000000).toString();
+  admin.otpHash = await bcrypt.hash(otp, 10);
+  admin.otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
+  await admin.save();
+  await sendOtpEmail(dataRouting.admin.recoveryEmail, otp);
 
   return NextResponse.json({ success: true });
 }

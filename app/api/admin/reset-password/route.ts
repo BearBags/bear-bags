@@ -13,13 +13,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const email = await verifyResetToken(resetToken);
-  if (!email) {
+  if (!(await verifyResetToken(resetToken))) {
     return NextResponse.json({ error: 'Reset link expired, request a new code' }, { status: 401 });
   }
 
+  // There is a single admin account.
   await connectToDatabase();
-  const admin = await Admin.findOne({ email });
+  const admin = await Admin.findOne();
   if (!admin) {
     return NextResponse.json({ error: 'Reset link expired, request a new code' }, { status: 401 });
   }
