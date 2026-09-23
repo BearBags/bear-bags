@@ -7,12 +7,10 @@ export interface LegalSection {
 
 interface LegalPageProps {
   title: string;
-  intro: string;
-  lastUpdated: string;
   sections: LegalSection[];
 }
  
-const LegalPage = ({ title, intro, lastUpdated, sections }: LegalPageProps) => {
+const LegalPage = ({ title, sections }: LegalPageProps) => {
   return (
     <main className="bg-[#f4f4ec] min-h-screen py-10 sm:py-14 lg:py-20">
       <div className="mx-auto max-w-3xl px-4 sm:px-8">
@@ -23,8 +21,6 @@ const LegalPage = ({ title, intro, lastUpdated, sections }: LegalPageProps) => {
           <h1 className="font-['Playfair_Display'] text-[30px] font-bold leading-tight tracking-tight text-[#134632] sm:text-4xl lg:text-5xl">
             {title}
           </h1>
-          <p className="text-sm leading-7 text-[#555]">{intro}</p>
-          <p className="text-xs text-[#8a9a8a]">Last updated: {lastUpdated}</p>
         </header>
 
         <div className="mt-8 space-y-4 sm:mt-10 sm:space-y-5">

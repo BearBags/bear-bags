@@ -7,33 +7,34 @@ export const metadata: Metadata = {
   description: 'The terms that apply when you buy compostable garbage bags from Bear Bags.',
 };
 
-const LAST_UPDATED = '26 August 2026';
-
-const Bullet = () => <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#23473f]" />;
-
 const SECTIONS: LegalSection[] = [
   {
     heading: 'Agreement to these terms',
     body: (
       <>
         <p>
-          These terms apply to everything you do on bearbags.in — browsing, placing an order, or subscribing to our
-          newsletter. By using the site you accept them. If you do not agree with them, please do not use the site.
+          These terms apply when you use bearbags.in, including when you browse the site, place an order, or subscribe
+          to our communications. By using the site, you agree to these terms.
         </p>
         <p>
-          {/* TODO: replace with the registered legal entity name and address before going live. */}
-          The site is operated by <strong>[Legal entity name]</strong>, <strong>[registered address]</strong>, India.
+          The site is operated by Eye of Arjuna, a proprietorship trading under the brand name Bear Bags, having its
+          principal place of business at 17/7, Maruti Kripa, Station Road, Near HDFC Bank, Mahatma Gandhi Marg, Ratlam,
+          Madhya Pradesh – 457001, India.
         </p>
+        <p>References to “Bear Bags”, “we”, “us” and “our” in these terms mean Eye of Arjuna.</p>
       </>
     ),
   },
   {
     heading: 'Eligibility',
     body: (
-      <p>
-        You must be at least 18 years old and able to enter into a contract under Indian law to place an order. We
-        currently ship only within India.
-      </p>
+      <>
+        <p>
+          You must be at least 18 years old and legally capable of entering into a contract under Indian law to place an
+          order.
+        </p>
+        <p>We currently ship orders placed through this website only within India.</p>
+      </>
     ),
   },
   {
@@ -41,13 +42,21 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          We describe our bags — sizes, bag counts, and compostability certifications — as accurately as we can. Product
-          photographs are illustrative; slight variation in colour, print, or packaging is normal and is not a defect.
+          We aim to describe our products, including their sizes, bag counts, materials and certifications, as
+          accurately as possible.
         </p>
         <p>
-          Our bags are certified compostable by CPCB, India and to TÜV Austria industrial compostable standards. They
-          compost properly under the conditions those certifications describe; they are not designed for long-term
-          storage of wet waste or for use as sealed airtight containers.
+          Product photographs are illustrative. Minor variations in colour, print, dimensions or packaging may occur and
+          do not necessarily constitute a defect.
+        </p>
+        <p>
+          Our compostable garbage bags are manufactured in accordance with the certifications and standards stated on
+          the product packaging, including applicable CPCB requirements and IS/ISO 17088 standards. The product is also
+          TÜV Austria certified for industrial composting.
+        </p>
+        <p>
+          Composting requires appropriate composting conditions and facilities. Actual decomposition time and conditions
+          may vary depending on the composting environment.
         </p>
       </>
     ),
@@ -57,94 +66,151 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          All prices are in Indian Rupees (₹) and include applicable taxes unless stated otherwise. Shipping is free on
-          all orders placed through this site.
+          All prices displayed on this website are in Indian Rupees (₹) and include applicable taxes unless stated
+          otherwise. Shipping is free on orders placed through this website.
         </p>
-        <ul>
-          <li><Bullet /><span>You can pay online through Razorpay (card, UPI, net banking, and wallets) or choose Cash on Delivery where it is offered.</span></li>
-          <li><Bullet /><span>An online order is confirmed only once Razorpay confirms the payment to us. If a payment is debited but the order does not confirm, contact us and we will trace it or refund it.</span></li>
-          <li><Bullet /><span>We may correct an obvious pricing error even after you order. If the corrected price is higher, we will ask you to confirm or we will cancel and refund the order in full.</span></li>
-        </ul>
+        <p>
+          You can pay online through the payment methods made available at checkout, or choose Cash on Delivery where it
+          is offered.
+        </p>
+        <p>
+          Online payments are currently processed through Razorpay. An online order is confirmed once we receive
+          successful payment confirmation from our payment provider and issue an order confirmation.
+        </p>
+        <p>
+          If a payment is debited but your order is not confirmed, contact us and we will help trace the transaction or
+          arrange a refund where applicable.
+        </p>
+        <p>
+          We may correct an obvious pricing or listing error. If an order has already been placed and the corrected price
+          is higher, we will ask you to confirm the revised price or cancel the affected order and refund any amount
+          already paid.
+        </p>
       </>
     ),
   },
   {
     heading: 'Discounts and coupons',
     body: (
-      <p>
-        Discount codes apply to the order they were used on, cannot be exchanged for cash, and cannot be combined unless
-        we say so. First-time and returning-customer offers are limited to genuine first-time and returning customers,
-        and we may cancel an order where a code has clearly been misused.
-      </p>
+      <>
+        <p>
+          Discount codes apply only in accordance with the conditions stated with the offer. They cannot be exchanged for
+          cash or combined with other offers unless we expressly allow it.
+        </p>
+        <p>
+          First-time, returning-customer or other eligibility-based offers are intended only for customers who meet the
+          stated conditions. We may reject or cancel the use of a promotional code where it has clearly been misused.
+        </p>
+      </>
     ),
   },
   {
     heading: 'Orders, delivery and cancellation',
     body: (
-      <p>
-        We aim to dispatch orders within 2 working days and deliver within 5–7 working days, depending on your pincode.
-        These are estimates, not guarantees. Delivery timelines, cancellation, returns and refunds are set out in full in
-        our <Link href="/refunds">Shipping &amp; Refund Policy</Link>, which forms part of these terms.
-      </p>
+      <>
+        <p>
+          We aim to dispatch orders within 2 working days of confirmation. Delivery normally takes approximately 5–7
+          working days from dispatch, depending on the delivery location. These timelines are estimates and are not
+          guaranteed.
+        </p>
+        <p>
+          Customers are responsible for providing complete and accurate delivery and contact information. Delivery may be
+          delayed or unsuccessful where incorrect or incomplete information has been provided.
+        </p>
+        <p>
+          Our rules regarding delivery, cancellations, returns, replacements and refunds are explained in our{' '}
+          <Link href="/refunds">Shipping &amp; Refund Policy</Link>, which forms part of these terms.
+        </p>
+      </>
     ),
   },
   {
     heading: 'Acceptable use',
     body: (
-      <ul>
-        <li><Bullet /><span>Do not use the site for any unlawful purpose, or to place fraudulent or fictitious orders.</span></li>
-        <li><Bullet /><span>Do not attempt to gain unauthorised access to the site, its admin area, or its underlying systems.</span></li>
-        <li><Bullet /><span>Do not scrape, copy, or resell our content, photographs, or product listings without our written permission.</span></li>
-      </ul>
+      <>
+        <p>You must not use this website for any unlawful purpose or to place fraudulent or fictitious orders.</p>
+        <p>
+          You must not attempt to gain unauthorised access to the website, its administrative areas, accounts, servers or
+          underlying systems.
+        </p>
+        <p>
+          You may not scrape, reproduce, copy, commercially exploit or resell our original content, photographs or
+          product listings without our prior written permission.
+        </p>
+      </>
     ),
   },
   {
     heading: 'Intellectual property',
     body: (
-      <p>
-        The Bear Bags name, logo, photographs, copy, and site design belong to us and are protected by Indian
-        intellectual property law. You may not use them without our prior written consent.
-      </p>
+      <>
+        <p>
+          The Bear Bags name, logo, original photographs, copy, graphics and other brand materials on this website are
+          owned by or licensed to us and are protected by applicable intellectual property laws.
+        </p>
+        <p>
+          You may not reproduce or use these materials for commercial purposes without our prior written consent.
+        </p>
+      </>
     ),
   },
   {
     heading: 'Third-party services and links',
     body: (
-      <p>
-        We link to marketplaces such as Amazon and Blinkit and use third-party services including Razorpay for payments.
-        Those services have their own terms and privacy policies, and we are not responsible for their content or
-        conduct.
-      </p>
+      <>
+        <p>
+          Our website may link to third-party websites and marketplaces, including Amazon and Blinkit, and may use
+          third-party services such as Razorpay for payment processing.
+        </p>
+        <p>
+          Third-party websites and services are governed by their own terms and privacy policies. We are not responsible
+          for the content or availability of third-party websites that we do not control.
+        </p>
+      </>
     ),
   },
   {
     heading: 'Liability',
     body: (
-      <p>
-        We are responsible for supplying the products you ordered. To the extent Indian law allows, our total liability
-        for any claim connected with an order is limited to the amount you paid for that order, and we are not liable for
-        indirect or consequential loss. Nothing here limits liability that cannot lawfully be limited, including
-        liability under the Consumer Protection Act, 2019.
-      </p>
+      <>
+        <p>
+          We are responsible for supplying the products you ordered. To the extent Indian law allows, our total liability
+          for any claim connected with an order is limited to the amount you paid for that order, and we are not liable
+          for indirect or consequential loss.
+        </p>
+        <p>
+          Nothing in these terms excludes, restricts or limits any rights or remedies available to you under the Consumer
+          Protection Act, 2019 or any other applicable law.
+        </p>
+      </>
     ),
   },
   {
-    heading: 'Governing law and disputes',
+    heading: 'Governing Laws and Disputes',
     body: (
-      <p>
-        {/* TODO: confirm the jurisdiction city with the client before going live. */}
-        These terms are governed by the laws of India. Any dispute will be subject to the exclusive jurisdiction of the
-        courts at <strong>[city]</strong>, India. We would much rather sort things out directly — email us first.
-      </p>
+      <>
+        <p>These terms are governed by the laws of India.</p>
+        <p>
+          Any dispute relating to these terms, this website or an order placed through it will be subject to the
+          jurisdiction of the competent courts and consumer forums in accordance with applicable law.
+        </p>
+        <p>
+          If you have a concern, we encourage you to contact us first at{' '}
+          <a href="mailto:hello@bearbags.in">hello@bearbags.in</a> so that we can try to resolve it promptly
+        </p>
+      </>
     ),
   },
   {
     heading: 'Changes to these terms',
     body: (
-      <p>
-        We may update these terms from time to time. The version shown on this page at the moment you place an order is
-        the one that applies to that order.
-      </p>
+      <>
+        <p>We may update these terms from time to time.</p>
+        <p>
+          For an order, the version of these terms in effect when you place that order will apply to that order. Updated
+          terms will apply to future use of the website from the date they are published.
+        </p>
+      </>
     ),
   },
 ];
@@ -152,8 +218,6 @@ const SECTIONS: LegalSection[] = [
 const TermsOfServicePage = () => (
   <LegalPage
     title="Terms of Service"
-    intro="The rules that apply when you browse this site and buy Bear Bags compostable garbage bags."
-    lastUpdated={LAST_UPDATED}
     sections={SECTIONS}
   />
 );
