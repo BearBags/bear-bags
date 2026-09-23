@@ -1,6 +1,9 @@
 import { connectToDatabase } from '@/lib/mongodb';
 import { Order } from '@/lib/models/Order';
 import { NewsletterSubscriber } from '@/lib/models/NewsletterSubscriber';
+import { CouponModel } from '@/lib/models/Coupon';
+import { isCampaignActive } from '@/lib/discount';
+import CouponsManager, { type AdminCoupon, type CouponStatus } from './CouponsManager';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 
@@ -15,15 +18,34 @@ async function logout() {
 async function getData() {
   await connectToDatabase();
   // Items are embedded in the order document, so no join/include is needed.
-  const [orders, subscribers] = await Promise.all([
+  const [orders, subscribers, couponDocs] = await Promise.all([
     Order.find().sort({ createdAt: -1 }).lean(),
     NewsletterSubscriber.find().sort({ createdAt: -1 }).lean(),
+    CouponModel.find().sort({ createdAt: -1 }).lean(),
   ]);
-  return { orders, subscribers };
+
+  const today = new Date().toISOString().slice(0, 10);
+  const coupons: AdminCoupon[] = couponDocs.map((doc) => {
+    const startsAt = doc.startsAt ?? '';
+    const endsAt = doc.endsAt ?? '';
+    // Same date rule checkout uses (isCampaignActive), so the badge matches
+    // whether customers can actually see the code.
+    const inWindow = isCampaignActive({ code: doc.code, percent: doc.percent, kind: 'campaign', blurb: '', startsAt, endsAt });
+    const status: CouponStatus = !doc.active
+      ? 'Paused'
+      : inWindow
+        ? 'Active'
+        : startsAt && today < startsAt
+          ? 'Scheduled'
+          : 'Expired';
+    return { id: String(doc._id), code: doc.code, percent: doc.percent, blurb: doc.blurb ?? '', startsAt, endsAt, active: doc.active, status };
+  });
+
+  return { orders, subscribers, coupons };
 }
 
 export default async function AdminPage() {
-  const { orders, subscribers } = await getData();
+  const { orders, subscribers, coupons } = await getData();
 
   return (
     <main className="min-h-screen bg-[#f4f4ec] py-10 px-4 sm:px-8">
@@ -124,6 +146,8 @@ export default async function AdminPage() {
             </table>
           </div>
         </section>
+
+        <CouponsManager coupons={coupons} />
 
       </div>
     </main>
