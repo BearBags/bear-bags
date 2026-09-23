@@ -2,12 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { dataRouting } from '@/config/data-routing';
 import { verifySessionToken } from '@/lib/session';
 
-const PUBLIC_API_PATHS = [
-  '/api/admin/login',
-  '/api/admin/forgot-password',
-  '/api/admin/verify-otp',
-  '/api/admin/reset-password',
-];
+const PUBLIC_API_PATHS = ['/api/admin/login'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

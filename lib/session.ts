@@ -24,21 +24,3 @@ export async function verifySessionToken(token: string) {
     return false;
   }
 }
-
-export async function createResetToken(email: string, maxAgeSeconds: number) {
-  return new SignJWT({ purpose: 'reset', email })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime(Math.floor(Date.now() / 1000) + maxAgeSeconds)
-    .sign(getSecretKey());
-}
-
-export async function verifyResetToken(token: string) {
-  try {
-    const { payload } = await jwtVerify(token, getSecretKey());
-    if (payload.purpose !== 'reset' || typeof payload.email !== 'string') return null;
-    return payload.email;
-  } catch {
-    return null;
-  }
-}

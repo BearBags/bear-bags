@@ -63,9 +63,8 @@ There is no migration or `generate` step — Mongo creates collections on first 
 | [`lib/mongodb.ts`](lib/mongodb.ts) | Connection helper — `connectToDatabase()` |
 | [`lib/models/Order.ts`](lib/models/Order.ts) | `Order` model, with items embedded |
 | [`lib/models/NewsletterSubscriber.ts`](lib/models/NewsletterSubscriber.ts) | `NewsletterSubscriber` model |
-| [`lib/models/Admin.ts`](lib/models/Admin.ts) | `Admin` model — recovery email + password hash + OTP |
-| [`lib/session.ts`](lib/session.ts) | Signs/verifies the admin session cookie and password-reset tokens (JWT via `jose`) |
-| [`lib/mailer.ts`](lib/mailer.ts) | Sends OTP emails via nodemailer/SMTP (Titan Email) |
+| [`lib/models/Admin.ts`](lib/models/Admin.ts) | `Admin` model — email + password hash |
+| [`lib/session.ts`](lib/session.ts) | Signs/verifies the admin session cookie (JWT via `jose`) |
 | [`config/data-routing.ts`](config/data-routing.ts) | Flags for what is stored / sent to Zoho |
 
 Call `await connectToDatabase()` before any query. It's cheap when already connected.
@@ -102,7 +101,7 @@ Order {
 
 NewsletterSubscriber { _id, email (unique), createdAt }
 
-Admin { _id, email (unique), passwordHash, otpHash, otpExpiresAt }
+Admin { _id, email (unique), passwordHash }
 ```
 
 ## Admin auth
@@ -116,24 +115,16 @@ without a database round trip.
 **One-time migration**: on first login after this change, if no `Admin` document exists yet,
 `app/api/admin/login/route.ts` seeds one from `ADMIN_PASSWORD` (hashing the password).
 After that first login, `ADMIN_PASSWORD` is no longer read — the DB is the source of truth,
-and the password can only be changed via the reset-password flow below.
+and the password can only be changed by writing a new bcrypt hash to the `Admin` document.
 
-**Forgot password flow** (`app/api/admin/forgot-password`, `verify-otp`, `reset-password`):
-6-digit OTP (bcrypt-hashed, 10 min TTL, single-use) emailed via nodemailer → a short-lived
-(10 min) signed reset JWT → new password. The code always goes to the fixed recovery address
-`dataRouting.admin.recoveryEmail` (`hello@bearbags.in`, in `config/data-routing.ts`); it
-cannot be changed from the dashboard, so a stolen session cannot redirect recovery. Sending a
-code is limited to 3 per IP per 15 min and verifying to 5 attempts per IP per 10 min.
+**No forgot-password flow**: there is deliberately no self-service reset. If the password is
+lost, a developer sets a new bcrypt hash (cost 12) on the single `Admin` document directly in
+MongoDB. Production uses the `test` database; `.env.local` points at `bear_bags`.
 
 ### Required env vars
 
 ```
-ADMIN_SESSION_SECRET=<random 32+ byte string>   # signs session + reset JWTs
-SMTP_USER=hello@bearbags.in                     # Titan Email mailbox that sends the OTP
-SMTP_PASS=<hello@bearbags.in mailbox password>
-# Optional — default to Titan's server:
-# SMTP_HOST=smtp.titan.email
-# SMTP_PORT=465
+ADMIN_SESSION_SECRET=<random 32+ byte string>   # signs the session JWT
 
 # Only needed once, to seed the first Admin document:
 ADMIN_PASSWORD=<old shared password>

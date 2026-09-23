@@ -24,7 +24,7 @@ async function seedAdminIfMissing() {
   if (!ADMIN_PASSWORD) return;
 
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
-  await Admin.create({ email: dataRouting.admin.recoveryEmail, passwordHash });
+  await Admin.create({ email: dataRouting.admin.email, passwordHash });
 }
 
 export async function POST(request: NextRequest) {
