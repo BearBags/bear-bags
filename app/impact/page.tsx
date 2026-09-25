@@ -199,11 +199,7 @@ export default function ImpactPage() {
                     fill
                     className="object-contain p-5 sm:p-6 transition-transform duration-500 group-hover:scale-[1.03]"
                   />
-                  <div className="absolute inset-0 bg-[#1a3d2b]/0 group-hover:bg-[#1a3d2b]/20 transition-all duration-300 flex items-end justify-start p-5">
-                    <span className="opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0 bg-white/95 text-[#1a3d2b] text-xs font-semibold px-4 py-2 rounded-full shadow-md">
-                      View Letter ↗
-                    </span>
-                  </div>
+                  <div className="absolute inset-0 bg-[#1a3d2b]/0 group-hover:bg-[#1a3d2b]/20 transition-all duration-300" />
                 </button>
 
                 {/* Right content panel */}

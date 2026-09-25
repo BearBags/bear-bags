@@ -5,7 +5,8 @@
       "Bash(echo \"tsc-exit=$?\")",
       "Bash(node -e ' *)",
       "Bash(sed -i -e 's/+91 91317 83440/+91 91317 88340/g' -e 's/919131783440/919131788340/g' docs/legal/content.json app/refunds/page.tsx app/components/LegalPage.tsx app/components/Footer.tsx app/components/FAQ.tsx && grep -rn \"83440\" --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.git . ; grep -rn \"88340\" --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.git . | cut -c1-140)",
-      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('docs/legal/content.json'\\)\\)\")"
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('docs/legal/content.json'\\)\\)\")",
+      "Bash(grep -E \"<\\(div|span|li|img|Image|tr|motion\\\\.div\\)\\\\s*$\")"
     ],
     "additionalDirectories": [
       "/home/vanshika/internships/freelance/bear-bags/app/api/checkout",
