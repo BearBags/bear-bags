@@ -24,7 +24,7 @@ export const products: ProductProfile[] = [
     id: 2,
     slug: 'medium-size-bag',
     title: 'Bear Bags — Medium',
-    price: 259,
+    price: 239,
     description: '30 compostable garbage bags',
     bagSize: '19 x 21 inches',
     bagCount: 30,

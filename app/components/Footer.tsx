@@ -50,7 +50,7 @@ const CERTIFICATIONS = [
 const SOCIALS = [
   { Icon: FaInstagram, href: 'https://www.instagram.com/bearbags.in?utm_source=qr&igsh=MXFhdjl6M2htY2RsMw==' },
   { Icon: FaLinkedin, href: 'https://www.linkedin.com/company/bearbags/posts/?feedView=all' },
-  { Icon: FaWhatsapp, href: 'https://wa.me/919131783440' },
+  { Icon: FaWhatsapp, href: 'https://wa.me/919131788340' },
 ];
 
 const Footer = () => {
@@ -78,11 +78,11 @@ const Footer = () => {
               </span>
               hello@bearbags.in
             </a>
-            <a href="tel:+919131783440" className="flex items-center gap-3 text-sm hover:text-white transition-colors">
+            <a href="tel:+919131788340" className="flex items-center gap-3 text-sm hover:text-white transition-colors">
               <span className="w-8 h-8 rounded-full border border-[#9adda9]/40 flex items-center justify-center text-[#9adda9] shrink-0">
                 <FaPhone size={16} />
               </span>
-              +91 91317 83440
+              +91 91317 88340
             </a>
           </div>
 

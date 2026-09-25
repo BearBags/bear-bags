@@ -70,7 +70,7 @@ const FAQ = () => {
       <div className="faq-contact">
         <p>Still have a question? We&apos;d be happy to help</p>
         <a href="mailto:hello@bearbags.in">hello@bearbags.in</a><br/>
-        <a href="https://wa.me/919131783440">WhatsApp: +91 91317 83440</a>
+        <a href="https://wa.me/919131788340">WhatsApp: +91 91317 88340</a>
       </div>
     </div>
 

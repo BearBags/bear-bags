@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
       return NextResponse.json(
-        { error: 'Online payment is not set up yet. Please choose Cash on Delivery.' },
+        { error: 'Online payment is temporarily unavailable. Please try again later or contact us at hello@bearbags.in.' },
         { status: 503 },
       );
     }

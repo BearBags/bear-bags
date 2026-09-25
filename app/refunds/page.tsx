@@ -29,7 +29,7 @@ const SECTIONS: LegalSection[] = [
         <p>
           You can cancel an order before it is dispatched by emailing{' '}
           <a href="mailto:hello@bearbags.in">hello@bearbags.in</a> or calling{' '}
-          <a href="tel:+919131783440">+91 91317 83440</a> with your order details.
+          <a href="tel:+919131788340">+91 91317 88340</a> with your order details.
         </p>
         <p>
           If you have already paid, we will refund the full amount. Once an order has been dispatched, it cannot be

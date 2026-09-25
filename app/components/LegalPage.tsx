@@ -44,7 +44,7 @@ const LegalPage = ({ title, sections }: LegalPageProps) => {
           <h2 className="text-base font-semibold text-[#134632] sm:text-lg">Questions?</h2>
           <p className="mt-2 text-sm leading-7 text-[#555]">
             Write to us at <a href="mailto:hello@bearbags.in" className="font-medium text-[#23473f] underline underline-offset-4">hello@bearbags.in</a> or
-            call <a href="tel:+919131783440" className="font-medium text-[#23473f] underline underline-offset-4">+91 91317 83440</a>. We usually reply within 2 working days.
+            call <a href="tel:+919131788340" className="font-medium text-[#23473f] underline underline-offset-4">+91 91317 88340</a>. We usually reply within 2 working days.
           </p>
           <Link
             href="/"
