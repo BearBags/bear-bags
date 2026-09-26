@@ -6,7 +6,16 @@
       "Bash(node -e ' *)",
       "Bash(sed -i -e 's/+91 91317 83440/+91 91317 88340/g' -e 's/919131783440/919131788340/g' docs/legal/content.json app/refunds/page.tsx app/components/LegalPage.tsx app/components/Footer.tsx app/components/FAQ.tsx && grep -rn \"83440\" --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.git . ; grep -rn \"88340\" --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.git . | cut -c1-140)",
       "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('docs/legal/content.json'\\)\\)\")",
-      "Bash(grep -E \"<\\(div|span|li|img|Image|tr|motion\\\\.div\\)\\\\s*$\")"
+      "Bash(grep -E \"<\\(div|span|li|img|Image|tr|motion\\\\.div\\)\\\\s*$\")",
+      "Bash(sed -E 's/=\\(.{0,3}\\).*/=\\\\1…/')",
+      "Bash(npx -y tsx /tmp/claude-1000/-home-vanshika-internships-freelance-bear-bags/35f824fb-37d8-48c1-89c0-f8bdf7e9e039/scratchpad/send-test-order.ts)",
+      "Bash(sed -i '/^import fs from '\\\\''fs'\\\\'';$/d; /^import dotenv from '\\\\''dotenv'\\\\'';$/d; /^for \\(const f of/d' /tmp/claude-1000/-home-vanshika-internships-freelance-bear-bags/35f824fb-37d8-48c1-89c0-f8bdf7e9e039/scratchpad/send-test-order.ts)",
+      "Bash(npx -y tsx --env-file=.env --env-file=.env.local /tmp/claude-1000/-home-vanshika-internships-freelance-bear-bags/35f824fb-37d8-48c1-89c0-f8bdf7e9e039/scratchpad/send-test-order.ts)",
+      "Bash(curl -s -m 20 -X POST https://bearbags.in/api/pricing -H 'Content-Type: application/json' -d '{\"email\":\"test@gmail.com\",\"cartItems\":[{\"product\":{\"id\":2,\"name\":\"Bear Bags — Medium\",\"price\":259},\"quantity\":1}],\"couponCode\":null}' -w '\\\\n[%{http_code}]\\\\n')",
+      "Bash(git mv *)",
+      "Bash(awk '{print $2, $11, $12, $13, $14}')",
+      "Bash(awk '{print $2, $11, $12, $13, $14, $15}')",
+      "Bash(curl -s -m 60 http://localhost:3000/admin/login -o /tmp/claude-1000/-home-vanshika-internships-freelance-bear-bags/35f824fb-37d8-48c1-89c0-f8bdf7e9e039/scratchpad/login.html -w \"login page: %{http_code}\\\\n\")"
     ],
     "additionalDirectories": [
       "/home/vanshika/internships/freelance/bear-bags/app/api/checkout",

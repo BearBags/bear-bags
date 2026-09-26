@@ -28,14 +28,6 @@ export interface Coupon {
   /** Campaign coupons only. ISO dates; the window is inclusive of both ends. */
   startsAt?: string;
   endsAt?: string;
-  /**
-   * False when the buyer can see this coupon but has not earned it -- the other
-   * tier's code, shown greyed out so both offers are always visible. Only set on
-   * the list `getEligibleCoupons` returns; absent means usable.
-   */
-  locked?: boolean;
-  /** Why it is locked, shown in place of the blurb. */
-  lockedBlurb?: string;
 }
 
 export const TIER_COUPONS: Record<number, Coupon> = {
@@ -44,14 +36,12 @@ export const TIER_COUPONS: Record<number, Coupon> = {
     percent: FIRST_TIME_DISCOUNT_PERCENT,
     kind: 'tier',
     blurb: 'First order? This one is yours.',
-    lockedBlurb: 'For first orders only.',
   },
   [RETURNING_DISCOUNT_PERCENT]: {
     code: RETURNING_COUPON,
     percent: RETURNING_DISCOUNT_PERCENT,
     kind: 'tier',
     blurb: 'Welcome back! Use this on your order.',
-    lockedBlurb: 'Unlocks on your next order.',
   },
 };
 
@@ -75,15 +65,10 @@ export function isCampaignActive(coupon: Coupon, now: Date = new Date()): boolea
   return true;
 }
 
-// Everything to show in "Available for you": BOTH tier coupons -- they are the
-// two standing offers, so the buyer always sees what the programme is -- plus
-// whatever campaigns are currently running. Best rate first, so the strongest
-// offer heads the list.
-//
-// Only the tier this email has earned comes back usable; the other is flagged
-// `locked` for the UI to grey out. Eligibility itself is unchanged: `isUsable`
-// below is the single rule, and pricing goes through `findEligibleCoupon`, so a
-// locked code sent by a client is still refused.
+// Everything to show in "Available for you": the ONE tier coupon this email
+// has earned -- FIRSTBEAR before the first order, BEARBACK on every order after
+// that -- plus whatever campaigns are currently running. The other tier's code
+// is never shown. Best rate first, so the strongest offer heads the list.
 //
 // `campaigns` comes from the database (see lib/coupon-server.ts). It is passed
 // in rather than read here so this stays a pure function -- the admin dashboard
@@ -93,22 +78,14 @@ export function getEligibleCoupons(
   campaigns: Coupon[] = CAMPAIGN_COUPONS,
   now: Date = new Date(),
 ): Coupon[] {
-  const tiers = Object.values(TIER_COUPONS).map((tier) =>
-    tier.percent === tierPercent ? tier : { ...tier, locked: true },
-  );
+  const tiers = Object.values(TIER_COUPONS).filter((tier) => tier.percent === tierPercent);
   const active = campaigns.filter((c) => isCampaignActive(c, now));
   return [...tiers, ...active].sort((a, b) => b.percent - a.percent);
 }
 
-/** The one rule for whether a buyer may actually apply a coupon. */
-export function isUsable(coupon: Coupon): boolean {
-  return !coupon.locked;
-}
-
 // The authoritative "may this buyer have this code?" check, used by pricing.
-// `getEligibleCoupons` now also returns the tier the buyer has NOT earned, so
-// the locked ones are filtered out here -- a client that sends the other tier's
-// code gets nothing back and is charged full price.
+// Only codes in this buyer's eligible list count, so a client that sends the
+// other tier's code gets nothing back and is charged full price.
 export function findEligibleCoupon(
   code: string,
   tierPercent: number,
@@ -117,7 +94,6 @@ export function findEligibleCoupon(
 ): Coupon | undefined {
   const normalized = normalizeCoupon(code);
   return getEligibleCoupons(tierPercent, campaigns, now)
-    .filter(isUsable)
     .find((c) => c.code === normalized);
 }
 

@@ -71,6 +71,24 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  // A saved cart keeps the price each item had when it was added. If the admin
+  // has changed a price since, show the current one -- it is what checkout
+  // charges. Failing to fetch just leaves the saved prices in place.
+  useEffect(() => {
+    fetch('/api/products/prices')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { prices: Record<number, number> } | null) => {
+        if (!data?.prices) return;
+        const priceOf = (product: Product) => data.prices[product.id] ?? product.price;
+        setCart((current) =>
+          current.some((i) => priceOf(i.product) !== i.product.price)
+            ? current.map((i) => ({ ...i, product: { ...i.product, price: priceOf(i.product) } }))
+            : current,
+        );
+      })
+      .catch(() => {});
+  }, []);
+
   // save to localStorage
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));

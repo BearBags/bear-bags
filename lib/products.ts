@@ -15,7 +15,6 @@ export interface ProductProfile {
   rating?: number;
   freeDelivery?: string;
   inStock?: string;
-  perBag: string;
   orders: string;
 }
 
@@ -42,10 +41,13 @@ export const products: ProductProfile[] = [
     rating: 4.5,
     freeDelivery: 'Free delivery on all orders',
     inStock: 'In stock. Ships within 1 business day',
-    perBag: '₹8.63 per bag',
     orders: " 230+ orders"
   },
 ];
+
+// "₹7.97 per bag" -- always derived from the live price so the two never disagree.
+export const formatPerBag = (price: number, bagCount: number): string =>
+  `₹${(price / bagCount).toFixed(2)} per bag`;
 
 export const getProductBySlug = (slug: string): ProductProfile | undefined => {
   return products.find((product) => product.slug === slug);

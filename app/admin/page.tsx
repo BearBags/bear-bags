@@ -4,6 +4,9 @@ import { NewsletterSubscriber } from '@/lib/models/NewsletterSubscriber';
 import { CouponModel } from '@/lib/models/Coupon';
 import { isCampaignActive } from '@/lib/discount';
 import CouponsManager, { type AdminCoupon, type CouponStatus } from './CouponsManager';
+import ProductPriceCard from './ProductPriceCard';
+import Pagination from './Pagination';
+import { getLiveProductBySlug } from '@/lib/product-prices';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 
@@ -15,13 +18,29 @@ async function logout() {
   redirect('/admin/login');
 }
 
-async function getData() {
+const PAGE_SIZE = 10;
+
+// ?ordersPage=2 -> 2. Anything missing or invalid is page 1; pages past the end
+// are clamped once the total is known.
+const pageFrom = (value: string | undefined) => Math.max(1, Math.floor(Number(value)) || 1);
+
+async function getData(ordersPageParam: number, subscribersPageParam: number) {
   await connectToDatabase();
+  const [orderCount, subscriberCount] = await Promise.all([
+    Order.countDocuments(),
+    NewsletterSubscriber.countDocuments(),
+  ]);
+  const ordersTotalPages = Math.max(1, Math.ceil(orderCount / PAGE_SIZE));
+  const subscribersTotalPages = Math.max(1, Math.ceil(subscriberCount / PAGE_SIZE));
+  const ordersPage = Math.min(ordersPageParam, ordersTotalPages);
+  const subscribersPage = Math.min(subscribersPageParam, subscribersTotalPages);
+
   // Items are embedded in the order document, so no join/include is needed.
-  const [orders, subscribers, couponDocs] = await Promise.all([
-    Order.find().sort({ createdAt: -1 }).lean(),
-    NewsletterSubscriber.find().sort({ createdAt: -1 }).lean(),
+  const [orders, subscribers, couponDocs, product] = await Promise.all([
+    Order.find().sort({ createdAt: -1 }).skip((ordersPage - 1) * PAGE_SIZE).limit(PAGE_SIZE).lean(),
+    NewsletterSubscriber.find().sort({ createdAt: -1 }).skip((subscribersPage - 1) * PAGE_SIZE).limit(PAGE_SIZE).lean(),
     CouponModel.find().sort({ createdAt: -1 }).lean(),
+    getLiveProductBySlug('medium-size-bag'),
   ]);
 
   const today = new Date().toISOString().slice(0, 10);
@@ -41,11 +60,24 @@ async function getData() {
     return { id: String(doc._id), code: doc.code, percent: doc.percent, blurb: doc.blurb ?? '', startsAt, endsAt, active: doc.active, status };
   });
 
-  return { orders, subscribers, coupons };
+  return {
+    orders, orderCount, ordersPage, ordersTotalPages,
+    subscribers, subscriberCount, subscribersPage, subscribersTotalPages,
+    coupons, product,
+  };
 }
 
-export default async function AdminPage() {
-  const { orders, subscribers, coupons } = await getData();
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const query = await searchParams;
+  const {
+    orders, orderCount, ordersPage, ordersTotalPages,
+    subscribers, subscriberCount, subscribersPage, subscribersTotalPages,
+    coupons, product,
+  } = await getData(pageFrom(query.ordersPage), pageFrom(query.subscribersPage));
 
   return (
     <main className="min-h-screen bg-[#f4f4ec] py-10 px-4 sm:px-8">
@@ -63,8 +95,8 @@ export default async function AdminPage() {
         {/* Stats row */}
         <div className="grid grid-cols-2 gap-4">
           {[
-            { label: 'Total Orders', value: orders.length },
-            { label: 'Newsletter', value: subscribers.length },
+            { label: 'Total Orders', value: orderCount },
+            { label: 'Newsletter', value: subscriberCount },
           ].map(({ label, value }) => (
             <div key={label} className="rounded-[20px] border border-[#dbe7d2] bg-white p-5 shadow-sm">
               <div className="text-3xl font-bold text-[#134632]">{value}</div>
@@ -86,13 +118,12 @@ export default async function AdminPage() {
                   <th className="px-5 py-3">City</th>
                   <th className="px-5 py-3">Total</th>
                   <th className="px-5 py-3">Payment</th>
-                  <th className="px-5 py-3">Zoho</th>
                 </tr>
               </thead>
               <tbody>
                 {orders.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-5 py-8 text-center text-[#888]">No orders yet</td>
+                    <td colSpan={6} className="px-5 py-8 text-center text-[#888]">No orders yet</td>
                   </tr>
                 )}
                 {orders.map((order) => (
@@ -105,15 +136,18 @@ export default async function AdminPage() {
                     <td className="px-5 py-3 text-[#555]">{order.city}</td>
                     <td className="px-5 py-3 font-semibold text-[#134632]">₹{order.total}</td>
                     <td className="px-5 py-3 capitalize text-[#555]">{order.paymentMethod}</td>
-                    <td className="px-5 py-3">
-                      <span className={`text-xs font-semibold ${order.zohoSynced ? 'text-[#134632]' : 'text-[#888]'}`}>
-                        {order.zohoSynced ? '✓ Synced' : '—'}
-                      </span>
-                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            <Pagination
+              param="ordersPage"
+              page={ordersPage}
+              totalPages={ordersTotalPages}
+              totalItems={orderCount}
+              pageSize={PAGE_SIZE}
+              searchParams={query}
+            />
           </div>
         </section>
 
@@ -144,8 +178,20 @@ export default async function AdminPage() {
                 ))}
               </tbody>
             </table>
+            <Pagination
+              param="subscribersPage"
+              page={subscribersPage}
+              totalPages={subscribersTotalPages}
+              totalItems={subscriberCount}
+              pageSize={PAGE_SIZE}
+              searchParams={query}
+            />
           </div>
         </section>
+
+        {product && (
+          <ProductPriceCard productId={product.id} title={product.title} bagCount={product.bagCount} price={product.price} />
+        )}
 
         <CouponsManager coupons={coupons} />
 

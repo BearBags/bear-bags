@@ -1,6 +1,7 @@
 import { connectToDatabase } from './mongodb';
 import { Order } from './models/Order';
 import { createZohoLead } from './zoho';
+import { sendOrderNotification } from './order-email';
 import { dataRouting } from '@/config/data-routing';
 import type { OrderFormData, OrderPricing } from './order-pricing';
 
@@ -47,6 +48,15 @@ export async function saveOrder({
         quantity: item.quantity,
       })),
     });
+  }
+
+  // A failed email must never fail an order that is already saved and paid for.
+  if (dataRouting.email.sendOrderNotifications) {
+    try {
+      await sendOrderNotification({ formData, pricing, paymentStatus, razorpayPaymentId });
+    } catch (error) {
+      console.error('[order-email] failed to send order notification:', error);
+    }
   }
 
   if (dataRouting.zohoCRM.sendAllOrders) {

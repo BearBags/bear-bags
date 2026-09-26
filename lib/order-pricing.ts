@@ -1,7 +1,7 @@
 import { applyDiscount, findEligibleCoupon } from './discount';
 import { getDiscountPercentForEmail } from './discount-server';
 import { getCampaignCoupons } from './coupon-server';
-import { getProductById } from './products';
+import { getProductPrices } from './product-prices';
 
 export interface CartProduct {
   id: number;
@@ -43,12 +43,6 @@ export interface OrderPricing {
   eligibleTierPercent: number;
 }
 
-const getBasePrice = (item: CartItem): number => {
-  const product = getProductById(item.product.id);
-  if (!product) return item.product.price; // fallback for products not in the catalog
-  return product.price;
-};
-
 // Recomputes pricing server-side from known product base prices rather than
 // trusting client-sent totals.
 //
@@ -62,10 +56,16 @@ export async function computeOrderPricing(
   email: string,
   couponCode?: string | null,
 ): Promise<OrderPricing> {
-  const [eligibleTierPercent, campaigns] = await Promise.all([
+  const [eligibleTierPercent, campaigns, livePrices] = await Promise.all([
     getDiscountPercentForEmail(email),
     getCampaignCoupons(),
+    getProductPrices(),
   ]);
+
+  // The admin-set price, never the price the browser sent (a cart can hold a
+  // stale price from before a change). Products not in the catalog fall back
+  // to the client price.
+  const getBasePrice = (item: CartItem): number => livePrices[item.product.id] ?? item.product.price;
 
   const coupon = couponCode
     ? findEligibleCoupon(couponCode, eligibleTierPercent, campaigns)

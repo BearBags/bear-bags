@@ -24,3 +24,22 @@ export async function verifySessionToken(token: string) {
     return false;
   }
 }
+
+// Short-lived token proving the reset code was verified; exchanged for a new
+// password by /api/admin/reset-password.
+export async function createResetToken(maxAgeSeconds: number) {
+  return new SignJWT({ purpose: 'reset' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(Math.floor(Date.now() / 1000) + maxAgeSeconds)
+    .sign(getSecretKey());
+}
+
+export async function verifyResetToken(token: string) {
+  try {
+    const { payload } = await jwtVerify(token, getSecretKey());
+    return payload.purpose === 'reset';
+  } catch {
+    return false;
+  }
+}

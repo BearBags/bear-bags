@@ -878,58 +878,30 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                     <div className="space-y-2">
                       {eligibleCoupons.map((coupon) => {
                         const isApplied = appliedCoupon === coupon.code;
-                        // Shown so the buyer can see both standing offers, but
-                        // not theirs to use yet -- the server refuses it too.
-                        const isLocked = !!coupon.locked;
                         return (
                           <div
                             key={coupon.code}
                             className="flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors"
                             style={{
                               borderColor: isApplied ? 'var(--forest-light)' : 'rgba(26,58,42,0.12)',
-                              background: isApplied
-                                ? 'rgba(45,106,79,0.06)'
-                                : isLocked
-                                  ? 'rgba(26,58,42,0.02)'
-                                  : 'white',
-                              opacity: isLocked ? 0.55 : 1,
+                              background: isApplied ? 'rgba(45,106,79,0.06)' : 'white',
                             }}>
                             <div className="flex min-w-0 items-start gap-2.5">
-                              {isLocked ? (
-                                <FiLock
-                                  aria-hidden="true"
-                                  className="mt-0.5 h-[18px] w-[18px] flex-shrink-0"
-                                  style={{ color: 'var(--text-muted)' }} />
-                              ) : (
-                                <FiTag
-                                  aria-hidden="true"
-                                  className="mt-0.5 h-[18px] w-[18px] flex-shrink-0"
-                                  style={{ color: 'var(--forest)' }} />
-                              )}
+                              <FiTag
+                                aria-hidden="true"
+                                className="mt-0.5 h-[18px] w-[18px] flex-shrink-0"
+                                style={{ color: 'var(--forest)' }} />
                               <div className="min-w-0">
-                                <div
-                                  className="text-sm font-semibold"
-                                  style={{ color: isLocked ? 'var(--text-muted)' : 'var(--forest)' }}>
-                                  {isLocked ? (
-                                    <span>{coupon.code}</span>
-                                  ) : (
-                                    <CopyableCode code={coupon.code} />
-                                  )}{' '}
-                                  · {coupon.percent}% off
+                                <div className="text-sm font-semibold" style={{ color: 'var(--forest)' }}>
+                                  <CopyableCode code={coupon.code} /> · {coupon.percent}% off
                                 </div>
                                 <p className="mt-0.5 text-xs leading-snug" style={{ color: 'var(--text-muted)' }}>
-                                  {isLocked ? (coupon.lockedBlurb ?? coupon.blurb) : coupon.blurb}
+                                  {coupon.blurb}
                                 </p>
                               </div>
                             </div>
 
-                            {isLocked ? (
-                              <span
-                                className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
-                                style={{ background: 'rgba(26,58,42,0.06)', color: 'var(--text-muted)' }}>
-                                Locked
-                              </span>
-                            ) : isApplied ? (
+                            {isApplied ? (
                               <span
                                 className="flex flex-shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
                                 style={{ background: 'rgba(45,106,79,0.12)', color: 'var(--forest-light)' }}>

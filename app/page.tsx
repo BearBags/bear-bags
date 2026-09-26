@@ -7,6 +7,10 @@ import OurStory from "./components/OurStory";
 import ProductIntroduction from "./components/ProductIntroduction";
 import Newsletter from "./components/Newsletter";
 
+// Static page, rebuilt when the admin changes the price (revalidatePath in
+// app/api/admin/products) and every 5 minutes as a safety net.
+export const revalidate = 300;
+
 export default function Home() {
   return (
     <div>

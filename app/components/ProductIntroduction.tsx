@@ -11,7 +11,8 @@ import { LiaHandHoldingHeartSolid } from "react-icons/lia";
 import { LuShieldAlert, LuDroplet } from "react-icons/lu";
 
 import Link from 'next/link';
-import { getProductBySlug } from '@/lib/products';
+import { formatPerBag } from '@/lib/products';
+import { getLiveProductBySlug } from '@/lib/product-prices';
 
 import { LuShield } from "react-icons/lu";
 
@@ -26,8 +27,8 @@ function WaterShieldIcon({ size = 64 }: { size?: number }) {
 }
 
 
-const ProductIntroduction = () => {
-  const product = getProductBySlug('medium-size-bag');
+const ProductIntroduction = async () => {
+  const product = await getLiveProductBySlug('medium-size-bag');
   if (!product) return null;
   return (
     <section id='product' className="bg-[#fff9f3] px-3 sm:px-6 py-8 sm:py-10 md:py-16 flex justify-center pt-4 sm:pt-6 pb-2 sm:pb-4">
@@ -71,7 +72,7 @@ const ProductIntroduction = () => {
                 ₹{product.price}
               </h3>
               <p className="text-[0.9rem] sm:text-[1rem] text-[#5e5e5e]">
-                {product.perBag}
+                {formatPerBag(product.price, product.bagCount)}
               </p>
             </div>
 
