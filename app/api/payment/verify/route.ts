@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
     await saveOrder({
       formData,
       pricing,
-      paymentStatus: 'paid',
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
     });

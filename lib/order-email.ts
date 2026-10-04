@@ -13,14 +13,12 @@ const rupees = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
 interface OrderEmailDetails {
   formData: OrderFormData;
   pricing: OrderPricing;
-  paymentStatus: 'cod' | 'paid';
   razorpayPaymentId?: string;
 }
 
 export async function sendOrderNotification({
   formData,
   pricing,
-  paymentStatus,
   razorpayPaymentId,
 }: OrderEmailDetails): Promise<void> {
   const gmail = getGmail();
@@ -34,10 +32,7 @@ export async function sendOrderNotification({
     dateStyle: 'medium',
     timeStyle: 'short',
   });
-  const payment =
-    paymentStatus === 'paid'
-      ? `Paid online${razorpayPaymentId ? ` (Razorpay payment ${razorpayPaymentId})` : ''}`
-      : 'Cash on Delivery';
+  const payment = `Paid online${razorpayPaymentId ? ` (Razorpay payment ${razorpayPaymentId})` : ''}`;
 
   const items = pricing.pricedItems.map((item) => {
     const product = getProductById(item.product.id);
@@ -112,7 +107,7 @@ export async function sendOrderNotification({
     from: `Bear Bags Orders <${gmail.user}>`,
     to: gmail.user,
     replyTo: formData.email,
-    subject: `New order: ${formData.name} — ${rupees(pricing.total)} (${paymentStatus === 'paid' ? 'Paid' : 'COD'})`,
+    subject: `New order: ${formData.name} — ${rupees(pricing.total)}`,
     text,
     html,
   });

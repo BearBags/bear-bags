@@ -8,7 +8,6 @@ import type { OrderFormData, OrderPricing } from './order-pricing';
 interface SaveOrderOptions {
   formData: OrderFormData;
   pricing: OrderPricing;
-  paymentStatus: 'cod' | 'paid';
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
 }
@@ -16,7 +15,6 @@ interface SaveOrderOptions {
 export async function saveOrder({
   formData,
   pricing,
-  paymentStatus,
   razorpayOrderId,
   razorpayPaymentId,
 }: SaveOrderOptions): Promise<void> {
@@ -32,7 +30,7 @@ export async function saveOrder({
       city: formData.city,
       pincode: formData.pincode,
       paymentMethod: formData.paymentMethod,
-      paymentStatus,
+      paymentStatus: 'paid',
       razorpayOrderId,
       razorpayPaymentId,
       subtotal,
@@ -53,7 +51,7 @@ export async function saveOrder({
   // A failed email must never fail an order that is already saved and paid for.
   if (dataRouting.email.sendOrderNotifications) {
     try {
-      await sendOrderNotification({ formData, pricing, paymentStatus, razorpayPaymentId });
+      await sendOrderNotification({ formData, pricing, razorpayPaymentId });
     } catch (error) {
       console.error('[order-email] failed to send order notification:', error);
     }
@@ -70,7 +68,7 @@ export async function saveOrder({
 
     const description = [
       `Order Date: ${new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })}`,
-      `Payment: ${paymentStatus === 'paid' ? 'Online Payment (paid)' : 'Cash on Delivery'}`,
+      `Payment: Online Payment (paid)${razorpayPaymentId ? ` — ${razorpayPaymentId}` : ''}`,
       `Subtotal: ₹${subtotal}  Shipping: ₹${shipping}  Total: ₹${total}`,
       '',
       'Items:',

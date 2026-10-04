@@ -15,7 +15,12 @@
       "Bash(git mv *)",
       "Bash(awk '{print $2, $11, $12, $13, $14}')",
       "Bash(awk '{print $2, $11, $12, $13, $14, $15}')",
-      "Bash(curl -s -m 60 http://localhost:3000/admin/login -o /tmp/claude-1000/-home-vanshika-internships-freelance-bear-bags/35f824fb-37d8-48c1-89c0-f8bdf7e9e039/scratchpad/login.html -w \"login page: %{http_code}\\\\n\")"
+      "Bash(curl -s -m 60 http://localhost:3000/admin/login -o /tmp/claude-1000/-home-vanshika-internships-freelance-bear-bags/35f824fb-37d8-48c1-89c0-f8bdf7e9e039/scratchpad/login.html -w \"login page: %{http_code}\\\\n\")",
+      "Bash(sed -i '/<li><Bullet \\\\/><span>Cash on Delivery orders will be refunded by bank transfer or UPI using details you confirm to us.<\\\\/span><\\\\/li>/d' app/refunds/page.tsx)",
+      "Bash(sed -i '/^            \"Cash on Delivery orders are refunded by bank transfer or UPI to an account you confirm to us.\",$/d' docs/legal/content.json)",
+      "Bash(sed -n '/heading: .Refunds./,/^  },/p' app/refunds/page.tsx)",
+      "Bash(rm -f app/api/order/route.ts)",
+      "Bash(rmdir app/api/order)"
     ],
     "additionalDirectories": [
       "/home/vanshika/internships/freelance/bear-bags/app/api/checkout",

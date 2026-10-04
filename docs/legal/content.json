@@ -109,7 +109,7 @@
           "heading": "Prices and payment",
           "paragraphs": ["All prices are in Indian Rupees (₹) and include applicable taxes unless stated otherwise. Shipping is free on all orders placed through this site."],
           "bullets": [
-            "You can pay online through Razorpay (card, UPI, net banking, and wallets) or choose Cash on Delivery where it is offered.",
+            "You can pay online through Razorpay (card, UPI, net banking, and wallets).",
             "An online order is confirmed only once Razorpay confirms the payment to us. If a payment is debited but the order does not confirm, contact us and we will trace it or refund it.",
             "We may correct an obvious pricing error even after you order. If the corrected price is higher, we will ask you to confirm or we will cancel and refund the order in full."
           ]
@@ -188,7 +188,6 @@
           "bullets": [
             "Once we receive the returned item, or approve a claim from your photos, we process the refund within 3 working days.",
             "Online payments are refunded to the original payment method through Razorpay and typically reach you within 5–7 working days, depending on your bank.",
-            "Cash on Delivery orders are refunded by bank transfer or UPI to an account you confirm to us.",
             "Where an order used a discount code, we refund the amount you actually paid.",
             "If you would rather have a replacement than a refund, tell us and we will ship one instead."
           ]

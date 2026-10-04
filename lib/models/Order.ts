@@ -21,7 +21,8 @@ const orderSchema = new Schema(
     city: { type: String, required: true },
     pincode: { type: String, required: true },
     paymentMethod: { type: String, required: true },
-    paymentStatus: { type: String, enum: ['cod', 'paid'], default: 'cod' },
+    // Every order is paid online through Razorpay before it is saved.
+    paymentStatus: { type: String, enum: ['paid'], default: 'paid' },
     razorpayOrderId: { type: String },
     razorpayPaymentId: { type: String },
     subtotal: { type: Number, required: true },

@@ -73,7 +73,6 @@ const SECTIONS: LegalSection[] = [
       <ul>
         <li><Bullet /><span>Once we receive the returned item, or approve a claim based on the information provided, we will process the refund within 3 working days.</span></li>
         <li><Bullet /><span>Online payments will be refunded to the original payment method. Once processed, refunds typically take 5–7 working days to appear, depending on your bank or payment provider.</span></li>
-        <li><Bullet /><span>Cash on Delivery orders will be refunded by bank transfer or UPI using details you confirm to us.</span></li>
         <li><Bullet /><span>If you used a discount or promotional code, the refund will be based on the amount you actually paid.</span></li>
         <li><Bullet /><span>If you would prefer a replacement instead of a refund for a damaged, incorrect, or defective item, let us know and we will arrange one, subject to availability.</span></li>
       </ul>

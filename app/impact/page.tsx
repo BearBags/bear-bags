@@ -119,16 +119,16 @@ export default function ImpactPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-14">
             {[
-              { src: '/images/1_prototype.jpg', caption: '1. Prototype', rotate: '-rotate-2' },
-              { src: '/images/2_barcode.jpg', caption: '2. Barcode', rotate: 'rotate-2' },
-              { src: '/images/3_final_sku.jpg', caption: '3. Final SKU', rotate: '-rotate-1' },
-              { src: '/images/4_amazon.png', caption: '4. Amazon Listing', rotate: 'rotate-2' },
-              { src: '/images/6_promotion.jpg', caption: '5. Promoting in Park', rotate: 'rotate-1' },
-              { src: '/images/6_dispatch.jpg', caption: '6. Dispatch', rotate: '-rotate-2' },
-              { src: '/images/7_retail.jpg', caption: '7. In-Store Launch', rotate: 'rotate-1' },
-              { src: '/images/8_retail.jpg', caption: '8. On the Shelf', rotate: '-rotate-1' },
-              { src: '/images/9_impact.jpg', caption: '9. Impact', rotate: 'rotate-2' },
-              { src: '/images/10_blinkit.png', caption: '10. Blinkit Listing', rotate: '-rotate-2' },
+              { src: '/images/impact/prototype-combined.jpg', caption: '1. First Prototype', rotate: '-rotate-2' },
+              { src: '/images/impact/impact2.jpg', caption: '2. First Production', rotate: 'rotate-2' },
+              { src: '/images/impact/impact3.jpg', caption: '3. First Dispatch', rotate: '-rotate-1' },
+              { src: '/images/impact/impact4.jpg', caption: '4. Launched on Amazon', rotate: 'rotate-2' },
+              { src: '/images/impact/impact5.png', caption: '5. Taking Bear Bags Offline', rotate: 'rotate-1' },
+              { src: '/images/impact/impact6.png', caption: '6. First Retail Store', rotate: '-rotate-2' },
+              { src: '/images/impact/impact7.jpg', caption: '7. On the Shelves', rotate: 'rotate-1' },
+              { src: '/images/impact/impact8.jpg', caption: '8. On the Shelf', rotate: '-rotate-1' },
+              { src: '/images/impact/impact9.jpg', caption: '9. Giving Back', rotate: 'rotate-2' },
+              { src: '/images/impact/impact10.png', caption: '10. Launched on Blinkit', rotate: '-rotate-2' },
             ].map((item) => (
               <div key={item.caption} className={`relative ${item.rotate} transition-transform duration-300 hover:rotate-0 hover:scale-[1.03]`}>
                 <div className="bg-white p-2.5 pb-8 shadow-lg rounded-sm">

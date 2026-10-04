@@ -70,8 +70,7 @@ const SECTIONS: LegalSection[] = [
           otherwise. Shipping is free on orders placed through this website.
         </p>
         <p>
-          You can pay online through the payment methods made available at checkout, or choose Cash on Delivery where it
-          is offered.
+          You can pay online through the payment methods made available at checkout.
         </p>
         <p>
           Online payments are currently processed through Razorpay. An online order is confirmed once we receive

@@ -43,7 +43,6 @@ function makeOrder(i) {
   const unitPrice = Math.round(UNIT_PRICE * (1 - discountPercent / 100));
   const subtotal = UNIT_PRICE * quantity;
   const total = unitPrice * quantity;
-  const paid = i % 4 !== 3;
   return {
     dummy: true,
     customerName: `${first} ${last}`,
@@ -52,9 +51,10 @@ function makeOrder(i) {
     address: `${(i * 13) % 200 + 1}, ${pick(STREETS, i)}`,
     city,
     pincode,
-    paymentMethod: paid ? 'online' : 'cod',
-    paymentStatus: paid ? 'paid' : 'cod',
-    ...(paid && { razorpayOrderId: `order_DUMMY${1000 + i}`, razorpayPaymentId: `pay_DUMMY${1000 + i}` }),
+    paymentMethod: 'online',
+    paymentStatus: 'paid',
+    razorpayOrderId: `order_DUMMY${1000 + i}`,
+    razorpayPaymentId: `pay_DUMMY${1000 + i}`,
     subtotal,
     shipping: 0,
     total,
