@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import type { Swiper as SwiperInstance } from "swiper";
+import { Pagination } from "swiper/modules";
 import "swiper/css";
-import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 const letters = [
@@ -28,12 +28,17 @@ const letters = [
     pdf: '/images/acknowledgment/Samarthanam Acknowledgment Letter Screenshot.png',
     website: 'https://samarthanam.org/',
     description: 'A prominent NGO dedicated to empowering individuals with visual impairments and other disabilities through education, livelihood, and sports.',
-    images: [
-      '/images/gnanaJyothiNGO/gnana_jyothi_1.jpg',
-      '/images/gnanaJyothiNGO/gnana_jyothi_2.jpg',
-      '/images/gnanaJyothiNGO/gnana_jyothi_3.jpg',
-      '/images/gnanaJyothiNGO/gnana_jyothi_4.jpg',
-    ],
+    beneficiary: {
+      summary: 'Through Samarthanam Trust, Bear Bags funded a student with a hearing impairment from Karnataka.',
+      points: [
+        { label: 'Student', value: 'Nikil Gupanni' },
+        { label: 'Age', value: '19' },
+        { label: 'Disability', value: 'Hearing impaired' },
+        { label: 'District', value: 'Dharwad' },
+        { label: 'State', value: 'Karnataka' },
+      ],
+    },
+    images: [] as string[],
   },
 ];
 
@@ -57,6 +62,7 @@ function DownloadIcon() {
 
 export default function ImpactPage() {
   const [selected, setSelected] = useState<{ letter: (typeof letters)[0]; mode: 'letter' | 'gallery' } | null>(null);
+  const [gallerySwiper, setGallerySwiper] = useState<SwiperInstance | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelected(null); };
@@ -74,9 +80,15 @@ export default function ImpactPage() {
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden min-h-[85vh] flex items-center px-6 md:px-16 py-24">
-        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover">
-          <source src="/videos/impact_bg_video.mp4" type="video/mp4" />
-        </video>
+        <Image
+          src="/images/impact/impact_bg.png"
+          alt=""
+          fill
+          sizes="100vw"
+          loading="eager"
+          fetchPriority="high"
+          className="object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-br from-[#0d2619]/85 via-[#1a3d2b]/70 to-[#0b1f11]/80" />
 
         <div className="relative z-10 max-w-7xl mx-auto w-full">
@@ -105,6 +117,121 @@ export default function ImpactPage() {
         </div>
       </section>
 
+         {/* ── NGO Acknowledgements ── */}
+      <section className="py-20 sm:py-28 px-6 md:px-16 bg-[#f5f2eb]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <p className="uppercase tracking-[0.18em] text-xs font-semibold text-[#2d6347] mb-3">Recognition</p>
+            <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#1a3d2b] mb-3">
+              NGO Acknowledgements
+            </h2>
+            <p className="text-[#1a3d2b]/50 max-w-sm mx-auto text-sm sm:text-base">
+              Letters received from our partner organizations
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-6">
+            {letters.map((letter) => (
+              <div
+                key={letter.name}
+                className="bg-white rounded-3xl border border-[#1a3d2b]/8 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col sm:flex-row"
+              >
+                {/* Letter image — left panel */}
+                <button
+                  onClick={() => setSelected({ letter, mode: 'letter' })}
+                  className="relative sm:w-[42%] shrink-0 h-[240px] sm:h-auto sm:min-h-[480px] bg-[#edf4e8] group overflow-hidden text-left"
+                  aria-label={`View ${letter.name} letter`}
+                >
+                  <Image
+                    src={letter.image}
+                    alt={`${letter.name} acknowledgement letter`}
+                    fill
+                    className="object-contain p-5 sm:p-6 transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute inset-0 bg-[#1a3d2b]/0 group-hover:bg-[#1a3d2b]/20 transition-all duration-300" />
+                </button>
+
+                {/* Right content panel */}
+                <div className="flex-1 p-6 sm:p-8 flex flex-col justify-between gap-6">
+                  <div>
+                    {/* Name + website */}
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <h3 className="text-lg sm:text-xl font-bold text-[#1a3d2b] leading-snug">{letter.name}</h3>
+                      <a
+                        href={letter.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-[#2d6347] hover:text-[#1a3d2b] transition-colors border border-[#2d6347]/30 rounded-full px-3 py-1.5 hover:border-[#1a3d2b]/50"
+                      >
+                        Website
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M7 17L17 7" /><path d="M7 7h10v10" />
+                        </svg>
+                      </a>
+                    </div>
+                    <p className="text-sm sm:text-[15px] leading-relaxed text-[#1a3d2b]/55">{letter.description}</p>
+                  </div>
+
+                  {/* Student funding details */}
+                  {letter.beneficiary && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wider text-[#2d6347] font-semibold mb-2.5">Student Funded by Bear Bags</p>
+                      <p className="text-sm sm:text-[15px] leading-relaxed text-[#1a3d2b]/70 mb-3">{letter.beneficiary.summary}</p>
+                      <ul className="flex flex-col gap-2">
+                        {letter.beneficiary.points.map((point) => (
+                          <li key={point.label} className="flex items-baseline gap-2.5 text-sm text-[#1a3d2b]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#2d6347] shrink-0 translate-y-[-2px]" />
+                            <span className="text-[#1a3d2b]/55">{point.label}:</span>
+                            <span className="font-semibold">{point.value}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Photo thumbnails */}
+                  {letter.images.length > 0 && (
+                  <div className="flex-1 flex flex-col">
+                    <p className="text-[11px] uppercase tracking-wider text-[#2d6347] font-semibold mb-2.5">Gallery</p>
+                    <div className="flex-1 grid grid-cols-4 gap-2 sm:gap-3">
+                      {letter.images.map((img, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setSelected({ letter, mode: 'gallery' })}
+                          className="relative aspect-square sm:aspect-auto sm:min-h-[120px] rounded-xl overflow-hidden ring-1 ring-[#1a3d2b]/10 hover:ring-[#1a3d2b]/40 transition-all hover:scale-[1.03]"
+                          aria-label="View gallery"
+                        >
+                          <Image src={img} alt="" fill sizes="(min-width: 640px) 160px, 25vw" className="object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex gap-3 flex-wrap">
+                    <button
+                      onClick={() => setSelected({ letter, mode: 'letter' })}
+                      className="px-5 py-2.5 rounded-full border-2 border-[#1a3d2b] text-sm font-semibold text-[#1a3d2b] hover:bg-[#1a3d2b] hover:text-white transition-all duration-200"
+                    >
+                      View Letter
+                    </button>
+                    <a
+                      href={letter.pdf}
+                      download
+                      className="px-5 py-2.5 rounded-full bg-[#1a3d2b] text-white text-sm font-semibold hover:bg-[#245038] transition-all duration-200 flex items-center gap-2"
+                    >
+                      <DownloadIcon />
+                      Download PDF
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Journey Collage ── */}
       <section className="bg-[#f5f2eb] py-20 sm:py-28 px-6 md:px-16 overflow-hidden">
         <div className="max-w-7xl mx-auto">
@@ -119,16 +246,15 @@ export default function ImpactPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-14">
             {[
-              { src: '/images/impact/prototype-combined.jpg', caption: '1. First Prototype', rotate: '-rotate-2' },
-              { src: '/images/impact/impact2.jpg', caption: '2. First Production', rotate: 'rotate-2' },
-              { src: '/images/impact/impact3.jpg', caption: '3. First Dispatch', rotate: '-rotate-1' },
-              { src: '/images/impact/impact4.jpg', caption: '4. Launched on Amazon', rotate: 'rotate-2' },
-              { src: '/images/impact/impact5.png', caption: '5. Taking Bear Bags Offline', rotate: 'rotate-1' },
-              { src: '/images/impact/impact6.png', caption: '6. First Retail Store', rotate: '-rotate-2' },
-              { src: '/images/impact/impact7.jpg', caption: '7. On the Shelves', rotate: 'rotate-1' },
-              { src: '/images/impact/impact8.jpg', caption: '8. On the Shelf', rotate: '-rotate-1' },
-              { src: '/images/impact/impact9.jpg', caption: '9. Giving Back', rotate: 'rotate-2' },
-              { src: '/images/impact/impact10.png', caption: '10. Launched on Blinkit', rotate: '-rotate-2' },
+              { src: '/images/1_prototype.jpg', caption: '1. First Prototype', rotate: '-rotate-2' },
+              { src: '/images/impact/impact3.jpg', caption: '2. First Production ', rotate: '-rotate-1' },
+              { src: '/images/impact/impact4.jpg', caption: '3. First Dispatch ', rotate: 'rotate-2' },
+              { src: '/images/impact/impact5.png', caption: '4. Launched on Amazon ', rotate: 'rotate-1' },
+              { src: '/images/impact/impact6.png', caption: '5. Taking Bear Bags Offline ', rotate: '-rotate-2' },
+              { src: '/images/impact/impact7.jpg', caption: '6. First Retail Store ', rotate: 'rotate-1' },
+              { src: '/images/impact/impact8.jpg', caption: '7. On the Shelves', rotate: '-rotate-1' },
+              { src: '/images/impact/impact9.jpg', caption: '8. Giving Back', rotate: 'rotate-2' },
+              { src: '/images/impact/impact10.png', caption: '9. Launched on Blinkit', rotate: '-rotate-2' },
             ].map((item) => (
               <div key={item.caption} className={`relative ${item.rotate} transition-transform duration-300 hover:rotate-0 hover:scale-[1.03]`}>
                 <div className="bg-white p-2.5 pb-8 shadow-lg rounded-sm">
@@ -168,101 +294,7 @@ export default function ImpactPage() {
         </div>
       </section> */}
 
-      {/* ── NGO Acknowledgements ── */}
-      <section className="py-20 sm:py-28 px-6 md:px-16 bg-[#f5f2eb]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
-            <p className="uppercase tracking-[0.18em] text-xs font-semibold text-[#2d6347] mb-3">Recognition</p>
-            <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#1a3d2b] mb-3">
-              NGO Acknowledgements
-            </h2>
-            <p className="text-[#1a3d2b]/50 max-w-sm mx-auto text-sm sm:text-base">
-              Letters received from our partner organizations
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-6">
-            {letters.map((letter) => (
-              <div
-                key={letter.name}
-                className="bg-white rounded-3xl border border-[#1a3d2b]/8 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col sm:flex-row"
-              >
-                {/* Letter image — left panel */}
-                <button
-                  onClick={() => setSelected({ letter, mode: 'letter' })}
-                  className="relative sm:w-[42%] shrink-0 h-[240px] sm:h-auto bg-[#edf4e8] group overflow-hidden text-left"
-                  aria-label={`View ${letter.name} letter`}
-                >
-                  <Image
-                    src={letter.image}
-                    alt={`${letter.name} acknowledgement letter`}
-                    fill
-                    className="object-contain p-5 sm:p-6 transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                  <div className="absolute inset-0 bg-[#1a3d2b]/0 group-hover:bg-[#1a3d2b]/20 transition-all duration-300" />
-                </button>
-
-                {/* Right content panel */}
-                <div className="flex-1 p-6 sm:p-8 flex flex-col justify-between gap-6">
-                  <div>
-                    {/* Name + website */}
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <h3 className="text-lg sm:text-xl font-bold text-[#1a3d2b] leading-snug">{letter.name}</h3>
-                      <a
-                        href={letter.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-[#2d6347] hover:text-[#1a3d2b] transition-colors border border-[#2d6347]/30 rounded-full px-3 py-1.5 hover:border-[#1a3d2b]/50"
-                      >
-                        Website
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M7 17L17 7" /><path d="M7 7h10v10" />
-                        </svg>
-                      </a>
-                    </div>
-                    <p className="text-sm sm:text-[15px] leading-relaxed text-[#1a3d2b]/55">{letter.description}</p>
-                  </div>
-
-                  {/* Photo thumbnails */}
-                  <div>
-                    <p className="text-[11px] uppercase tracking-wider text-[#2d6347] font-semibold mb-2.5">Gallery</p>
-                    <div className="flex gap-2">
-                      {letter.images.map((img, i) => (
-                        <button
-                          key={i}
-                          onClick={() => setSelected({ letter, mode: 'gallery' })}
-                          className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 ring-1 ring-[#1a3d2b]/10 hover:ring-[#1a3d2b]/40 transition-all hover:scale-105"
-                          aria-label="View gallery"
-                        >
-                          <Image src={img} alt="" fill className="object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-3 flex-wrap">
-                    <button
-                      onClick={() => setSelected({ letter, mode: 'letter' })}
-                      className="px-5 py-2.5 rounded-full border-2 border-[#1a3d2b] text-sm font-semibold text-[#1a3d2b] hover:bg-[#1a3d2b] hover:text-white transition-all duration-200"
-                    >
-                      View Letter
-                    </button>
-                    <a
-                      href={letter.pdf}
-                      download
-                      className="px-5 py-2.5 rounded-full bg-[#1a3d2b] text-white text-sm font-semibold hover:bg-[#245038] transition-all duration-200 flex items-center gap-2"
-                    >
-                      <DownloadIcon />
-                      Download PDF
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+   
 
       {/* ── NGO Partners ── */}
       {/* <section className="bg-[#f5f2eb] py-20 sm:py-28 px-6 md:px-16">
@@ -345,22 +377,30 @@ export default function ImpactPage() {
                       <DownloadIcon />
                       Download
                     </a>
-                    <button
-                      onClick={() => setSelected({ letter: selected.letter, mode: 'gallery' })}
-                      className="px-4 sm:px-5 py-2.5 rounded-full bg-white border border-[#1a3d2b]/15 text-[#1a3d2b] text-sm font-semibold hover:bg-[#e8f0e3] transition shadow-lg"
-                    >
-                      View Gallery
-                    </button>
+                    {selected.letter.images.length > 0 && (
+                      <button
+                        onClick={() => setSelected({ letter: selected.letter, mode: 'gallery' })}
+                        className="px-4 sm:px-5 py-2.5 rounded-full bg-white border border-[#1a3d2b]/15 text-[#1a3d2b] text-sm font-semibold hover:bg-[#e8f0e3] transition shadow-lg"
+                      >
+                        View Gallery
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (
-                <div className="h-[55vh] sm:h-[62vh]">
+                <div className="relative h-[55vh] sm:h-[62vh]">
                   <Swiper
-                    modules={[Navigation, Pagination]}
-                    navigation
+                    modules={[Pagination]}
                     pagination={{ clickable: true }}
                     loop
+                    onSwiper={setGallerySwiper}
                     className="h-full"
+                    style={{
+                      '--swiper-pagination-color': '#fff',
+                      '--swiper-pagination-bullet-inactive-color': '#fff',
+                      '--swiper-pagination-bullet-inactive-opacity': '0.5',
+                      '--swiper-pagination-bottom': '16px',
+                    } as React.CSSProperties}
                   >
                     {selected.letter.images.map((img, i) => (
                       <SwiperSlide key={i}>
@@ -375,6 +415,24 @@ export default function ImpactPage() {
                       </SwiperSlide>
                     ))}
                   </Swiper>
+                  <button
+                    onClick={() => gallerySwiper?.slidePrev()}
+                    aria-label="Previous image"
+                    className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/90 text-[#1a3d2b] shadow-lg flex items-center justify-center hover:bg-white hover:scale-105 transition"
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => gallerySwiper?.slideNext()}
+                    aria-label="Next image"
+                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/90 text-[#1a3d2b] shadow-lg flex items-center justify-center hover:bg-white hover:scale-105 transition"
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
                 </div>
               )}
             </div>

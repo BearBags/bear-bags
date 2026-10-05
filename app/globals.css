@@ -904,24 +904,6 @@ width: 513px;
     padding-top: 16px;
   }
 
-  /* impact page  */
-.swiper-button-next,
-.swiper-button-prev {
-  width: 52px !important;
-  height: 52px !important;
-  border-radius: 9999px;
-  background: rgba(255,255,255,0.9);
-  backdrop-filter: blur(8px);
-}
-
-.swiper-button-next:after,
-.swiper-button-prev:after {
-  font-size: 18px !important;
-  font-weight: 700;
-  color: #1a3d2b;
-}
-
-
   /* ─── FOOTER ─── */
   footer {
     background: #102219;
