@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
-import { computeOrderPricing, type CartItem, type OrderFormData } from '@/lib/order-pricing';
+import {
+  computeOrderPricing,
+  InvalidCartError,
+  pricingToOrderNotes,
+  type CartItem,
+  type OrderFormData,
+} from '@/lib/order-pricing';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
 
 // Creating a Razorpay order is the one unauthenticated endpoint that calls a
@@ -49,6 +55,7 @@ export async function POST(request: NextRequest) {
       amount: pricing.total * 100, // paise
       currency: 'INR',
       receipt: `bearbags_${Date.now()}`,
+      notes: pricingToOrderNotes(pricing, formData.email),
     });
 
     return NextResponse.json({
@@ -62,6 +69,9 @@ export async function POST(request: NextRequest) {
       discountPercent: pricing.discountPercent,
     });
   } catch (error) {
+    if (error instanceof InvalidCartError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     console.error('[payment/create-order] failed:', error);
     return NextResponse.json({ error: 'Failed to start payment. Please try again.' }, { status: 500 });
   }

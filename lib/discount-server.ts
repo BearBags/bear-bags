@@ -7,6 +7,8 @@ import { FIRST_TIME_DISCOUNT_PERCENT, RETURNING_DISCOUNT_PERCENT } from './disco
 // correcting whatever the client's localStorage-based guess was.
 export async function getDiscountPercentForEmail(email: string): Promise<number> {
   await connectToDatabase();
-  const pastOrders = await Order.countDocuments({ email: email.toLowerCase().trim() });
+  // Case-insensitive, so orders saved before emails were lowercased still count.
+  const pastOrders = await Order.countDocuments({ email: email.toLowerCase().trim() })
+    .collation({ locale: 'en', strength: 2 });
   return pastOrders === 0 ? FIRST_TIME_DISCOUNT_PERCENT : RETURNING_DISCOUNT_PERCENT;
 }

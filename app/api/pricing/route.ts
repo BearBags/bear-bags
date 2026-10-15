@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { computeOrderPricing, type CartItem } from '@/lib/order-pricing';
+import { computeOrderPricing, InvalidCartError, type CartItem } from '@/lib/order-pricing';
 import { getEligibleCoupons } from '@/lib/discount';
 import { getCampaignCoupons } from '@/lib/coupon-server';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
@@ -50,6 +50,9 @@ export async function POST(request: NextRequest) {
       eligibleCoupons: getEligibleCoupons(pricing.eligibleTierPercent, campaigns),
     });
   } catch (error) {
+    if (error instanceof InvalidCartError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     console.error('[pricing] failed:', error);
     return NextResponse.json({ error: 'Could not calculate pricing' }, { status: 500 });
   }

@@ -24,7 +24,8 @@ const orderSchema = new Schema(
     // Every order is paid online through Razorpay before it is saved.
     paymentStatus: { type: String, enum: ['paid'], default: 'paid' },
     razorpayOrderId: { type: String },
-    razorpayPaymentId: { type: String },
+    // Unique so one payment can never be recorded as two orders.
+    razorpayPaymentId: { type: String, unique: true, sparse: true },
     subtotal: { type: Number, required: true },
     shipping: { type: Number, required: true },
     total: { type: Number, required: true },

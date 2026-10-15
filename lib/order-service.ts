@@ -22,30 +22,39 @@ export async function saveOrder({
 
   if (dataRouting.database.storeOrders) {
     await connectToDatabase();
-    await Order.create({
-      customerName: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      address: formData.address,
-      city: formData.city,
-      pincode: formData.pincode,
-      paymentMethod: formData.paymentMethod,
-      paymentStatus: 'paid',
-      razorpayOrderId,
-      razorpayPaymentId,
-      subtotal,
-      shipping,
-      total,
-      discountPercent,
-      discountAmount,
-      couponCode: appliedCoupon,
-      items: pricedItems.map((item) => ({
-        productId: item.product.id,
-        productName: item.product.name,
-        price: item.unitPrice,
-        quantity: item.quantity,
-      })),
-    });
+    // A retried or replayed verify call for a payment already recorded is a
+    // no-op: no second order, email or CRM lead.
+    if (razorpayPaymentId && (await Order.exists({ razorpayPaymentId }))) return;
+    try {
+      await Order.create({
+        customerName: formData.name,
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        pincode: formData.pincode,
+        paymentMethod: formData.paymentMethod,
+        paymentStatus: 'paid',
+        razorpayOrderId,
+        razorpayPaymentId,
+        subtotal,
+        shipping,
+        total,
+        discountPercent,
+        discountAmount,
+        couponCode: appliedCoupon,
+        items: pricedItems.map((item) => ({
+          productId: item.product.id,
+          productName: item.product.name,
+          price: item.unitPrice,
+          quantity: item.quantity,
+        })),
+      });
+    } catch (error) {
+      // Two concurrent calls for the same payment: the unique index let one through.
+      if ((error as { code?: number })?.code === 11000) return;
+      throw error;
+    }
   }
 
   // A failed email must never fail an order that is already saved and paid for.

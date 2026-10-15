@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDiscountPercentForEmail } from '@/lib/discount-server';
-import { computeOrderPricing, type CartItem } from '@/lib/order-pricing';
+import { computeOrderPricing, InvalidCartError, type CartItem } from '@/lib/order-pricing';
 import {
   couponExists,
   findEligibleCoupon,
@@ -93,6 +93,9 @@ export async function POST(request: NextRequest) {
       { status: 200 },
     );
   } catch (error) {
+    if (error instanceof InvalidCartError) {
+      return NextResponse.json({ valid: false, error: error.message }, { status: 400 });
+    }
     console.error('[coupon] failed:', error);
     return NextResponse.json({ valid: false, error: 'Could not check that coupon.' }, { status: 500 });
   }

@@ -363,7 +363,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
             const verifyRes = await fetch('/api/payment/verify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ formData, cartItems, couponCode: appliedCoupon, ...response }),
+              body: JSON.stringify({ formData, ...response }),
             });
             const verifyData = await verifyRes.json();
             setIsProcessingPayment(false);
