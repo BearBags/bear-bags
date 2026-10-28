@@ -4,9 +4,11 @@ import { NewsletterSubscriber } from '@/lib/models/NewsletterSubscriber';
 import { CouponModel } from '@/lib/models/Coupon';
 import { isCampaignActive } from '@/lib/discount';
 import CouponsManager, { type AdminCoupon, type CouponStatus } from './CouponsManager';
+import ContributionsManager from './ContributionsManager';
 import ProductPriceCard from './ProductPriceCard';
 import Pagination from './Pagination';
 import { getLiveProductBySlug } from '@/lib/product-prices';
+import { getContributions } from '@/lib/contributions';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 
@@ -36,11 +38,12 @@ async function getData(ordersPageParam: number, subscribersPageParam: number) {
   const subscribersPage = Math.min(subscribersPageParam, subscribersTotalPages);
 
   // Items are embedded in the order document, so no join/include is needed.
-  const [orders, subscribers, couponDocs, product] = await Promise.all([
+  const [orders, subscribers, couponDocs, product, contributions] = await Promise.all([
     Order.find().sort({ createdAt: -1 }).skip((ordersPage - 1) * PAGE_SIZE).limit(PAGE_SIZE).lean(),
     NewsletterSubscriber.find().sort({ createdAt: -1 }).skip((subscribersPage - 1) * PAGE_SIZE).limit(PAGE_SIZE).lean(),
     CouponModel.find().sort({ createdAt: -1 }).lean(),
     getLiveProductBySlug('medium-size-bag'),
+    getContributions(),
   ]);
 
   const today = new Date().toISOString().slice(0, 10);
@@ -63,7 +66,7 @@ async function getData(ordersPageParam: number, subscribersPageParam: number) {
   return {
     orders, orderCount, ordersPage, ordersTotalPages,
     subscribers, subscriberCount, subscribersPage, subscribersTotalPages,
-    coupons, product,
+    coupons, product, contributions,
   };
 }
 
@@ -76,7 +79,7 @@ export default async function AdminPage({
   const {
     orders, orderCount, ordersPage, ordersTotalPages,
     subscribers, subscriberCount, subscribersPage, subscribersTotalPages,
-    coupons, product,
+    coupons, product, contributions,
   } = await getData(pageFrom(query.ordersPage), pageFrom(query.subscribersPage));
 
   return (
@@ -194,6 +197,8 @@ export default async function AdminPage({
         )}
 
         <CouponsManager coupons={coupons} />
+
+        <ContributionsManager contributions={contributions} />
 
       </div>
     </main>

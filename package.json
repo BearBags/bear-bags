@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dummy:add:contributions": "node scripts/dummy-data.mjs add contributions",
+    "dummy:remove:contributions": "node scripts/dummy-data.mjs remove contributions",
+    "dummy:orders:add": "node scripts/dummy-data.mjs add orders",
+    "dummy:orders:remove": "node scripts/dummy-data.mjs remove orders"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -9,8 +9,9 @@ import { SlCalender } from "react-icons/sl";
 import { BiLandscape } from "react-icons/bi";
 import { HiOutlineBuildingLibrary } from "react-icons/hi2";
 import Link from "next/link";
+import { formatRupees } from "@/lib/contribution-format";
 
-const Impact = () => {
+const Impact = ({ contributedTotal }: { contributedTotal: number }) => {
   return (
     <section id="impact" className="w-full bg-gradient-to-b from-[#06261F] via-[#08332A] to-[#06261F] py-12 md:py-20 px-4 sm:px-6 text-white bg-[#173d36]">
       <div className="max-w-6xl mx-auto text-center">
@@ -48,7 +49,7 @@ const Impact = () => {
                 <LiaHandHoldingHeartSolid className="w-7 h-7 sm:w-10 sm:h-10" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-3xl sm:text-5xl font-semibold mb-1 sm:mb-2 font-serif">₹35,000</h3>
+                <h3 className="text-3xl sm:text-5xl font-semibold mb-1 sm:mb-2 font-serif">{formatRupees(contributedTotal)}</h3>
                 <p className="text-xs sm:text-sm text-gray-300">contributed so far</p>
               </div>
             </div>

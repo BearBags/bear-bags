@@ -6,12 +6,17 @@ import FAQ from "./components/FAQ";
 import OurStory from "./components/OurStory";
 import ProductIntroduction from "./components/ProductIntroduction";
 import Newsletter from "./components/Newsletter";
+import { getContributions } from "@/lib/contributions";
 
-// Static page, rebuilt when the admin changes the price (revalidatePath in
-// app/api/admin/products) and every 5 minutes as a safety net.
+// Static page, rebuilt when the admin changes the price or a contribution
+// (revalidatePath in app/api/admin/products and app/api/admin/contributions)
+// and every 5 minutes as a safety net.
 export const revalidate = 300;
 
-export default function Home() {
+export default async function Home() {
+  const contributions = await getContributions();
+  const contributedTotal = contributions.reduce((sum, c) => sum + c.amount, 0);
+
   return (
     <div>
       {/* 1. Hero Section */}
@@ -24,7 +29,7 @@ export default function Home() {
       <ProductIntroduction />
 
       {/* 4. Impact */}
-      <Impact />
+      <Impact contributedTotal={contributedTotal} />
 
       {/* 5. Our Story  */}
       {/* <OurStory /> */}
