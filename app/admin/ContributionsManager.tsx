@@ -3,8 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatMonth, formatRupees, type Contribution } from '@/lib/contribution-format';
+import ReceiptLightbox from '@/app/components/ReceiptLightbox';
 
 const EMPTY_FORM = { month: '', ngo: '', amount: '', funded: '', receiptUrl: '' };
+
+const PAGE_SIZE = 5;
 
 const inputClass =
   'w-full rounded-xl border border-[#d1ddcf] bg-[#f8fcf6] px-4 py-2.5 text-sm text-[#1f3a2d] outline-none focus:border-[#23473f]';
@@ -220,10 +223,23 @@ function EditModal({ contribution, onClose, onSaved }: { contribution: Contribut
 export default function ContributionsManager({ contributions }: { contributions: Contribution[] }) {
   const router = useRouter();
   const [editing, setEditing] = useState<Contribution | null>(null);
+  const [viewing, setViewing] = useState<Contribution | null>(null);
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [pageState, setPage] = useState(1);
 
   const total = contributions.reduce((sum, c) => sum + c.amount, 0);
+
+  // Paged in the browser: every row is already loaded for the total. Clamped so
+  // deleting the last row of the last page falls back to the previous page.
+  const totalPages = Math.max(1, Math.ceil(contributions.length / PAGE_SIZE));
+  const page = Math.min(pageState, totalPages);
+  const rows = contributions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1).filter(
+    (n) => n === 1 || n === totalPages || Math.abs(n - page) <= 2,
+  );
+  const pageButton = 'min-w-9 rounded-full border px-3 py-1.5 text-center text-xs font-medium transition';
+  const navButton = `${pageButton} inline-flex h-[30px] items-center justify-center border-[#d1ddcf] text-[#134632] hover:bg-[#f0f0e8] disabled:border-[#eee] disabled:text-[#bbb] disabled:hover:bg-transparent`;
 
   const remove = async (c: Contribution) => {
     if (!window.confirm(`Delete the ${formatRupees(c.amount)} contribution to ${c.ngo}? It will disappear from the impact page.`)) return;
@@ -269,7 +285,7 @@ export default function ContributionsManager({ contributions }: { contributions:
                 <td colSpan={6} className="px-5 py-8 text-center text-[#888]">No contributions yet</td>
               </tr>
             )}
-            {contributions.map((c) => (
+            {rows.map((c) => (
               <tr key={c.id} className="border-b border-[#f0f0e8] last:border-0 hover:bg-[#f8fcf6]">
                 <td className="whitespace-nowrap px-5 py-3 text-[#555]">{formatMonth(c.month)}</td>
                 <td className="px-5 py-3 font-medium text-[#1f3a2d]">{c.ngo}</td>
@@ -277,9 +293,9 @@ export default function ContributionsManager({ contributions }: { contributions:
                 <td className="px-5 py-3 text-[#555]">{c.funded}</td>
                 <td className="px-5 py-3">
                   {c.receiptUrl ? (
-                    <a href={c.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-[#134632] underline underline-offset-2">
+                    <button type="button" onClick={() => setViewing(c)} className="text-[#134632] underline underline-offset-2">
                       View
-                    </a>
+                    </button>
                   ) : (
                     <span className="text-[#bbb]">—</span>
                   )}
@@ -314,7 +330,43 @@ export default function ContributionsManager({ contributions }: { contributions:
             </tfoot>
           )}
         </table>
+
+        {totalPages > 1 && (
+          <div className="flex flex-col items-center justify-between gap-3 border-t border-[#dbe7d2] px-5 py-3 sm:flex-row">
+            <span className="text-xs text-[#888]">
+              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, contributions.length)} of {contributions.length}
+            </span>
+            {/* Not a <nav>: globals.css styles every <nav> as the sticky site header. */}
+            <div role="navigation" aria-label="Contributions pages" className="flex flex-wrap items-center gap-1.5">
+              <button type="button" onClick={() => setPage(page - 1)} disabled={page === 1} aria-label="Previous page" className={navButton}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              {pageNumbers.map((n, i) => (
+                <span key={n} className="flex items-center gap-1.5">
+                  {i > 0 && n - pageNumbers[i - 1] > 1 && <span className="text-xs text-[#bbb]">…</span>}
+                  <button
+                    type="button"
+                    onClick={() => setPage(n)}
+                    aria-current={n === page ? 'page' : undefined}
+                    className={`${pageButton} ${n === page ? 'border-[#134632] bg-[#134632] text-white' : 'border-[#d1ddcf] text-[#134632] hover:bg-[#f0f0e8]'}`}
+                  >
+                    {n}
+                  </button>
+                </span>
+              ))}
+              <button type="button" onClick={() => setPage(page + 1)} disabled={page === totalPages} aria-label="Next page" className={navButton}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {viewing && <ReceiptLightbox contribution={viewing} onClose={() => setViewing(null)} />}
 
       {editing && (
         <EditModal
