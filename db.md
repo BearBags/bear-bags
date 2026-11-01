@@ -65,7 +65,7 @@ There is no migration or `generate` step — Mongo creates collections on first 
 | [`lib/models/NewsletterSubscriber.ts`](lib/models/NewsletterSubscriber.ts) | `NewsletterSubscriber` model |
 | [`lib/models/Admin.ts`](lib/models/Admin.ts) | `Admin` model — email + password hash |
 | [`lib/session.ts`](lib/session.ts) | Signs/verifies the admin session cookie (JWT via `jose`) |
-| [`config/data-routing.ts`](config/data-routing.ts) | Flags for what is stored / sent to Zoho |
+| [`config/data-routing.ts`](config/data-routing.ts) | Flags for what is stored / emailed |
 
 Call `await connectToDatabase()` before any query. It's cheap when already connected.
 
@@ -95,7 +95,7 @@ Order {
   _id, customerName, email, phone, address, city, pincode,
   paymentMethod, paymentStatus, razorpayOrderId, razorpayPaymentId,
   subtotal, shipping, total, discountPercent, discountAmount,
-  zohoSynced, createdAt,
+  createdAt,
   items: [{ productId, productName, price, quantity }]
 }
 
@@ -109,7 +109,7 @@ Admin { _id, email (unique), passwordHash }
 The admin dashboard used to check `password === process.env.ADMIN_PASSWORD` and store that
 plaintext password directly as the session cookie value. That's gone — the password now
 lives in the `Admin` document as a bcrypt hash, and the session cookie is a signed JWT
-(`lib/session.ts`, via `jose`, HS256), so `middleware.ts` can verify it on the Edge runtime
+(`lib/session.ts`, via `jose`, HS256), so `proxy.ts` can verify it on the Edge runtime
 without a database round trip.
 
 **One-time migration**: on first login after this change, if no `Admin` document exists yet,
@@ -117,9 +117,9 @@ without a database round trip.
 After that first login, `ADMIN_PASSWORD` is no longer read — the DB is the source of truth,
 and the password can only be changed by writing a new bcrypt hash to the `Admin` document.
 
-**No forgot-password flow**: there is deliberately no self-service reset. If the password is
-lost, a developer sets a new bcrypt hash (cost 12) on the single `Admin` document directly in
-MongoDB. Production uses the `test` database; `.env.local` points at `bear_bags`.
+**Password reset**: the login page emails a 6-digit code to the fixed recovery address in
+`config/data-routing.ts`. It expires after 10 minutes and stops working after 5 wrong guesses.
+Production uses the `test` database; `.env.local` points at `bear_bags`.
 
 ### Required env vars
 

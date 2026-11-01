@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isValidObjectId } from 'mongoose';
 import { connectToDatabase } from '@/lib/mongodb';
 import { CouponModel } from '@/lib/models/Coupon';
 import { normalizeCoupon, TIER_COUPONS } from '@/lib/discount';
 
 // Campaign coupon management for the admin dashboard. Access is gated by the
-// admin session check in middleware.ts, which covers everything under
+// admin session check in proxy.ts, which covers everything under
 // /api/admin/.
 
 const CODE_RE = /^[A-Z0-9]{3,20}$/;
@@ -12,24 +13,8 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 const RESERVED = new Set(Object.values(TIER_COUPONS).map((c) => c.code));
 
-export async function GET() {
-  await connectToDatabase();
-  const coupons = await CouponModel.find().sort({ createdAt: -1 }).lean();
-  return NextResponse.json({
-    coupons: coupons.map((c) => ({
-      id: String(c._id),
-      code: c.code,
-      percent: c.percent,
-      blurb: c.blurb ?? '',
-      startsAt: c.startsAt ?? '',
-      endsAt: c.endsAt ?? '',
-      active: c.active,
-    })),
-  });
-}
-
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const body = await request.json().catch(() => null);
   const code = normalizeCoupon(body?.code ?? '');
   const percent = Number(body?.percent);
   const blurb: string = (body?.blurb ?? '').trim();
@@ -50,8 +35,9 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
-  if (!Number.isInteger(percent) || percent < 1 || percent > 100) {
-    return NextResponse.json({ error: 'Discount must be a whole number between 1 and 100.' }, { status: 400 });
+  // Razorpay cannot take a ₹0 payment, so a 100% coupon could never be used.
+  if (!Number.isInteger(percent) || percent < 1 || percent > 99) {
+    return NextResponse.json({ error: 'Discount must be a whole number between 1 and 99.' }, { status: 400 });
   }
   if (startsAt && !DATE_RE.test(startsAt)) {
     return NextResponse.json({ error: 'Start date must look like 2026-10-25.' }, { status: 400 });
@@ -82,9 +68,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const body = await request.json();
+  const body = await request.json().catch(() => null);
   const id: string = body?.id ?? '';
-  if (!id) return NextResponse.json({ error: 'Missing coupon id.' }, { status: 400 });
+  if (!isValidObjectId(id)) return NextResponse.json({ error: 'Missing coupon id.' }, { status: 400 });
 
   await connectToDatabase();
   const coupon = await CouponModel.findById(id);
@@ -98,7 +84,7 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   const id = request.nextUrl.searchParams.get('id');
-  if (!id) return NextResponse.json({ error: 'Missing coupon id.' }, { status: 400 });
+  if (!isValidObjectId(id)) return NextResponse.json({ error: 'Missing coupon id.' }, { status: 400 });
 
   await connectToDatabase();
   const deleted = await CouponModel.findByIdAndDelete(id);

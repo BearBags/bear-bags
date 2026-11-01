@@ -9,7 +9,6 @@
 // Nothing is discounted until a code is applied. `getEligibleCoupons` decides
 // what a given buyer may use, and the server re-checks on every price
 // calculation so a client cannot award itself a rate it has not earned.
-const VISITED_KEY = 'bb_has_shopped_before';
 
 export const FIRST_TIME_DISCOUNT_PERCENT = 7;
 export const RETURNING_DISCOUNT_PERCENT = 5;
@@ -55,11 +54,16 @@ export function normalizeCoupon(code: string): string {
   return code.trim().toUpperCase();
 }
 
+// Today's calendar day in India (YYYY-MM-DD). Servers run on UTC, which is a
+// different date until 05:30 IST.
+export const indiaDay = (now: Date = new Date()): string =>
+  now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
 export function isCampaignActive(coupon: Coupon, now: Date = new Date()): boolean {
   if (coupon.kind !== 'campaign') return true;
   // Compare on calendar days so a campaign runs to the end of its last day
   // regardless of the hour the check happens to run at.
-  const today = now.toISOString().slice(0, 10);
+  const today = indiaDay(now);
   if (coupon.startsAt && today < coupon.startsAt) return false;
   if (coupon.endsAt && today > coupon.endsAt) return false;
   return true;
@@ -104,17 +108,6 @@ export function couponExists(code: string, campaigns: Coupon[] = CAMPAIGN_COUPON
     Object.values(TIER_COUPONS).some((c) => c.code === normalized) ||
     campaigns.some((c) => c.code === normalized)
   );
-}
-
-export function getClientDiscountPercent(): number {
-  if (typeof window === 'undefined') return RETURNING_DISCOUNT_PERCENT;
-
-  const hasShoppedBefore = window.localStorage.getItem(VISITED_KEY);
-  if (!hasShoppedBefore) {
-    window.localStorage.setItem(VISITED_KEY, '1');
-    return FIRST_TIME_DISCOUNT_PERCENT;
-  }
-  return RETURNING_DISCOUNT_PERCENT;
 }
 
 export function applyDiscount(price: number, percent: number): number {

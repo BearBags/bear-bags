@@ -21,5 +21,7 @@ export const formatMonth = (month: string) =>
 export const formatRupees = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
 
 // Receipts open in a new tab, so only allow our own paths or https links --
-// never javascript: or other schemes.
-export const isSafeReceiptUrl = (url: string) => url === '' || /^\/[^/]/.test(url) || /^https:\/\//i.test(url);
+// never javascript: or other schemes. Backslashes are refused because browsers
+// read "/\host" as "//host", another site.
+export const isSafeReceiptUrl = (url: string) =>
+  url === '' || (!url.includes('\\') && (/^\/[^/]/.test(url) || /^https:\/\//i.test(url)));

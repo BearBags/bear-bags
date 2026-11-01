@@ -2,8 +2,10 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { Order } from '@/lib/models/Order';
 import { NewsletterSubscriber } from '@/lib/models/NewsletterSubscriber';
 import { CouponModel } from '@/lib/models/Coupon';
-import { isCampaignActive } from '@/lib/discount';
+import { indiaDay, isCampaignActive } from '@/lib/discount';
+import { dataRouting } from '@/config/data-routing';
 import CouponsManager, { type AdminCoupon, type CouponStatus } from './CouponsManager';
+import AdminFeedbackProvider from './AdminFeedback';
 import ContributionsManager from './ContributionsManager';
 import ProductPriceCard from './ProductPriceCard';
 import Pagination from './Pagination';
@@ -16,7 +18,7 @@ export const dynamic = 'force-dynamic';
 
 async function logout() {
   'use server';
-  (await cookies()).delete('bear_admin_session');
+  (await cookies()).delete(dataRouting.admin.sessionCookieName);
   redirect('/admin/login');
 }
 
@@ -46,7 +48,7 @@ async function getData(ordersPageParam: number, subscribersPageParam: number) {
     getContributions(),
   ]);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = indiaDay();
   const coupons: AdminCoupon[] = couponDocs.map((doc) => {
     const startsAt = doc.startsAt ?? '';
     const endsAt = doc.endsAt ?? '';
@@ -132,7 +134,7 @@ export default async function AdminPage({
                 {orders.map((order) => (
                   <tr key={String(order._id)} className="border-b border-[#f0f0e8] last:border-0 hover:bg-[#f8fcf6]">
                     <td className="whitespace-nowrap px-5 py-3 text-[#555]">
-                      {order.createdAt.toLocaleDateString('en-IN')}
+                      {order.createdAt.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
                     </td>
                     <td className="px-5 py-3 font-medium text-[#1f3a2d]">{order.customerName}</td>
                     <td className="px-5 py-3 text-[#555]">{order.email}</td>
@@ -174,7 +176,7 @@ export default async function AdminPage({
                 {subscribers.map((sub) => (
                   <tr key={String(sub._id)} className="border-b border-[#f0f0e8] last:border-0 hover:bg-[#f8fcf6]">
                     <td className="whitespace-nowrap px-5 py-3 text-[#555]">
-                      {sub.createdAt.toLocaleDateString('en-IN')}
+                      {sub.createdAt.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
                     </td>
                     <td className="px-5 py-3 font-medium text-[#1f3a2d]">{sub.email}</td>
                   </tr>
@@ -192,13 +194,16 @@ export default async function AdminPage({
           </div>
         </section>
 
-        {product && (
-          <ProductPriceCard productId={product.id} title={product.title} bagCount={product.bagCount} price={product.price} />
-        )}
+        {/* Inside the provider: these show toasts and delete confirmations */}
+        <AdminFeedbackProvider>
+          {product && (
+            <ProductPriceCard productId={product.id} title={product.title} bagCount={product.bagCount} price={product.price} />
+          )}
 
-        <CouponsManager coupons={coupons} />
+          <CouponsManager coupons={coupons} />
 
-        <ContributionsManager contributions={contributions} />
+          <ContributionsManager contributions={contributions} />
+        </AdminFeedbackProvider>
 
       </div>
     </main>

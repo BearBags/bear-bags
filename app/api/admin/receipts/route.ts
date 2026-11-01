@@ -3,7 +3,7 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { ReceiptModel } from '@/lib/models/Receipt';
 
 // Receipt upload for the admin Contributions section. Access is gated by the
-// admin session check in middleware.ts, which covers everything under
+// admin session check in proxy.ts, which covers everything under
 // /api/admin/. Returns the public URL to save as the contribution's receiptUrl.
 
 // Vercel rejects request bodies over 4.5 MB, so stay under that.

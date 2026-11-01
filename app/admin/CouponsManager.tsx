@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { safeFetch } from '@/lib/safe-fetch';
+import { useFeedback } from './AdminFeedback';
 
 export type CouponStatus = 'Active' | 'Paused' | 'Scheduled' | 'Expired';
 
@@ -36,6 +38,7 @@ const formatDate = (iso: string) =>
 // re-read from the database rather than patched locally.
 export default function CouponsManager({ coupons }: { coupons: AdminCoupon[] }) {
   const router = useRouter();
+  const { notify, confirm } = useFeedback();
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -49,7 +52,7 @@ export default function CouponsManager({ coupons }: { coupons: AdminCoupon[] }) 
     setSaving(true);
     setError('');
 
-    const res = await fetch('/api/admin/coupons', {
+    const res = await safeFetch('/api/admin/coupons', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, percent: Number(form.percent) }),
@@ -57,6 +60,7 @@ export default function CouponsManager({ coupons }: { coupons: AdminCoupon[] }) 
     const data = await res.json().catch(() => null);
 
     if (res.ok) {
+      notify(`${form.code} added.`);
       setForm(EMPTY_FORM);
       router.refresh();
     } else {
@@ -67,23 +71,28 @@ export default function CouponsManager({ coupons }: { coupons: AdminCoupon[] }) 
 
   const toggleActive = async (coupon: AdminCoupon) => {
     setBusyId(coupon.id);
-    setError('');
-    const res = await fetch('/api/admin/coupons', {
+    const res = await safeFetch('/api/admin/coupons', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: coupon.id, active: !coupon.active }),
     });
-    if (!res.ok) setError(`Could not update ${coupon.code}.`);
+    if (res.ok) notify(`${coupon.code} ${coupon.active ? 'paused' : 'resumed'}.`);
+    else notify(`Could not update ${coupon.code}.`, 'error');
     router.refresh();
     setBusyId(null);
   };
 
   const remove = async (coupon: AdminCoupon) => {
-    if (!window.confirm(`Delete ${coupon.code}? Customers will no longer be able to use it.`)) return;
+    const confirmed = await confirm({
+      title: `Delete ${coupon.code}?`,
+      message: 'Customers will no longer be able to use this coupon.',
+      confirmLabel: 'Delete coupon',
+    });
+    if (!confirmed) return;
     setBusyId(coupon.id);
-    setError('');
-    const res = await fetch(`/api/admin/coupons?id=${encodeURIComponent(coupon.id)}`, { method: 'DELETE' });
-    if (!res.ok) setError(`Could not delete ${coupon.code}.`);
+    const res = await safeFetch(`/api/admin/coupons?id=${encodeURIComponent(coupon.id)}`, { method: 'DELETE' });
+    if (res.ok) notify(`${coupon.code} deleted.`);
+    else notify(`Could not delete ${coupon.code}.`, 'error');
     router.refresh();
     setBusyId(null);
   };
@@ -119,7 +128,7 @@ export default function CouponsManager({ coupons }: { coupons: AdminCoupon[] }) 
               required
               type="number"
               min={1}
-              max={100}
+              max={99}
               step={1}
               value={form.percent}
               onChange={update('percent')}

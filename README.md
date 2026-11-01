@@ -65,16 +65,10 @@ Local values go in `.env.local`, which is git-ignored. Production values go in
 | `MONGODB_URI` | Yes | MongoDB connection string. Put the database name in the path (`.../bear_bags?...`); leave it out and Mongo silently uses `test`. |
 | `ADMIN_SESSION_SECRET` | Yes | Random 32+ byte string used to sign the admin session cookie (JWT). |
 | `ADMIN_PASSWORD` | First login only | Seeds the single admin account the first time anyone logs in. Ignored after that. |
-| `RAZORPAY_KEY_ID` | Yes | Razorpay API key (use Test Mode keys locally). |
+| `RAZORPAY_KEY_ID` | Yes | Razorpay API key (use Test Mode keys locally). Sent to the browser to open the checkout widget, which is safe: it isn't the secret. |
 | `RAZORPAY_KEY_SECRET` | Yes | Razorpay API secret. Used to create orders and verify payment signatures. |
-| `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Yes | Same value as `RAZORPAY_KEY_ID`. Exposed to the browser to open the checkout widget. |
 | `GMAIL_USER` | Optional | Gmail account that sends order notifications and admin password-reset codes. |
 | `GMAIL_APP_PASSWORD` | Optional | A Google **App Password** for that account, not the normal password. Without these two, no emails are sent. |
-| `ZOHO_CLIENT_ID` | Optional | Zoho CRM (India) self-client, used to sync orders and newsletter signups as leads. |
-| `ZOHO_CLIENT_SECRET` | Optional | ″ |
-| `ZOHO_REFRESH_TOKEN` | Optional | ″ (scope `ZohoCRM.modules.leads.ALL`) |
-| `ZOHO_ACCOUNTS_URL` | Optional | Usually `https://accounts.zoho.in` |
-| `ZOHO_API_URL` | Optional | Usually `https://www.zohoapis.in` |
 
 **Databases:** production uses the `test` database. Local development
 (`.env.local`) uses `bear_bags`. The dev scripts refuse to write dummy data to
@@ -126,7 +120,7 @@ app/
   components/              Shared UI sections (Header, Footer, Impact, FAQ, ...)
   context/CartContext.tsx  Cart state (client)
 config/
-  data-routing.ts          Flags for what gets stored / emailed / sent to Zoho, and admin settings
+  data-routing.ts          Flags for what gets stored / emailed, and admin settings
 lib/
   mongodb.ts               connectToDatabase(): cached connection for serverless
   models/                  Mongoose models (Order, NewsletterSubscriber, Admin, Coupon,
@@ -137,15 +131,14 @@ lib/
   discount-server.ts       Server-side check of first-time vs returning customer discount
   coupon-server.ts         Loads campaign coupons from the DB
   order-pricing.ts         Server-side cart pricing and validation
-  order-service.ts         Saves an order and fans it out (email, Zoho)
+  order-service.ts         Saves an order and sends the notification email
   order-email.ts           Order notification email
   contributions.ts         Loads contributions from the DB (server only)
   contribution-format.ts   Contribution type + formatting helpers (safe for client code)
   gmail.ts / mailer.ts     Gmail sender and admin reset-code email
-  zoho.ts                  Zoho CRM lead sync
   session.ts               Signs/verifies the admin session JWT (jose)
   rate-limit.ts            In-memory per-IP rate limiter
-middleware.ts              Protects /admin and /api/admin/* with the session cookie
+proxy.ts              Protects /admin and /api/admin/* with the session cookie
 scripts/                   Dev / data scripts (see "npm scripts")
 public/images/             Site images, NGO letters (acknowledgment/) and receipts (receipts/)
 docs/legal/                Source and built versions of the legal policies
@@ -170,7 +163,7 @@ db.md                      In-depth database notes (read this before touching mo
 
 ## Admin dashboard
 
-`/admin` is a single page, protected by [`middleware.ts`](middleware.ts). It has
+`/admin` is a single page, protected by [`proxy.ts`](proxy.ts). It has
 these sections:
 
 - **Stats**: total orders and newsletter subscribers.
@@ -191,7 +184,7 @@ these sections:
 - On the very first login, if no admin exists yet, one is created from
   `ADMIN_PASSWORD`.
 - After a successful login, the server sets a signed JWT cookie
-  (`bear_admin_session`, valid for 8 hours). The middleware checks it on every
+  (`bear_admin_session`, valid for 8 hours). The proxy checks it on every
   `/admin` and `/api/admin/*` request without a database lookup.
 - **Forgot password:** a 6-digit code is emailed to the fixed recovery address
   in `config/data-routing.ts` (`recoveryEmail`), and the admin can then set a new
@@ -277,11 +270,9 @@ Adding a new NGO card means editing that file. Adding a ledger row does not.
    [`config/data-routing.ts`](config/data-routing.ts):
    - the order is stored in MongoDB (`Order`, with its items stored inside the
      same document);
-   - a notification email goes to the business Gmail;
-   - a lead is created in Zoho CRM.
+   - a notification email goes to the business Gmail.
 
-Newsletter signups (`POST /api/newsletter`) are stored in MongoDB and synced to
-Zoho in the same way.
+Newsletter signups (`POST /api/newsletter`) are stored in MongoDB.
 
 ---
 
@@ -299,16 +290,16 @@ Public:
 | `POST /api/payment/verify` | Verify a payment and save the order. |
 | `GET /api/receipts/[id]` | Serve an uploaded contribution receipt. |
 
-Admin (session required, enforced by `middleware.ts`):
+Admin (session required, enforced by `proxy.ts`):
 
 | Route | Purpose |
 | --- | --- |
-| `POST/DELETE /api/admin/login` | Log in (rate-limited) / log out. |
+| `POST /api/admin/login` | Log in (rate-limited). Logging out is a server action on `/admin`. |
 | `POST /api/admin/forgot-password` | Email a reset code to the recovery address (rate-limited). |
 | `POST /api/admin/verify-otp` | Check the reset code (rate-limited). |
 | `POST /api/admin/reset-password` | Set a new password. |
 | `PUT /api/admin/products` | Change a product price. |
-| `GET/POST/PATCH/DELETE /api/admin/coupons` | Manage campaign coupons. |
+| `POST/PATCH/DELETE /api/admin/coupons` | Manage campaign coupons. |
 | `POST/PATCH/DELETE /api/admin/contributions` | Manage contributions. |
 | `POST /api/admin/receipts` | Upload a receipt image. Returns its URL. |
 
@@ -323,7 +314,7 @@ MongoDB Atlas via Mongoose. Collections:
 
 | Model | Contents |
 | --- | --- |
-| `Order` | Customer details, items (stored inside the order), totals, discount, payment and Zoho sync status. |
+| `Order` | Customer details, items (stored inside the order), totals, discount and payment status. |
 | `NewsletterSubscriber` | Email (unique) and signup date. |
 | `Admin` | The single admin: email, password hash, reset-code hash and expiry. |
 | `Coupon` | Campaign coupons: code, percent, description, start/end dates, active flag. |

@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { connectToDatabase } from '@/lib/mongodb';
+import { isValidObjectId } from 'mongoose';
 import { ContributionModel } from '@/lib/models/Contribution';
+import { ReceiptModel } from '@/lib/models/Receipt';
 import { MONTH_RE, isSafeReceiptUrl } from '@/lib/contribution-format';
 
 // Contribution (donation) management for the admin dashboard. Access is gated
-// by the admin session check in middleware.ts, which covers everything under
+// by the admin session check in proxy.ts, which covers everything under
 // /api/admin/.
 
 const MAX_AMOUNT = 10_000_000;
@@ -38,6 +40,12 @@ function revalidatePublicPages() {
   revalidatePath('/');
 }
 
+// Uploaded files have no other reference, and stay public until deleted.
+async function deleteUploadedReceipt(url: string | null | undefined) {
+  const id = url?.match(/^\/api\/receipts\/([0-9a-f]{24})$/)?.[1];
+  if (id) await ReceiptModel.findByIdAndDelete(id);
+}
+
 export async function POST(request: NextRequest) {
   const result = parse(await request.json().catch(() => null));
   if ('error' in result) return NextResponse.json({ error: result.error }, { status: 400 });
@@ -52,7 +60,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const id = String(body?.id ?? '');
-  if (!id) return NextResponse.json({ error: 'Missing contribution id.' }, { status: 400 });
+  if (!isValidObjectId(id)) return NextResponse.json({ error: 'Missing contribution id.' }, { status: 400 });
 
   const result = parse(body);
   if ('error' in result) return NextResponse.json({ error: result.error }, { status: 400 });
@@ -60,6 +68,7 @@ export async function PATCH(request: NextRequest) {
   await connectToDatabase();
   const updated = await ContributionModel.findByIdAndUpdate(id, result.fields);
   if (!updated) return NextResponse.json({ error: 'Contribution not found.' }, { status: 404 });
+  if (updated.receiptUrl !== result.fields.receiptUrl) await deleteUploadedReceipt(updated.receiptUrl);
   revalidatePublicPages();
 
   return NextResponse.json({ success: true });
@@ -67,11 +76,12 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   const id = request.nextUrl.searchParams.get('id');
-  if (!id) return NextResponse.json({ error: 'Missing contribution id.' }, { status: 400 });
+  if (!isValidObjectId(id)) return NextResponse.json({ error: 'Missing contribution id.' }, { status: 400 });
 
   await connectToDatabase();
   const deleted = await ContributionModel.findByIdAndDelete(id);
   if (!deleted) return NextResponse.json({ error: 'Contribution not found.' }, { status: 404 });
+  await deleteUploadedReceipt(deleted.receiptUrl);
   revalidatePublicPages();
 
   return NextResponse.json({ success: true });

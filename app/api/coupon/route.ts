@@ -4,6 +4,7 @@ import { computeOrderPricing, InvalidCartError, type CartItem } from '@/lib/orde
 import {
   couponExists,
   findEligibleCoupon,
+  indiaDay,
   normalizeCoupon,
   TIER_COUPONS,
   FIRST_TIME_COUPON,
@@ -70,6 +71,8 @@ export async function POST(request: NextRequest) {
         error = `${FIRST_TIME_COUPON} is for first orders only. Use ${RETURNING_COUPON} for ${tierPercent}% off.`;
       } else if (code === RETURNING_COUPON) {
         error = `${RETURNING_COUPON} is for returning customers. Use ${FIRST_TIME_COUPON} for ${FIRST_TIME_DISCOUNT_PERCENT}% off your first order.`;
+      } else if ((campaigns.find((c) => c.code === code)?.startsAt ?? '') > indiaDay()) {
+        error = 'That offer hasn’t started yet.';
       } else if (theirTier) {
         error = `That offer has ended. Use ${theirTier.code} for ${theirTier.percent}% off.`;
       }

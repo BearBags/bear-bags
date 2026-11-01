@@ -3,7 +3,6 @@ import Impact from "./components/Impact";
 import WhyBearBags from "./components/WhyBearBags";
 import Testimonials from "./components/Testimonials";
 import FAQ from "./components/FAQ";
-import OurStory from "./components/OurStory";
 import ProductIntroduction from "./components/ProductIntroduction";
 import Newsletter from "./components/Newsletter";
 import { getContributions } from "@/lib/contributions";
@@ -31,16 +30,13 @@ export default async function Home() {
       {/* 4. Impact */}
       <Impact contributedTotal={contributedTotal} />
 
-      {/* 5. Our Story  */}
-      {/* <OurStory /> */}
-
-      {/* 6. Testimonials */}
+      {/* 5. Testimonials */}
       <Testimonials />
 
-      {/* 7. FAQ */}
+      {/* 6. FAQ */}
       <FAQ />
 
-      {/* 8. Newsletter Signup */}
+      {/* 7. Newsletter Signup */}
       <Newsletter />
     </div>
   );

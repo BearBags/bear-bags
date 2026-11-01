@@ -1,13 +1,139 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatMonth, formatRupees, type Contribution } from '@/lib/contribution-format';
 import ReceiptLightbox from '@/app/components/ReceiptLightbox';
+import { safeFetch } from '@/lib/safe-fetch';
+import { useFeedback } from './AdminFeedback';
 
 const EMPTY_FORM = { month: '', ngo: '', amount: '', funded: '', receiptUrl: '' };
 
 const PAGE_SIZE = 5;
+
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const FIRST_YEAR = 2024;
+
+// Custom rather than <select>: the open list of a native select is drawn by the
+// browser and can't be styled. Closes on an outside click or Esc.
+function Dropdown({
+  placeholder,
+  value,
+  options,
+  onChange,
+  listClass,
+}: {
+  placeholder: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
+  listClass: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const selected = options.find((o) => o.value === value);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      // Stops here so Esc in the edit modal closes this list, not the modal.
+      e.stopImmediatePropagation();
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', onPointer);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('mousedown', onPointer);
+      window.removeEventListener('keydown', onKey, true);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={selected ? `${placeholder}: ${selected.label}` : placeholder}
+        className={`${inputClass} flex items-center justify-between gap-1 text-left ${open ? 'border-[#23473f] bg-white' : ''}`}
+      >
+        <span className={selected ? '' : 'text-[#8a9a8f]'}>{selected?.label ?? placeholder}</span>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`shrink-0 text-[#134632] transition-transform ${open ? 'rotate-180' : ''}`}
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          role="listbox"
+          aria-label={placeholder}
+          className={`absolute left-0 top-full z-20 mt-1.5 rounded-xl border border-[#dbe7d2] bg-white p-1.5 shadow-lg ${listClass}`}
+        >
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="option"
+              aria-selected={option.value === value}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+              className={`rounded-lg px-2 py-2 text-center text-sm transition ${
+                option.value === value ? 'bg-[#134632] font-semibold text-white' : 'text-[#1f3a2d] hover:bg-[#e3f1dc]'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Month and year dropdowns rather than <input type="month">, which some
+// browsers render as a plain text box that sends "Nov 2026" instead of "2026-11".
+function MonthPicker({ value, onChange }: { value: string; onChange: (month: string) => void }) {
+  const [year = '', month = ''] = value.split('-');
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - FIRST_YEAR + 2 }, (_, i) => String(currentYear + 1 - i));
+  if (year && !years.includes(year)) years.push(year);
+
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <Dropdown
+        placeholder="Month"
+        value={month}
+        options={MONTH_NAMES.map((name, i) => ({ value: String(i + 1).padStart(2, '0'), label: name }))}
+        onChange={(m) => onChange(`${year}-${m}`)}
+        listClass="grid w-56 grid-cols-3 gap-1"
+      />
+      <Dropdown
+        placeholder="Year"
+        value={year}
+        options={years.map((y) => ({ value: y, label: y }))}
+        onChange={(y) => onChange(`${y}-${month}`)}
+        listClass="flex max-h-56 w-full flex-col gap-1 overflow-y-auto"
+      />
+    </div>
+  );
+}
 
 const inputClass =
   'w-full rounded-xl border border-[#d1ddcf] bg-[#f8fcf6] px-4 py-2.5 text-sm text-[#1f3a2d] outline-none focus:border-[#23473f]';
@@ -24,6 +150,7 @@ function ContributionForm({
   onCancel?: () => void;
 }) {
   const editing = Boolean(contribution);
+  const { notify } = useFeedback();
   const [form, setForm] = useState(
     contribution
       ? { month: contribution.month, ngo: contribution.ngo, amount: String(contribution.amount), funded: contribution.funded, receiptUrl: contribution.receiptUrl }
@@ -47,11 +174,12 @@ function ContributionForm({
 
     const body = new FormData();
     body.append('file', file);
-    const res = await fetch('/api/admin/receipts', { method: 'POST', body });
+    const res = await safeFetch('/api/admin/receipts', { method: 'POST', body });
     const data = await res.json().catch(() => null);
 
     if (res.ok) {
       setForm((prev) => ({ ...prev, receiptUrl: data.url }));
+      notify('Receipt uploaded. Save the form to keep it.');
     } else {
       setError(data?.error ?? 'Could not upload the receipt.');
     }
@@ -63,7 +191,7 @@ function ContributionForm({
     setSaving(true);
     setError('');
 
-    const res = await fetch('/api/admin/contributions', {
+    const res = await safeFetch('/api/admin/contributions', {
       method: editing ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, amount: Number(form.amount), ...(contribution && { id: contribution.id }) }),
@@ -72,6 +200,7 @@ function ContributionForm({
 
     setSaving(false);
     if (res.ok) {
+      notify(editing ? 'Contribution updated.' : 'Contribution added.');
       if (!editing) setForm(EMPTY_FORM);
       onSaved();
     } else {
@@ -115,10 +244,10 @@ function ContributionForm({
             </div>
           </div>
         )}
-        <label className="block">
+        <div>
           <span className="mb-1.5 block text-xs text-[#555]">Month</span>
-          <input required type="month" value={form.month} onChange={update('month')} className={inputClass} />
-        </label>
+          <MonthPicker value={form.month} onChange={(month) => setForm({ ...form, month })} />
+        </div>
         <label className="block">
           <span className="mb-1.5 block text-xs text-[#555]">NGO</span>
           <input required maxLength={100} value={form.ngo} onChange={update('ngo')} placeholder="Gnana Jyothi Trust" className={inputClass} />
@@ -222,9 +351,9 @@ function EditModal({ contribution, onClose, onSaved }: { contribution: Contribut
 // server-rendered dashboard and is re-read with router.refresh() after each change.
 export default function ContributionsManager({ contributions }: { contributions: Contribution[] }) {
   const router = useRouter();
+  const { notify, confirm } = useFeedback();
   const [editing, setEditing] = useState<Contribution | null>(null);
   const [viewing, setViewing] = useState<Contribution | null>(null);
-  const [error, setError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [pageState, setPage] = useState(1);
 
@@ -242,11 +371,16 @@ export default function ContributionsManager({ contributions }: { contributions:
   const navButton = `${pageButton} inline-flex h-[30px] items-center justify-center border-[#d1ddcf] text-[#134632] hover:bg-[#f0f0e8] disabled:border-[#eee] disabled:text-[#bbb] disabled:hover:bg-transparent`;
 
   const remove = async (c: Contribution) => {
-    if (!window.confirm(`Delete the ${formatRupees(c.amount)} contribution to ${c.ngo}? It will disappear from the impact page.`)) return;
+    const confirmed = await confirm({
+      title: 'Delete this contribution?',
+      message: `The ${formatRupees(c.amount)} contribution to ${c.ngo} will disappear from the impact page and the home page total.`,
+      confirmLabel: 'Delete contribution',
+    });
+    if (!confirmed) return;
     setBusyId(c.id);
-    setError('');
-    const res = await fetch(`/api/admin/contributions?id=${encodeURIComponent(c.id)}`, { method: 'DELETE' });
-    if (!res.ok) setError(`Could not delete the contribution to ${c.ngo}.`);
+    const res = await safeFetch(`/api/admin/contributions?id=${encodeURIComponent(c.id)}`, { method: 'DELETE' });
+    if (res.ok) notify(`Contribution to ${c.ngo} deleted.`);
+    else notify(`Could not delete the contribution to ${c.ngo}.`, 'error');
     router.refresh();
     setBusyId(null);
   };
@@ -263,8 +397,6 @@ export default function ContributionsManager({ contributions }: { contributions:
         <h3 className="mb-4 text-sm font-semibold text-[#134632]">Add a contribution</h3>
         <ContributionForm onSaved={() => router.refresh()} />
       </div>
-
-      {error && <p className="mb-3 text-sm text-[#c82b2d]">{error}</p>}
 
       {/* Existing contributions */}
       <div className="overflow-x-auto rounded-[20px] border border-[#dbe7d2] bg-white shadow-sm">

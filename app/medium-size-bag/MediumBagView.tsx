@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiChevronDown, FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
 import { formatPerBag, type ProductProfile } from '@/lib/products';
 import { FIRST_TIME_COUPON, RETURNING_COUPON } from '@/lib/discount';

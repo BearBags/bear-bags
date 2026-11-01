@@ -8,11 +8,8 @@ import {
   FaLinkedin,
   FaCircleCheck,
   FaAward,
-  FaLocationDot,
   FaAmazon,
-  FaBolt,
 } from 'react-icons/fa6';
-import { PiShoppingBagOpenLight } from 'react-icons/pi';
 
 const MARKETPLACES = [
   {

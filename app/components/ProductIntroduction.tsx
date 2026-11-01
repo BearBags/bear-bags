@@ -1,14 +1,8 @@
 import React from 'react';
 import Image from 'next/image';
-import { FiArrowRight } from 'react-icons/fi';
-import { GiWaterDrop } from 'react-icons/gi';
-import { PiPlantBold } from 'react-icons/pi';
-import { FaRecycle } from 'react-icons/fa';
-import { GiStrong } from 'react-icons/gi';
 import { BiLeaf } from "react-icons/bi";
-import { FaHandHoldingHeart } from "react-icons/fa6";
 import { LiaHandHoldingHeartSolid } from "react-icons/lia";
-import { LuShieldAlert, LuDroplet } from "react-icons/lu";
+import { LuDroplet } from "react-icons/lu";
 
 import Link from 'next/link';
 import { formatPerBag } from '@/lib/products';

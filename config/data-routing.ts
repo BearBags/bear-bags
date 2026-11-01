@@ -14,12 +14,6 @@ export const dataRouting = {
     sendOrderNotifications: true,
   },
 
-  zohoCRM: {
-    // Leads created in Zoho CRM free plan
-    sendNewsletterSubscribers: true,
-    sendAllOrders: true,
-  },
-
   admin: {
     routePrefix: '/admin',
     sessionCookieName: 'bear_admin_session',

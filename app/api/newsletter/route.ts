@@ -1,15 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { NewsletterSubscriber } from '@/lib/models/NewsletterSubscriber';
-import { createZohoLead } from '@/lib/zoho';
 import { dataRouting } from '@/config/data-routing';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
+
+// Every new signup writes to the database.
+const MAX_SIGNUPS_PER_WINDOW = 10;
+const WINDOW_MS = 60_000;
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const email: string = body?.email;
+    const { allowed, retryAfterSeconds } = rateLimit(
+      `newsletter:${getClientIp(request)}`,
+      MAX_SIGNUPS_PER_WINDOW,
+      WINDOW_MS,
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again in a minute.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } },
+      );
+    }
 
-    if (!email || typeof email !== 'string' || !email.includes('@')) {
+    const body = await request.json().catch(() => null);
+    const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
+
+    if (!email.includes('@')) {
       return NextResponse.json({ error: 'Valid email is required' }, { status: 400 });
     }
 
@@ -20,16 +36,6 @@ export async function POST(request: NextRequest) {
         { $setOnInsert: { email } },
         { upsert: true },
       );
-    }
-
-    if (dataRouting.zohoCRM.sendNewsletterSubscribers) {
-      const username = email.split('@')[0];
-      await createZohoLead({
-        lastName: username,
-        email,
-        leadSource: 'Newsletter',
-        description: `Newsletter subscriber. Signed up on ${new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })}.`,
-      });
     }
 
     return NextResponse.json({ success: true });

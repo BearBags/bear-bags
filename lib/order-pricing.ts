@@ -73,7 +73,7 @@ export async function computeOrderPricing(
   const [eligibleTierPercent, campaigns, livePrices] = await Promise.all([
     getDiscountPercentForEmail(email),
     getCampaignCoupons(),
-    getProductPrices(),
+    getProductPrices({ strict: true }),
   ]);
 
   // The admin-set price, never the price the browser sent (a cart can hold a
@@ -120,7 +120,10 @@ function validateCart(cartItems: unknown): CartItem[] {
   if (cartItems.length > MAX_CART_LINES) {
     throw new InvalidCartError('Too many items in the cart.');
   }
-  return cartItems.map((item) => {
+  // Lines for the same product are merged, so the quantity limit applies per
+  // product and cannot be sidestepped by repeating a line.
+  const merged = new Map<number, CartItem>();
+  for (const item of cartItems) {
     const product = getProductById(Number(item?.product?.id));
     const quantity = item?.quantity;
     if (!product) {
@@ -129,8 +132,14 @@ function validateCart(cartItems: unknown): CartItem[] {
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_QUANTITY_PER_ITEM) {
       throw new InvalidCartError(`Quantity must be a whole number between 1 and ${MAX_QUANTITY_PER_ITEM}.`);
     }
-    return { product: { id: product.id, name: product.title, price: product.price }, quantity };
-  });
+    const line = merged.get(product.id);
+    const total = (line?.quantity ?? 0) + quantity;
+    if (total > MAX_QUANTITY_PER_ITEM) {
+      throw new InvalidCartError(`Quantity must be a whole number between 1 and ${MAX_QUANTITY_PER_ITEM}.`);
+    }
+    merged.set(product.id, { product: { id: product.id, name: product.title, price: product.price }, quantity: total });
+  }
+  return [...merged.values()];
 }
 
 // The Razorpay order carries the exact pricing it was created with, so the

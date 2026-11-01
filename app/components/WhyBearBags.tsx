@@ -1,7 +1,6 @@
 'use client'
 import React, { useRef, useState } from 'react'
 import Image from 'next/image';
-import { LuLeaf } from "react-icons/lu";
 
 const WhyBearBags = () => {
   const videoRef = useRef<HTMLVideoElement>(null);

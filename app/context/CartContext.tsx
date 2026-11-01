@@ -12,7 +12,6 @@ interface Product {
   count?: number;
   features?: string[];
   option?: string;
-  discountPercent?: number;
 }
 
 interface CartItem {
@@ -48,6 +47,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [buyNowItem, setBuyNowItemState] = useState<CartItem | null>(null);
+  const [cartLoaded, setCartLoaded] = useState(false);
   const pathname = usePathname();
 
   // The provider lives in the root layout and survives client-side navigation,
@@ -65,10 +65,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [pathname]);
 
   useEffect(() => {
-    const stored = localStorage.getItem('cart');
-    if (stored) {
-      setCart(JSON.parse(stored));
+    // Corrupt or blocked storage just means starting with an empty cart; this
+    // provider wraps the whole site, so it must never throw.
+    try {
+      const stored = JSON.parse(localStorage.getItem('cart') ?? '[]');
+      if (Array.isArray(stored)) setCart(stored);
+    } catch {
+      // keep the empty cart
     }
+    setCartLoaded(true);
   }, []);
 
   // A saved cart keeps the price each item had when it was added. If the admin
@@ -90,9 +95,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // save to localStorage
+  // Waits for the load above, or the initial empty cart would overwrite it.
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
+    if (!cartLoaded) return;
+    try {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    } catch {
+      // storage unavailable -- the cart still works for this visit
+    }
+  }, [cart, cartLoaded]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
     const exists = cart.find(

@@ -29,6 +29,11 @@ export function rateLimit(key: string, limit: number, windowMs: number): RateLim
 
   if (!existing || existing.resetAt <= now) {
     if (windows.size >= MAX_TRACKED_KEYS) sweepExpired(now);
+    // Still full of live keys: drop the oldest (a Map iterates in insertion order).
+    if (windows.size >= MAX_TRACKED_KEYS) {
+      const oldest = windows.keys().next().value;
+      if (oldest !== undefined) windows.delete(oldest);
+    }
     windows.set(key, { count: 1, resetAt: now + windowMs });
     return { allowed: true, retryAfterSeconds: 0 };
   }

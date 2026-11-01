@@ -7,18 +7,21 @@ import { GoShieldCheck } from 'react-icons/go';
 export default function Newsletter() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      try {
-        await fetch('/api/newsletter', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-        });
-      } catch {
-        // Non-blocking: show success to user even if CRM save fails
+      setError('');
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      }).catch(() => null);
+      if (!res?.ok) {
+        const data = await res?.json().catch(() => null);
+        setError(data?.error ?? 'Could not sign you up. Please try again.');
+        return;
       }
       setSubmitted(true);
       setTimeout(() => {
@@ -96,6 +99,8 @@ export default function Newsletter() {
               </button>
             </form>
           )}
+
+          {error && <p className="mt-3 text-sm text-[#c82b2d]">{error}</p>}
 
           {/* Privacy note */}
           <p className="mt-6 flex items-center gap-2 text-xs text-[#4b5d50] sm:text-sm">

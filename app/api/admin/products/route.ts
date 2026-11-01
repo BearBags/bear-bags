@@ -5,11 +5,11 @@ import { ProductPrice } from '@/lib/models/ProductPrice';
 import { getProductById } from '@/lib/products';
 
 // Price management for the admin dashboard. Access is gated by the admin
-// session check in middleware.ts, which covers everything under /api/admin/.
+// session check in proxy.ts, which covers everything under /api/admin/.
 const MAX_PRICE = 100_000;
 
 export async function PUT(request: NextRequest) {
-  const body = await request.json();
+  const body = await request.json().catch(() => null);
   const productId = Number(body?.productId);
   const price = Number(body?.price);
 

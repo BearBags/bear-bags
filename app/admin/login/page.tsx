@@ -3,16 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
-import { dataRouting } from '@/config/data-routing';
+import { safeFetch } from '@/lib/safe-fetch';
 
-// Shown on a public page, so only enough of the address to recognise it:
-// aschouhan17@gmail.com → as*********17@gmail.com
-const maskEmail = (email: string) => {
-  const [name, domain] = email.split('@');
-  if (name.length <= 4) return `${name[0]}***@${domain}`;
-  return `${name.slice(0, 2)}${'*'.repeat(name.length - 4)}${name.slice(-2)}@${domain}`;
-};
-const RECOVERY_EMAIL = maskEmail(dataRouting.admin.recoveryEmail);
+// Masked by hand, not computed from config/data-routing.ts: this is a client
+// component, so anything imported here ships the full address to every visitor.
+// Update it if recoveryEmail changes.
+const RECOVERY_EMAIL = 'as*******17@gmail.com';
 
 const inputClass =
   'w-full rounded-xl border border-[#d1ddcf] bg-[#f8fcf6] px-4 py-3 text-sm text-[#1f3a2d] outline-none focus:border-[#23473f]';
@@ -71,7 +67,7 @@ export default function AdminLogin() {
     setLoading(true);
     setError('');
 
-    const res = await fetch('/api/admin/login', {
+    const res = await safeFetch('/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
@@ -81,7 +77,7 @@ export default function AdminLogin() {
       router.push('/admin');
     } else {
       const data = await res.json().catch(() => null);
-      setError(res.status === 429 ? data?.error : 'Incorrect password.');
+      setError(res.status === 401 ? 'Incorrect password.' : data?.error ?? 'Something went wrong. Please try again.');
     }
     setLoading(false);
   };
@@ -91,7 +87,7 @@ export default function AdminLogin() {
     setError('');
     setNotice('');
 
-    const res = await fetch('/api/admin/forgot-password', { method: 'POST' });
+    const res = await safeFetch('/api/admin/forgot-password', { method: 'POST' });
     const data = await res.json().catch(() => null);
     if (res.ok) {
       setOtp('');
@@ -113,7 +109,7 @@ export default function AdminLogin() {
     setLoading(true);
     setError('');
 
-    const res = await fetch('/api/admin/verify-otp', {
+    const res = await safeFetch('/api/admin/verify-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ otp }),
@@ -139,7 +135,7 @@ export default function AdminLogin() {
     setLoading(true);
     setError('');
 
-    const res = await fetch('/api/admin/reset-password', {
+    const res = await safeFetch('/api/admin/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ resetToken, newPassword }),

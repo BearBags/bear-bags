@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { safeFetch } from '@/lib/safe-fetch';
+import { useFeedback } from './AdminFeedback';
 import { formatPerBag } from '@/lib/products';
 
 interface Props {
@@ -15,6 +17,7 @@ interface Props {
 // the site, so it is only previewed here, never entered.
 export default function ProductPriceCard({ productId, title, bagCount, price }: Props) {
   const router = useRouter();
+  const { notify } = useFeedback();
   const [value, setValue] = useState(String(price));
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [error, setError] = useState('');
@@ -27,7 +30,7 @@ export default function ProductPriceCard({ productId, title, bagCount, price }: 
     setStatus('saving');
     setError('');
 
-    const res = await fetch('/api/admin/products', {
+    const res = await safeFetch('/api/admin/products', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ productId, price: parsed }),
@@ -36,6 +39,7 @@ export default function ProductPriceCard({ productId, title, bagCount, price }: 
 
     if (res.ok) {
       setStatus('saved');
+      notify(`Saved. The website now shows ₹${parsed}.`);
       router.refresh();
     } else {
       setError(data?.error ?? 'Could not save the price.');
@@ -78,7 +82,6 @@ export default function ProductPriceCard({ productId, title, bagCount, price }: 
             {status === 'saving' ? 'Saving…' : 'Save price'}
           </button>
         </div>
-        {status === 'saved' && <p className="mt-3 text-sm text-[#134632]">Saved. The website now shows ₹{price}.</p>}
         {status === 'error' && <p className="mt-3 text-sm text-[#c82b2d]">{error}</p>}
       </form>
     </section>

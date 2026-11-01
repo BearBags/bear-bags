@@ -33,7 +33,6 @@ const orderSchema = new Schema(
     discountAmount: { type: Number, default: 0 },
     // Which coupon the buyer applied, so campaign codes can be reported on.
     couponCode: { type: String, default: null },
-    zohoSynced: { type: Boolean, default: false },
     items: { type: [orderItemSchema], default: [] },
     createdAt: { type: Date, default: Date.now },
   },

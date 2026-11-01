@@ -7,7 +7,7 @@ import { verifyResetToken } from '@/lib/session';
 const MIN_PASSWORD_LENGTH = 8;
 
 export async function POST(request: NextRequest) {
-  const { resetToken, newPassword } = await request.json();
+  const { resetToken, newPassword } = (await request.json().catch(() => null)) ?? {};
   if (!resetToken || typeof newPassword !== 'string' || newPassword.length < MIN_PASSWORD_LENGTH) {
     return NextResponse.json(
       { error: `The new password must be at least ${MIN_PASSWORD_LENGTH} characters.` },

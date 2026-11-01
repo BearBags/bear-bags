@@ -197,7 +197,12 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: formData.email, cartItems, couponCode: requestedCoupon }),
         });
-        if (!res.ok) return;
+        // Drop the old figures: they are for a previous cart or coupon, and the
+        // summary prefers them over the current local total.
+        if (!res.ok) {
+          if (!cancelled) setServerPricing(null);
+          return;
+        }
         const data: ServerPricing = await res.json();
         if (cancelled) return;
         setServerPricing(data);
@@ -209,8 +214,9 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
           setCouponError('That coupon isn’t available for this email.');
         }
       } catch {
-        // Leave the local estimate in place; the order routes still price
+        // Fall back to the local estimate; the order routes still price
         // authoritatively server-side when the buyer pays.
+        if (!cancelled) setServerPricing(null);
       }
     }, 500);
 
@@ -232,8 +238,6 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
   const discountPercent = serverPricing?.discountPercent ?? 0;
   const discountAmount = serverPricing?.discountAmount ?? 0;
   const eligibleCoupons = serverPricing?.eligibleCoupons ?? [];
-
-  const unitPriceFor = (item: (typeof cartItems)[number]): number => item.product.price;
 
   const applyCouponCode = async (rawCode: string) => {
     const code = normalizeCoupon(rawCode);
@@ -311,19 +315,19 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
     });
   };
 
-  // The server re-checks order history by email and applies the authoritative
-  // first-time/returning discount, which may differ from the client's
-  // localStorage-based guess, so the confirmation reflects what was actually charged.
+  // Shows the figures the server returned, which are what was actually charged.
   const finalizeOrder = (data: { total?: number; discountPercent?: number }) => {
     if (typeof data?.total === 'number') setConfirmedTotal(data.total);
     if (typeof data?.discountPercent === 'number') setConfirmedDiscountPercent(data.discountPercent);
     setOrderPlaced(true);
+    // Straight away, so closing the tab can't leave paid items in the cart. The
+    // timer below only dismisses the confirmation message.
+    onClearCart();
+    resetForm();
     setTimeout(() => {
-      onClearCart();
       setOrderPlaced(false);
       setConfirmedTotal(null);
       setConfirmedDiscountPercent(null);
-      resetForm();
     }, 4000);
   };
 
@@ -431,7 +435,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
             Thank you for choosing Bear Bags. Your order will be delivered soon.
           </p>
           <p className="text-sm mb-4" style={{ color: 'var(--forest-light)' }}>
-            You are helping us make a difference. 30% of your purchase goes to community development.
+            You are helping us make a difference. 30% of our profits go to community development.
           </p>
           {confirmedTotal !== null && (
             <p className="text-base font-medium" style={{ color: 'var(--forest)' }}>
@@ -517,7 +521,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                         {item.product.name}
                       </h3>
                       <p className="mt-0.5 text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                        {(item.product.size ?? 'Bag')} · {item.product.count ?? item.quantity} bags per roll
+                        {item.product.size ?? 'Bag'}{item.product.count ? ` · ${item.product.count} bags per roll` : ''}
                       </p>
 
                       {isBuyNow ? (
@@ -562,10 +566,10 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
 
                     <div className="flex-shrink-0 text-right">
                       <div className="text-[15px] font-bold" style={{ color: 'var(--forest)' }}>
-                        ₹{unitPriceFor(item) * item.quantity}
+                        ₹{item.product.price * item.quantity}
                       </div>
                       <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                        ₹{unitPriceFor(item)} each
+                        ₹{item.product.price} each
                       </div>
                     </div>
                   </div>

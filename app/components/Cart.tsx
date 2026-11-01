@@ -7,7 +7,6 @@ import { TiShoppingCart } from "react-icons/ti";
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart } = useCart();
   const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  const discountPercent = cart[0]?.product.discountPercent;
 
   if (cart.length === 0) {
     return (
@@ -47,12 +46,6 @@ export default function CartPage() {
             🚚 Free shipping on all orders
           </p>
         </div>
-
-        {!!discountPercent && (
-          <p className="mb-4 text-sm font-medium text-center" style={{ color: 'var(--forest-light)' }}>
-            🎉 {discountPercent}% off applied ({discountPercent === 7 ? 'first order' : 'welcome back'})
-          </p>
-        )}
 
         <div className="space-y-4 mb-8">
           {cart.map((item) => (

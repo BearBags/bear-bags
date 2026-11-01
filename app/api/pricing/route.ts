@@ -6,8 +6,7 @@ import { rateLimit, getClientIp } from '@/lib/rate-limit';
 
 // Read-only preview of what this cart will actually cost this email. The
 // checkout summary renders from this rather than from the cart's own prices,
-// which carry a localStorage-based guess of the discount tier made when the
-// item was added and can disagree with the server's order-history lookup.
+// because only the server knows this email's order history.
 const MAX_LOOKUPS_PER_WINDOW = 30;
 const WINDOW_MS = 60_000;
 

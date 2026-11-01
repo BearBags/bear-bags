@@ -1,10 +1,8 @@
 import React from "react";
 import { PiLeafBold } from "react-icons/pi";
-import { GoShieldCheck } from "react-icons/go";
 import { LiaHandHoldingHeartSolid } from "react-icons/lia";
 import { MdPeopleOutline } from "react-icons/md";
 import { HiOutlineDocumentCheck } from "react-icons/hi2";
-import { FaBuilding, FaChartBar } from "react-icons/fa6";
 import { SlCalender } from "react-icons/sl";
 import { BiLandscape } from "react-icons/bi";
 import { HiOutlineBuildingLibrary } from "react-icons/hi2";

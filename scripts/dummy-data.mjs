@@ -8,8 +8,8 @@
 // The public pages refresh within 5 minutes (or on the next admin save).
 //
 // Usage (reads MONGODB_URI from .env.local):
-//   node scripts/dummy-data.mjs add contributions      # 8 ledger rows (npm run dummy:add)
-//   node scripts/dummy-data.mjs remove contributions   # (npm run dummy:remove)
+//   node scripts/dummy-data.mjs add contributions      # 8 ledger rows (npm run dummy:add:contributions)
+//   node scripts/dummy-data.mjs remove contributions   # (npm run dummy:remove:contributions)
 //   node scripts/dummy-data.mjs add orders [count]     # orders + subscribers, default 25 of each
 //   node scripts/dummy-data.mjs remove orders
 //
@@ -80,7 +80,6 @@ function makeOrder(i) {
     discountPercent,
     discountAmount: subtotal - total,
     couponCode,
-    zohoSynced: i % 5 !== 0,
     items: [{ productId: 2, productName: 'Bear Bags — Medium', price: unitPrice, quantity }],
     createdAt: daysAgo(i, i % 10),
     __v: 0,
@@ -133,6 +132,10 @@ if (target === 'contributions') {
     console.log(`Removed ${c.deletedCount} dummy contributions from "${db.databaseName}".`);
   }
 } else if (mode === 'add') {
+  // Replace earlier dummy rows: their ids and emails would hit the unique indexes.
+  const dummyOnly = { dummy: true, email: /@example\.com$/ };
+  await orders.deleteMany(dummyOnly);
+  await subscribers.deleteMany(dummyOnly);
   await orders.insertMany(Array.from({ length: count }, (_, i) => makeOrder(i)));
   await subscribers.insertMany(Array.from({ length: count }, (_, i) => makeSubscriber(i)));
   console.log(`Added ${count} dummy orders and ${count} dummy subscribers to "${db.databaseName}".`);

@@ -11,7 +11,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (!isValidObjectId(id)) return new Response('Not found', { status: 404 });
 
   await connectToDatabase();
-  const receipt = await ReceiptModel.findById(id).lean();
+  // Not .lean(): that returns a BSON Binary, which converts to an empty array.
+  const receipt = await ReceiptModel.findById(id);
   if (!receipt) return new Response('Not found', { status: 404 });
 
   return new Response(new Uint8Array(receipt.data), {

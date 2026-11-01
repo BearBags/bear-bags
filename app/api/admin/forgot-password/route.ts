@@ -15,6 +15,8 @@ const WINDOW_MS = 15 * 60 * 1000;
 
 // Emails a 6-digit code to the fixed recovery address -- the caller does not
 // supply one.
+const RESEND_COOLDOWN_MS = 60_000;
+
 export async function POST(request: NextRequest) {
   const { allowed, retryAfterSeconds } = rateLimit(
     `admin-forgot:${getClientIp(request)}`,
@@ -35,9 +37,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No admin account found.' }, { status: 404 });
     }
 
+    // Without this, anyone could keep replacing the code the admin just received.
+    const sentAt = admin.otpExpiresAt ? admin.otpExpiresAt.getTime() - OTP_TTL_MS : 0;
+    if (Date.now() - sentAt < RESEND_COOLDOWN_MS) {
+      return NextResponse.json({ error: 'A code was just sent. Please wait a minute before asking for another.' }, { status: 429 });
+    }
+
     const otp = crypto.randomInt(100000, 1000000).toString();
     admin.otpHash = await bcrypt.hash(otp, 10);
     admin.otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
+    admin.otpAttempts = 0;
     await admin.save();
     await sendOtpEmail(otp);
 
