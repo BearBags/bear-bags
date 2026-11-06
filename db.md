@@ -157,9 +157,9 @@ Documents key on `_id` (an ObjectId), not `id`. Use `String(doc._id)` for React 
   `NewsletterSubscriber.syncIndexes()` once against prod, or create the index in Atlas.
   Consider setting `autoIndex: false` in prod once indexes are established, since building
   indexes on every cold start costs latency.
-- **`next build` does not need a live database.** `/admin` is `force-dynamic` and the API
-  routes are dynamic, so nothing connects at build time. A missing `MONGODB_URI` will fail
-  at request time, not build time.
+- **`next build` needs the database.** The home and impact pages are static and read
+  contributions when they are built, so a missing `MONGODB_URI` or an unreachable Atlas
+  fails the build. `/admin` and the API routes are dynamic and only connect at request time.
 - **`mongoose` is auto-externalized by Next 16** (it's on the built-in
   `serverExternalPackages` list), so no `next.config.ts` change is needed.
 - **Never import models into a Client Component.** Mongoose is server-only; keep it in

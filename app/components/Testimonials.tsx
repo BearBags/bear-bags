@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FaStar, FaStarHalfAlt } from "react-icons/fa";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import LazyVideo from "./LazyVideo";
 
 interface Testimonial {
   type: "image" | "video";
@@ -25,7 +26,7 @@ const testimonials: Testimonial[] = [
   {
     type: "video",
     name: "Anoop",
-    video: "/videos/anoop_review.MP4",
+    video: "/videos/anoop_review.mp4",
     quote: "I personally liked the bags. The price is a bit higher compared to the local options, but the product quality is good. <strong>The moment I first held the bag, it felt premium and sturdier than most garbage bags I have used.</strong>",
     avatar: "A",
     rating: 4,
@@ -96,12 +97,12 @@ function TestimonialCard({ item }: { item: Testimonial }) {
     <div className="w-[260px] sm:w-[300px] md:w-[340px] shrink-0 rounded-2xl sm:rounded-3xl border border-neutral-200 bg-white p-4 sm:p-5 md:p-7 shadow-sm">
       {item.type === "image" && item.image && (
         <div className="mb-3 sm:mb-4 md:mb-5 overflow-hidden rounded-xl sm:rounded-2xl">
-          <img src={item.image} alt={item.name} className="h-[140px] sm:h-[180px] md:h-[240px] w-full object-cover" />
+          <img src={item.image} alt={item.name} loading="lazy" decoding="async" className="h-[140px] sm:h-[180px] md:h-[240px] w-full object-cover" />
         </div>
       )}
       {item.type === "video" && item.video && (
         <div className="mb-3 sm:mb-4 md:mb-5 overflow-hidden rounded-xl sm:rounded-2xl">
-          <video src={item.video} autoPlay muted loop playsInline className="h-[140px] sm:h-[180px] md:h-[240px] w-full object-cover" />
+          <LazyVideo src={item.video} poster={item.video.replace(/\.mp4$/, '-poster.jpg')} className="h-[140px] sm:h-[180px] md:h-[240px] w-full object-cover" />
         </div>
       )}
       <StarRating rating={item.rating} />

@@ -1,6 +1,7 @@
 import { connectToDatabase } from './mongodb';
 import { Order } from './models/Order';
-import { sendOrderNotification } from './order-email';
+import { sendOrderConfirmation, sendOrderNotification } from './order-email';
+import { invoiceOrder } from './invoice-service';
 import { dataRouting } from '@/config/data-routing';
 import type { OrderFormData, OrderPricing } from './order-pricing';
 
@@ -11,57 +12,86 @@ interface SaveOrderOptions {
   razorpayPaymentId?: string;
 }
 
+// Saves the paid order. Returns null when this payment was already recorded
+// (a retried or replayed verify call), so its follow-ups never run twice.
 export async function saveOrder({
   formData,
   pricing,
   razorpayOrderId,
   razorpayPaymentId,
-}: SaveOrderOptions): Promise<void> {
+}: SaveOrderOptions): Promise<{ orderId: string | null } | null> {
   const { pricedItems, subtotal, shipping, total, discountPercent, discountAmount, appliedCoupon } = pricing;
 
-  if (dataRouting.database.storeOrders) {
-    await connectToDatabase();
-    // A retried or replayed verify call for a payment already recorded is a
-    // no-op: no second order or email.
-    if (razorpayPaymentId && (await Order.exists({ razorpayPaymentId }))) return;
-    try {
-      await Order.create({
-        customerName: formData.name,
-        email: formData.email.trim().toLowerCase(),
-        phone: formData.phone,
-        address: formData.address,
-        city: formData.city,
-        pincode: formData.pincode,
-        paymentMethod: formData.paymentMethod,
-        paymentStatus: 'paid',
-        razorpayOrderId,
-        razorpayPaymentId,
-        subtotal,
-        shipping,
-        total,
-        discountPercent,
-        discountAmount,
-        couponCode: appliedCoupon,
-        items: pricedItems.map((item) => ({
-          productId: item.product.id,
-          productName: item.product.name,
-          price: item.unitPrice,
-          quantity: item.quantity,
-        })),
-      });
-    } catch (error) {
-      // Two concurrent calls for the same payment: the unique index let one through.
-      if ((error as { code?: number })?.code === 11000) return;
-      throw error;
-    }
-  }
+  if (!dataRouting.database.storeOrders) return { orderId: null };
 
-  // A failed email must never fail an order that is already saved and paid for.
+  await connectToDatabase();
+  if (razorpayPaymentId && (await Order.exists({ razorpayPaymentId }))) return null;
+  try {
+    const order = await Order.create({
+      customerName: formData.name,
+      email: formData.email.trim().toLowerCase(),
+      phone: formData.phone,
+      address: formData.address,
+      city: formData.city,
+      state: formData.state,
+      pincode: formData.pincode,
+      paymentMethod: formData.paymentMethod,
+      paymentStatus: 'paid',
+      razorpayOrderId,
+      razorpayPaymentId,
+      subtotal,
+      shipping,
+      total,
+      discountPercent,
+      discountAmount,
+      couponCode: appliedCoupon,
+      items: pricedItems.map((item) => ({
+        productId: item.product.id,
+        productName: item.product.name,
+        price: item.unitPrice,
+        quantity: item.quantity,
+      })),
+      ...(dataRouting.invoices.createInZohoBooks && { invoice: { status: 'pending' } }),
+    });
+    return { orderId: String(order._id) };
+  } catch (error) {
+    // Two concurrent calls for the same payment: the unique index let one through.
+    if ((error as { code?: number })?.code === 11000) return null;
+    throw error;
+  }
+}
+
+// Emails and the invoice, run after the customer already has their "order
+// placed" response (next/server `after`). The customer has paid, so none of
+// these may fail the order: each failure is logged, and a failed invoice shows
+// in the admin with a Retry button.
+export async function runOrderFollowUps({
+  orderId,
+  formData,
+  pricing,
+  razorpayPaymentId,
+}: SaveOrderOptions & { orderId: string | null }): Promise<void> {
   if (dataRouting.email.sendOrderNotifications) {
     try {
       await sendOrderNotification({ formData, pricing, razorpayPaymentId });
     } catch (error) {
       console.error('[order-email] failed to send order notification:', error);
+    }
+  }
+
+  if (dataRouting.email.sendCustomerConfirmations) {
+    try {
+      await sendOrderConfirmation({ formData, pricing, orderId });
+    } catch (error) {
+      console.error('[order-email] failed to send customer confirmation:', error);
+    }
+  }
+
+  if (orderId && dataRouting.invoices.createInZohoBooks) {
+    try {
+      await invoiceOrder(orderId);
+    } catch (error) {
+      console.error('[invoice] failed to start:', error);
     }
   }
 }

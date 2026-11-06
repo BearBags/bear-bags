@@ -38,7 +38,7 @@ const ProductIntroduction = async () => {
                 src={product.imageSrc}
                 alt={product.imageAlt}
                 fill
-                priority
+                sizes="(min-width: 1024px) 750px, (min-width: 768px) 520px, (min-width: 640px) 400px, 280px"
                 className="object-contain"
               />
             </div>

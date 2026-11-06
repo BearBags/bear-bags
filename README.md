@@ -25,6 +25,7 @@ Built with **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS 4** and
 - [Impact page and contributions](#impact-page-and-contributions)
 - [Shop, pricing and coupons](#shop-pricing-and-coupons)
 - [Orders and payments](#orders-and-payments)
+- [Invoices (Zoho Books)](#invoices-zoho-books)
 - [API routes](#api-routes)
 - [Database](#database)
 - [Caching and revalidation](#caching-and-revalidation)
@@ -69,6 +70,12 @@ Local values go in `.env.local`, which is git-ignored. Production values go in
 | `RAZORPAY_KEY_SECRET` | Yes | Razorpay API secret. Used to create orders and verify payment signatures. |
 | `GMAIL_USER` | Optional | Gmail account that sends order notifications and admin password-reset codes. |
 | `GMAIL_APP_PASSWORD` | Optional | A Google **App Password** for that account, not the normal password. Without these two, no emails are sent. |
+| `ZOHO_BOOKS_CLIENT_ID` | For invoices | Zoho API console Self Client. See [Invoices](#invoices-zoho-books). |
+| `ZOHO_BOOKS_CLIENT_SECRET` | For invoices | ″ |
+| `ZOHO_BOOKS_REFRESH_TOKEN` | For invoices | ″ |
+| `ZOHO_BOOKS_ORGANIZATION_ID` | For invoices | Zoho Books → Settings → Organization Profile. |
+| `ZOHO_BOOKS_ITEM_ID` | For invoices | The Bear Bags — Medium item in Zoho Books. |
+| `ZOHO_BOOKS_DEPOSIT_ACCOUNT_ID` | Optional | Account payments are recorded into. |
 
 **Databases:** production uses the `test` database. Local development
 (`.env.local`) uses `bear_bags`. The dev scripts refuse to write dummy data to
@@ -274,6 +281,44 @@ Adding a new NGO card means editing that file. Adding a ledger row does not.
 
 Newsletter signups (`POST /api/newsletter`) are stored in MongoDB.
 
+Checkout also asks for the delivery **state**, which the GST invoice needs.
+
+---
+
+## Invoices (Zoho Books)
+
+After the order is saved and the customer has their "order placed" screen,
+these run in the background (`after()` in `/api/payment/verify`):
+
+1. The business gets the order notification email.
+2. The customer gets an **order confirmation email** with the order number
+   (`BB-…`), items, totals and delivery address.
+3. [`lib/invoice-service.ts`](lib/invoice-service.ts) invoices the order in Zoho
+   Books: finds or creates the customer, creates the invoice (prices are GST
+   inclusive, place of supply from the state), records the Razorpay payment so it
+   shows **Paid**, and has Zoho email the PDF invoice to the customer.
+
+A failure in any of these never fails the order. Invoice progress is saved on
+the order (`order.invoice`), and the admin **Orders** table shows each order's
+invoice number (linking to Zoho), or **Failed** with the reason on hover and a
+**Retry** button. Retrying resumes where it stopped, and the invoice is looked up
+in Zoho by the Razorpay payment id first, so it can't be created twice.
+
+Orders placed before this existed show **None** with a **Create** button; orders
+with no delivery state can't be invoiced automatically and need doing by hand
+in Zoho.
+
+**Setup:** in Zoho Books, set up the organisation (GSTIN, address), the item
+(HSN code, GST rates) and the invoice template. Then create a Self Client at
+api-console.zoho.in with the scopes
+`ZohoBooks.contacts.ALL,ZohoBooks.invoices.ALL,ZohoBooks.customerpayments.ALL,ZohoBooks.settings.READ`,
+exchange the code for a refresh token, and set the `ZOHO_BOOKS_*` variables.
+Until they're set, new orders show "Invoice failed: not set up" and can be
+retried later. Turn invoicing off with `invoices.createInZohoBooks` in
+[`config/data-routing.ts`](config/data-routing.ts).
+
+Refunds and returns are handled by hand in Zoho with a credit note.
+
 ---
 
 ## API routes
@@ -302,6 +347,7 @@ Admin (session required, enforced by `proxy.ts`):
 | `POST/PATCH/DELETE /api/admin/coupons` | Manage campaign coupons. |
 | `POST/PATCH/DELETE /api/admin/contributions` | Manage contributions. |
 | `POST /api/admin/receipts` | Upload a receipt image. Returns its URL. |
+| `POST /api/admin/orders/[id]/invoice` | Create or retry an order's Zoho Books invoice. |
 
 The login and password-reset routes are reachable without a session. Everything
 else under `/api/admin/` needs one.
@@ -314,7 +360,7 @@ MongoDB Atlas via Mongoose. Collections:
 
 | Model | Contents |
 | --- | --- |
-| `Order` | Customer details, items (stored inside the order), totals, discount and payment status. |
+| `Order` | Customer details and delivery state, items (stored inside the order), totals, discount, payment status and Zoho invoice progress. |
 | `NewsletterSubscriber` | Email (unique) and signup date. |
 | `Admin` | The single admin: email, password hash, reset-code hash and expiry. |
 | `Coupon` | Campaign coupons: code, percent, description, start/end dates, active flag. |

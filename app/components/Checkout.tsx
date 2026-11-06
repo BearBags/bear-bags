@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { TiShoppingCart } from "react-icons/ti";
 import { FiLock, FiCheckCircle, FiCheck, FiTruck, FiPackage, FiInfo, FiTag } from "react-icons/fi";
 import { normalizeCoupon, type Coupon } from '@/lib/discount';
+import { INDIAN_STATES } from '@/lib/indian-states';
 import CopyableCode from './CopyableCode';
 
 const SHIPPING_DETAILS_KEY = 'bearbags_shipping_details';
@@ -138,6 +139,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
     phone: '',
     address: '',
     city: '',
+    state: '',
     pincode: '',
     paymentMethod: 'online'
   });
@@ -310,6 +312,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
       phone: '',
       address: '',
       city: '',
+      state: '',
       pincode: '',
       paymentMethod: 'online'
     });
@@ -722,7 +725,7 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div>
                       <label htmlFor="city" className="mb-1.5 block text-[12px]" style={{ color: 'var(--text-muted)' }}>
                         City
@@ -738,6 +741,27 @@ export default function Checkout({ cartItems, isBuyNow = false, onUpdateQuantity
                         onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--forest)')}
                         onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)')}
                       />
+                    </div>
+                    {/* Needed for the GST invoice (place of supply) */}
+                    <div>
+                      <label htmlFor="state" className="mb-1.5 block text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                        State
+                      </label>
+                      <select
+                        id="state"
+                        required
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                        className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm outline-none transition-colors"
+                        style={{ borderColor: 'rgba(26,58,42,0.15)', color: formData.state ? undefined : 'var(--text-muted)' }}
+                        onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--forest)')}
+                        onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(26,58,42,0.15)')}
+                      >
+                        <option value="">Select state</option>
+                        {INDIAN_STATES.map((s) => (
+                          <option key={s.code} value={s.name}>{s.name}</option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label htmlFor="pincode" className="mb-1.5 block text-[12px]" style={{ color: 'var(--text-muted)' }}>

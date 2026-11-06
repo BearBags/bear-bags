@@ -12,6 +12,16 @@ export const dataRouting = {
   email: {
     // Email a copy of every order to GMAIL_USER (see lib/order-email.ts)
     sendOrderNotifications: true,
+    // Email the customer an order confirmation (see lib/order-email.ts)
+    sendCustomerConfirmations: true,
+  },
+
+  invoices: {
+    // Create a paid GST invoice in Zoho Books for every order and have Zoho
+    // email it to the customer (see lib/invoice-service.ts). Needs the
+    // ZOHO_BOOKS_* env vars; until they are set, orders show "Invoice failed:
+    // not set up" in the admin and can be retried once they are.
+    createInZohoBooks: true,
   },
 
   admin: {

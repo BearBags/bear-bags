@@ -1,19 +1,19 @@
 'use client'
 import React, { useRef, useState } from 'react'
 import Image from 'next/image';
+import LazyVideo from './LazyVideo';
 
 const WhyBearBags = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
+  // Starts false: the video only plays once it scrolls into view (LazyVideo).
+  const [isPlaying, setIsPlaying] = useState(false);
 
 const togglePlay = () => {
   if (!videoRef.current) return;
   if (videoRef.current.paused) {
     videoRef.current.play();
-    setIsPlaying(true);
   } else {
     videoRef.current.pause();
-    setIsPlaying(false);
   }
 };
 
@@ -61,7 +61,7 @@ const togglePlay = () => {
       src="/images/Bag Stretch Image without backgorund 2.png"
       alt="No Leak. No Tear."
       fill
-      priority
+      sizes="100vw"
       // className="object-cover"
     />
   </div>
@@ -104,16 +104,13 @@ const togglePlay = () => {
 
         {/* Video container */}
         <div className="group relative rounded-2xl overflow-hidden border-2 border-[#f2d9c0] shadow-[0_20px_60px_rgba(181,101,29,0.15)] w-full aspect-[16/9] bg-[#173d36]">
-          <video
+          <LazyVideo
             ref={videoRef}
-            autoPlay
-            muted
-            loop
-            playsInline
+            src="/videos/unboxing.mp4"
+            poster="/videos/unboxing-poster.jpg"
+            onPlayingChange={setIsPlaying}
             className="h-full w-auto mx-auto rotate-270 scale-[1.8] object-cover"
-          >
-            <source src="/videos/Bear Bags_Unboxing.mp4" type="video/mp4" />
-          </video>
+          />
 
           {/* Overlay on pause */}
           {!isPlaying && (

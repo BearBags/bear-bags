@@ -8,6 +8,7 @@ import {
   type OrderFormData,
 } from '@/lib/order-pricing';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { isIndianState } from '@/lib/indian-states';
 
 // Creating a Razorpay order is the one unauthenticated endpoint that calls a
 // paid third-party API, so it is capped per IP.
@@ -38,6 +39,10 @@ export async function POST(request: NextRequest) {
     const requiredFields = ['name', 'email', 'phone', 'address', 'city', 'pincode'] as const;
     if (requiredFields.some((field) => !String(formData?.[field] ?? '').trim())) {
       return NextResponse.json({ error: 'Please fill in all your delivery details.' }, { status: 400 });
+    }
+    // The GST invoice needs the delivery state, so it is checked before payment too.
+    if (!isIndianState(String(formData.state ?? ''))) {
+      return NextResponse.json({ error: 'Please choose your state.' }, { status: 400 });
     }
 
     if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {

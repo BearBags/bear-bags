@@ -35,6 +35,21 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// One line per product and option. Also repairs carts saved before this rule,
+// which could hold the same product twice. A missing option and an empty one
+// are the same option.
+const lineKey = (product: Product) => `${product.id}|${product.option ?? ''}`;
+function mergeLines(items: CartItem[]): CartItem[] {
+  const lines = new Map<string, CartItem>();
+  for (const item of items) {
+    if (!item?.product || !Number.isInteger(item.quantity) || item.quantity < 1) continue;
+    const key = lineKey(item.product);
+    const line = lines.get(key);
+    lines.set(key, line ? { ...line, quantity: line.quantity + item.quantity } : item);
+  }
+  return [...lines.values()];
+}
+
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -69,7 +84,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     // provider wraps the whole site, so it must never throw.
     try {
       const stored = JSON.parse(localStorage.getItem('cart') ?? '[]');
-      if (Array.isArray(stored)) setCart(stored);
+      if (Array.isArray(stored)) setCart(mergeLines(stored));
     } catch {
       // keep the empty cart
     }
@@ -105,20 +120,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cart, cartLoaded]);
 
+  // Functional update, so two quick taps on "Add to Cart" add to one line
+  // instead of each starting from the same old cart.
   const addToCart = (product: Product, quantity: number = 1) => {
-    const exists = cart.find(
-      (i) => i.product.id === product.id && i.product.option === product.option
-    );
-
-    const nextCart = exists
-      ? cart.map(i =>
-          i.product.id === product.id && i.product.option === product.option
-            ? { ...i, quantity: i.quantity + quantity }
-            : i
-        )
-      : [...cart, { product, quantity }];
-
-    setCart(nextCart);
+    setCart((current) => mergeLines([...current, { product, quantity }]));
     setIsCartOpen(true);
   };
 

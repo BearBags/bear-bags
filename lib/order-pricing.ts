@@ -29,6 +29,7 @@ export interface OrderFormData {
   address: string;
   city: string;
   pincode: string;
+  state: string;
   paymentMethod: string;
 }
 

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { after, NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
 import { pricingFromOrderNotes, type OrderFormData } from '@/lib/order-pricing';
-import { saveOrder } from '@/lib/order-service';
+import { runOrderFollowUps, saveOrder } from '@/lib/order-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,12 +52,11 @@ export async function POST(request: NextRequest) {
     }
 
     const { pricing } = paid;
-    await saveOrder({
-      formData,
-      pricing,
-      razorpayOrderId: razorpay_order_id,
-      razorpayPaymentId: razorpay_payment_id,
-    });
+    const order = { formData, pricing, razorpayOrderId: razorpay_order_id, razorpayPaymentId: razorpay_payment_id };
+    const saved = await saveOrder(order);
+    // Emails and the invoice run once the customer has their response, so a
+    // slow Gmail or Zoho never keeps them waiting on the payment screen.
+    if (saved) after(() => runOrderFollowUps({ ...order, orderId: saved.orderId }));
 
     return NextResponse.json({
       success: true,

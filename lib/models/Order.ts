@@ -12,6 +12,23 @@ const orderItemSchema = new Schema(
   { _id: false },
 );
 
+// Progress of the order's Zoho Books invoice (lib/invoice-service.ts). Each id
+// is saved as soon as it exists, so a retry resumes instead of starting over.
+const invoiceSchema = new Schema(
+  {
+    status: { type: String, enum: ['pending', 'running', 'done', 'failed'], default: 'pending' },
+    zohoCustomerId: { type: String, default: null },
+    zohoInvoiceId: { type: String, default: null },
+    number: { type: String, default: null },
+    paidAt: { type: Date, default: null },
+    emailedAt: { type: Date, default: null },
+    error: { type: String, default: null },
+    attempts: { type: Number, default: 0 },
+    startedAt: { type: Date, default: null },
+  },
+  { _id: false },
+);
+
 const orderSchema = new Schema(
   {
     customerName: { type: String, required: true },
@@ -20,6 +37,8 @@ const orderSchema = new Schema(
     address: { type: String, required: true },
     city: { type: String, required: true },
     pincode: { type: String, required: true },
+    // Needed for the GST place of supply. Missing on orders placed before it was asked for.
+    state: { type: String, default: null },
     paymentMethod: { type: String, required: true },
     // Every order is paid online through Razorpay before it is saved.
     paymentStatus: { type: String, enum: ['paid'], default: 'paid' },
@@ -34,6 +53,8 @@ const orderSchema = new Schema(
     // Which coupon the buyer applied, so campaign codes can be reported on.
     couponCode: { type: String, default: null },
     items: { type: [orderItemSchema], default: [] },
+    // Absent on orders placed before invoicing, or while it is switched off.
+    invoice: { type: invoiceSchema, default: undefined },
     createdAt: { type: Date, default: Date.now },
   },
 );
