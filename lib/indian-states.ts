@@ -2,8 +2,8 @@
 // place of supply. Shared by the checkout form and the server, so this file must
 // not import the database.
 //
-// The place of supply decides the tax: CGST + SGST inside Madhya Pradesh (where
-// Eye of Arjuna is registered), IGST everywhere else.
+// The place of supply decides the tax: CGST + SGST inside Karnataka (the state
+// of Eye of Arjuna's GSTIN in Zoho Books), IGST everywhere else.
 //
 // Not yet checked against a live Zoho organisation: the codes for Chhattisgarh,
 // Odisha, Telangana, Uttarakhand and Dadra & Nagar Haveli and Daman & Diu have

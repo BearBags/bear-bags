@@ -107,7 +107,7 @@ export interface ZohoCustomer {
   name: string;
   email: string;
   phone: string;
-  /** GST place-of-supply code, e.g. "MP". */
+  /** GST place-of-supply code, e.g. "KA". */
   placeOfSupply: string;
   address: ZohoAddress;
 }
