@@ -1,7 +1,6 @@
 import { connectToDatabase } from './mongodb';
 import { Order } from './models/Order';
 import { sendOrderConfirmation, sendOrderNotification } from './order-email';
-import { invoiceOrder } from './invoice-service';
 import { dataRouting } from '@/config/data-routing';
 import type { OrderFormData, OrderPricing } from './order-pricing';
 
@@ -61,10 +60,13 @@ export async function saveOrder({
   }
 }
 
-// Emails and the invoice, run after the customer already has their "order
-// placed" response (next/server `after`). The customer has paid, so none of
-// these may fail the order: each failure is logged, and a failed invoice shows
-// in the admin with a Retry button.
+// Emails, run after the customer already has their "order placed" response
+// (next/server `after`). The customer has paid, so none of these may fail the
+// order: each failure is logged.
+//
+// The GST invoice is not created here: it is created when the admin marks the
+// order as shipped (app/api/admin/orders/[id]/status), since a customer may
+// cancel before then.
 export async function runOrderFollowUps({
   orderId,
   formData,
@@ -84,14 +86,6 @@ export async function runOrderFollowUps({
       await sendOrderConfirmation({ formData, pricing, orderId });
     } catch (error) {
       console.error('[order-email] failed to send customer confirmation:', error);
-    }
-  }
-
-  if (orderId && dataRouting.invoices.createInZohoBooks) {
-    try {
-      await invoiceOrder(orderId);
-    } catch (error) {
-      console.error('[invoice] failed to start:', error);
     }
   }
 }

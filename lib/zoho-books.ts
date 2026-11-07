@@ -213,14 +213,28 @@ export async function recordPayment(
   });
 }
 
-/** Zoho emails the invoice, with its PDF attached, to the customer. */
+/**
+ * Zoho emails the invoice, with its PDF attached, to the customer.
+ *
+ * Sent from the "From" address chosen in Zoho's invoice email template
+ * (Settings → Email Notifications → Invoice Notification). Without
+ * from_address_id the API sends as the user who owns the API token instead.
+ */
 export async function emailInvoice(
   config: ZohoBooksConfig,
   invoiceId: string,
-  email: { to: string; subject: string; body: string },
+  email: { to: string; cc?: string[]; subject: string; body: string },
 ): Promise<void> {
+  const template = (await call(config, 'GET', `/invoices/${invoiceId}/email`)).data;
+  const fromAddressId: string | undefined = template?.from_address || undefined;
   await call(config, 'POST', `/invoices/${invoiceId}/email`, {
-    body: { to_mail_ids: [email.to], subject: email.subject, body: email.body },
+    body: {
+      ...(fromAddressId && { from_address_id: fromAddressId }),
+      to_mail_ids: [email.to],
+      ...(email.cc?.length && { cc_mail_ids: email.cc }),
+      subject: email.subject,
+      body: email.body,
+    },
   });
 }
 

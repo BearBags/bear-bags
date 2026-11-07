@@ -11,7 +11,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
   const result = await invoiceOrder(id);
   if (!result) {
     return NextResponse.json(
-      { error: 'This order is already invoiced, or an invoice is being created right now.' },
+      { error: 'This order is not shipped yet, is already invoiced, or an invoice is being created right now.' },
       { status: 409 },
     );
   }

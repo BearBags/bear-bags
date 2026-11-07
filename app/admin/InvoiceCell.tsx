@@ -13,11 +13,13 @@ interface Props {
   error?: string | null;
   /** Link to the invoice in Zoho Books, when it exists. */
   zohoUrl?: string | null;
+  /** Invoices are only created for shipped (or delivered) orders. */
+  orderStatus: 'placed' | 'shipped' | 'delivered' | 'cancelled';
 }
 
 // The Invoice column of the admin Orders table: the Zoho invoice number once it
 // exists, otherwise the status with a button to (re)try.
-export default function InvoiceCell({ orderId, status, number, error, zohoUrl }: Props) {
+export default function InvoiceCell({ orderId, status, number, error, zohoUrl, orderStatus }: Props) {
   const router = useRouter();
   const { notify } = useFeedback();
   const [busy, setBusy] = useState(false);
@@ -41,6 +43,9 @@ export default function InvoiceCell({ orderId, status, number, error, zohoUrl }:
       <span className="font-medium text-[#134632]">{number}</span>
     );
   }
+
+  if (orderStatus === 'placed') return <span className="text-xs text-[#888]">When shipped</span>;
+  if (orderStatus === 'cancelled') return <span className="text-xs text-[#888]">—</span>;
 
   const badge =
     status === 'failed'

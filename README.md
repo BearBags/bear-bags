@@ -69,7 +69,11 @@ Local values go in `.env.local`, which is git-ignored. Production values go in
 | `RAZORPAY_KEY_ID` | Yes | Razorpay API key (use Test Mode keys locally). Sent to the browser to open the checkout widget, which is safe: it isn't the secret. |
 | `RAZORPAY_KEY_SECRET` | Yes | Razorpay API secret. Used to create orders and verify payment signatures. |
 | `GMAIL_USER` | Optional | Gmail account that sends order notifications and admin password-reset codes. |
-| `GMAIL_APP_PASSWORD` | Optional | A Google **App Password** for that account, not the normal password. Without these two, no emails are sent. |
+| `GMAIL_APP_PASSWORD` | Optional | A Google **App Password** for that account, not the normal password. Without these two (or the `SMTP_*` set), no emails are sent. |
+| `SMTP_HOST` | Optional | Send from another mailbox instead of Gmail, e.g. `smtp.titan.email` for hello@bearbags.in. Overrides `GMAIL_*` when set. |
+| `SMTP_PORT` | Optional | Default `465`. |
+| `SMTP_USER` | Optional | The mailbox address, e.g. `hello@bearbags.in`. Also receives the "New order" notifications. |
+| `SMTP_PASSWORD` | Optional | That mailbox's password. |
 | `ZOHO_BOOKS_CLIENT_ID` | For invoices | Zoho API console Self Client. See [Invoices](#invoices-zoho-books). |
 | `ZOHO_BOOKS_CLIENT_SECRET` | For invoices | ″ |
 | `ZOHO_BOOKS_REFRESH_TOKEN` | For invoices | ″ |

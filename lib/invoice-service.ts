@@ -3,6 +3,7 @@ import { Order } from './models/Order';
 import { indiaDay } from './discount';
 import { stateCode } from './indian-states';
 import { formatOrderNumber } from './order-number';
+import { escapeHtml } from './order-email';
 import { dataRouting } from '@/config/data-routing';
 import {
   createInvoice,
@@ -16,8 +17,9 @@ import {
 } from './zoho-books';
 
 // Invoices a paid order in Zoho Books: customer → invoice → payment → email.
-// Runs after the customer has their confirmation (see lib/order-service.ts) and
-// again whenever the admin presses Retry.
+// Runs when the admin marks the order as shipped (GST: the invoice is issued at
+// dispatch, and a customer may cancel before then), and again whenever the
+// admin presses Retry. Orders that are not shipped are never invoiced.
 //
 // Each step's result is saved on the order as it completes, so a retry picks up
 // where the last attempt stopped. The invoice is also looked up in Zoho by the
@@ -51,6 +53,7 @@ export async function invoiceOrder(orderId: string): Promise<InvoiceResult | nul
   const order = await Order.findOneAndUpdate(
     {
       _id: orderId,
+      status: 'shipped',
       $or: [
         { 'invoice.status': { $in: ['pending', 'failed'] } },
         { 'invoice.status': { $exists: false } },
@@ -58,7 +61,7 @@ export async function invoiceOrder(orderId: string): Promise<InvoiceResult | nul
       ],
     },
     { $set: { 'invoice.status': 'running', 'invoice.startedAt': new Date() }, $inc: { 'invoice.attempts': 1 } },
-    { new: true },
+    { returnDocument: 'after' },
   );
   if (!order?.invoice) return null;
   const invoice = order.invoice;
@@ -78,7 +81,8 @@ export async function invoiceOrder(orderId: string): Promise<InvoiceResult | nul
     if (unsupported) throw new Error(`"${unsupported.productName}" has no Zoho Books item.`);
 
     const reference = order.razorpayPaymentId ?? String(order._id);
-    const date = indiaDay(order.createdAt);
+    // Dated the day it shipped: that is the GST time of supply.
+    const date = indiaDay(order.shippedAt ?? new Date());
 
     invoice.zohoCustomerId ??= await upsertCustomer(config, {
       name: order.customerName,
@@ -126,8 +130,10 @@ export async function invoiceOrder(orderId: string): Promise<InvoiceResult | nul
     if (!invoice.emailedAt) {
       await emailInvoice(config, zohoInvoice.invoice_id, {
         to: order.email,
-        subject: `Invoice ${zohoInvoice.invoice_number} for your Bear Bags order ${formatOrderNumber(String(order._id))}`,
-        body: `Hi ${order.customerName},<br><br>Thank you for your order. Your invoice is attached.<br><br>Bear Bags (Eye of Arjuna)`,
+        // Never Cc the customer's own address back to them.
+        cc: dataRouting.invoices.ccInvoiceEmailsTo.filter((cc) => cc.toLowerCase() !== order.email.toLowerCase()),
+        subject: `Your Bear Bags order ${formatOrderNumber(String(order._id))} has shipped (invoice ${zohoInvoice.invoice_number})`,
+        body: `Hi ${escapeHtml(order.customerName)},<br><br>Good news: your Bear Bags order ${formatOrderNumber(String(order._id))} has been shipped. Your invoice is attached.<br><br>Questions? Just reply to this email.<br><br>Bear Bags (Eye of Arjuna)`,
       });
       invoice.emailedAt = new Date();
     }

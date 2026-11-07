@@ -8,6 +8,7 @@ import CouponsManager, { type AdminCoupon, type CouponStatus } from './CouponsMa
 import AdminFeedbackProvider from './AdminFeedback';
 import ContributionsManager from './ContributionsManager';
 import InvoiceCell from './InvoiceCell';
+import StatusCell, { type OrderStatus } from './StatusCell';
 import ProductPriceCard from './ProductPriceCard';
 import Pagination from './Pagination';
 import { getLiveProductBySlug } from '@/lib/product-prices';
@@ -130,13 +131,14 @@ export default async function AdminPage({
                   <th className="px-5 py-3">City</th>
                   <th className="px-5 py-3">Total</th>
                   <th className="px-5 py-3">Payment</th>
+                  <th className="px-5 py-3">Status</th>
                   <th className="px-5 py-3">Invoice</th>
                 </tr>
               </thead>
               <tbody>
                 {orders.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-5 py-8 text-center text-[#888]">No orders yet</td>
+                    <td colSpan={9} className="px-5 py-8 text-center text-[#888]">No orders yet</td>
                   </tr>
                 )}
                 {orders.map((order) => (
@@ -151,8 +153,17 @@ export default async function AdminPage({
                     <td className="px-5 py-3 font-semibold text-[#134632]">₹{order.total}</td>
                     <td className="px-5 py-3 capitalize text-[#555]">{order.paymentMethod}</td>
                     <td className="whitespace-nowrap px-5 py-3">
+                      <StatusCell
+                        orderId={String(order._id)}
+                        orderNumber={formatOrderNumber(String(order._id))}
+                        status={(order.status ?? 'placed') as OrderStatus}
+                        invoicesOn={dataRouting.invoices.createInZohoBooks}
+                      />
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-3">
                       <InvoiceCell
                         orderId={String(order._id)}
+                        orderStatus={(order.status ?? 'placed') as OrderStatus}
                         status={order.invoice?.status as 'pending' | 'running' | 'done' | 'failed' | undefined}
                         number={order.invoice?.number}
                         error={order.invoice?.error}

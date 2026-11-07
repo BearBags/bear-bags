@@ -53,6 +53,13 @@ const orderSchema = new Schema(
     // Which coupon the buyer applied, so campaign codes can be reported on.
     couponCode: { type: String, default: null },
     items: { type: [orderItemSchema], default: [] },
+    // Set from the admin Orders table. The GST invoice is only created once an
+    // order is shipped (lib/invoice-service.ts); a cancelled order never gets one.
+    // Missing on orders placed before statuses existed, which count as "placed".
+    status: { type: String, enum: ['placed', 'shipped', 'delivered', 'cancelled'], default: 'placed' },
+    shippedAt: { type: Date, default: null },
+    deliveredAt: { type: Date, default: null },
+    cancelledAt: { type: Date, default: null },
     // Absent on orders placed before invoicing, or while it is switched off.
     invoice: { type: invoiceSchema, default: undefined },
     createdAt: { type: Date, default: Date.now },

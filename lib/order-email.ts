@@ -10,7 +10,7 @@ import type { OrderFormData, OrderPricing } from './order-pricing';
 //   sendOrderNotification -- a copy of every new order, to the business inbox
 //   sendOrderConfirmation -- the customer's "order confirmed" email
 
-const escapeHtml = (value: string) =>
+export const escapeHtml = (value: string) =>
   value.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
 const rupees = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
@@ -152,7 +152,7 @@ export async function sendOrderConfirmation({
   // Only promise an invoice email when one will actually be sent.
   const invoiceNote =
     dataRouting.invoices.createInZohoBooks && getZohoBooksConfig()
-      ? 'Your GST invoice will arrive in a separate email shortly.'
+      ? "We'll email you again when your order ships, with your GST invoice attached."
       : null;
   const support = dataRouting.admin.email;
 

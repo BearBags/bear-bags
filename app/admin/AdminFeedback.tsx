@@ -14,6 +14,8 @@ interface ConfirmOptions {
   title: string;
   message: string;
   confirmLabel: string;
+  /** "danger" (red, the default) for deletes and cancels; "primary" (green) for forward steps. */
+  tone?: 'danger' | 'primary';
 }
 
 interface Feedback {
@@ -68,7 +70,9 @@ function ConfirmDialog({ options, onClose }: { options: ConfirmOptions; onClose:
           <button
             type="button"
             onClick={() => onClose(true)}
-            className="rounded-full bg-[#c82b2d] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#a82224]"
+            className={`rounded-full px-5 py-2.5 text-sm font-semibold text-white transition ${
+              options.tone === 'primary' ? 'bg-[#134632] hover:bg-[#0e3526]' : 'bg-[#c82b2d] hover:bg-[#a82224]'
+            }`}
           >
             {options.confirmLabel}
           </button>
@@ -78,7 +82,7 @@ function ConfirmDialog({ options, onClose }: { options: ConfirmOptions; onClose:
   );
 }
 
-// Delete confirmations and success/failure toasts for the admin dashboard.
+// Confirmations and success/failure toasts for the admin dashboard.
 export default function AdminFeedbackProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [pending, setPending] = useState<(ConfirmOptions & { resolve: (confirmed: boolean) => void }) | null>(null);

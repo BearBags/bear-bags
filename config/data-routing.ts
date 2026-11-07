@@ -12,16 +12,22 @@ export const dataRouting = {
   email: {
     // Email a copy of every order to GMAIL_USER (see lib/order-email.ts)
     sendOrderNotifications: true,
-    // Email the customer an order confirmation (see lib/order-email.ts)
+    // Email the customer an order confirmation right after payment (see
+    // lib/order-email.ts). The GST invoice follows from Zoho Books once the
+    // order is marked shipped in the admin.
     sendCustomerConfirmations: true,
   },
 
   invoices: {
-    // Create a paid GST invoice in Zoho Books for every order and have Zoho
-    // email it to the customer (see lib/invoice-service.ts). Needs the
-    // ZOHO_BOOKS_* env vars; until they are set, orders show "Invoice failed:
-    // not set up" in the admin and can be retried once they are.
+    // Create a paid GST invoice in Zoho Books when an order is marked shipped,
+    // and have Zoho email it to the customer (see lib/invoice-service.ts).
+    // Needs the ZOHO_BOOKS_* env vars; until they are set, shipped orders show
+    // "Invoice failed: not set up" in the admin and can be retried once they are.
     createInZohoBooks: true,
+    // Cc'd on every invoice email so the business keeps a copy. (The Bcc in
+    // Zoho's invoice email template is ignored for emails sent through the
+    // API.) Empty list = no copy.
+    ccInvoiceEmailsTo: ['hello@bearbags.in'],
   },
 
   admin: {
