@@ -164,7 +164,7 @@ export default function CouponsManager({ coupons }: { coupons: AdminCoupon[] }) 
 
       {/* Existing coupons */}
       <div className="overflow-x-auto rounded-[20px] border border-[#dbe7d2] bg-white shadow-sm">
-        <table className="min-w-full text-sm">
+        <table className="admin-table min-w-full text-sm">
           <thead>
             <tr className="border-b border-[#dbe7d2] text-left text-xs font-semibold uppercase tracking-wide text-[#555]">
               <th className="px-5 py-3">Code</th>
@@ -183,20 +183,21 @@ export default function CouponsManager({ coupons }: { coupons: AdminCoupon[] }) 
             )}
             {coupons.map((coupon) => (
               <tr key={coupon.id} className="border-b border-[#f0f0e8] last:border-0 hover:bg-[#f8fcf6]">
-                <td className="px-5 py-3 font-semibold tracking-wide text-[#1f3a2d]">{coupon.code}</td>
-                <td className="px-5 py-3 font-semibold text-[#134632]">{coupon.percent}%</td>
-                <td className="px-5 py-3 text-[#555]">{coupon.blurb || '—'}</td>
-                <td className="whitespace-nowrap px-5 py-3 text-[#555]">
+                <td data-label="Code" className="px-5 py-3 font-semibold tracking-wide text-[#1f3a2d]">{coupon.code}</td>
+                <td data-label="Discount" className="px-5 py-3 font-semibold text-[#134632]">{coupon.percent}%</td>
+                <td data-label="Description" className="px-5 py-3 text-[#555]">{coupon.blurb || '—'}</td>
+                <td data-label="Runs" className="whitespace-nowrap px-5 py-3 text-[#555]">
                   {!coupon.startsAt && !coupon.endsAt
                     ? 'No end date'
                     : `${formatDate(coupon.startsAt) || 'Now'} → ${formatDate(coupon.endsAt) || 'No end date'}`}
                 </td>
-                <td className="px-5 py-3">
+                <td data-label="Status" className="px-5 py-3">
                   <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[coupon.status]}`}>
                     {coupon.status}
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-5 py-3 text-right">
+                <td data-label="Actions" className="whitespace-nowrap px-5 py-3 text-right">
+                  <div>
                   <button
                     type="button"
                     onClick={() => toggleActive(coupon)}
@@ -213,6 +214,7 @@ export default function CouponsManager({ coupons }: { coupons: AdminCoupon[] }) 
                   >
                     Delete
                   </button>
+                  </div>
                 </td>
               </tr>
             ))}

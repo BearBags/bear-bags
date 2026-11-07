@@ -93,10 +93,10 @@ export default async function AdminPage({
     <main className="min-h-screen bg-[#f4f4ec] py-10 px-4 sm:px-8">
       {/* Toasts and confirm dialogs for everything below */}
       <AdminFeedbackProvider>
-      <div className="mx-auto max-w-6xl space-y-10">
+      <div className="mx-auto max-w-7xl space-y-10">
 
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-semibold text-[#134632]">Bear Bags — Admin</h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-2xl font-semibold text-[#134632] sm:text-3xl">Bear Bags — Admin</h1>
           <form action={logout}>
             <button type="submit" className="rounded-full border border-[#d1ddcf] bg-white px-5 py-2 text-sm text-[#555] hover:bg-[#f0f0e8]">
               Log out
@@ -121,38 +121,46 @@ export default async function AdminPage({
         <section>
           <h2 className="mb-4 text-xl font-semibold text-[#134632]">Orders</h2>
           <div className="overflow-x-auto rounded-[20px] border border-[#dbe7d2] bg-white shadow-sm">
-            <table className="min-w-full text-sm">
+            <table className="admin-table min-w-full text-sm">
               <thead>
                 <tr className="border-b border-[#dbe7d2] text-left text-xs font-semibold uppercase tracking-wide text-[#555]">
-                  <th className="px-5 py-3">Date</th>
-                  <th className="px-5 py-3">Order</th>
-                  <th className="px-5 py-3">Customer</th>
-                  <th className="px-5 py-3">Email</th>
-                  <th className="px-5 py-3">City</th>
-                  <th className="px-5 py-3">Total</th>
-                  <th className="px-5 py-3">Payment</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3">Invoice</th>
+                  <th className="px-4 py-3">Order</th>
+                  <th className="px-4 py-3">Customer</th>
+                  <th className="px-4 py-3">Total</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Invoice</th>
                 </tr>
               </thead>
               <tbody>
                 {orders.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="px-5 py-8 text-center text-[#888]">No orders yet</td>
+                    <td colSpan={5} className="px-4 py-8 text-center text-[#888]">No orders yet</td>
                   </tr>
                 )}
                 {orders.map((order) => (
-                  <tr key={String(order._id)} className="border-b border-[#f0f0e8] last:border-0 hover:bg-[#f8fcf6]">
-                    <td className="whitespace-nowrap px-5 py-3 text-[#555]">
-                      {order.createdAt.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
+                  <tr key={String(order._id)} className="border-b border-[#f0f0e8] align-top last:border-0 hover:bg-[#f8fcf6]">
+                    <td data-label="Order" className="whitespace-nowrap px-4 py-3">
+                      <div>
+                        <div className="font-mono text-xs font-semibold text-[#1f3a2d]">{formatOrderNumber(String(order._id))}</div>
+                        <div className="mt-0.5 text-xs text-[#888]">
+                          {order.createdAt.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
+                        </div>
+                      </div>
                     </td>
-                    <td className="whitespace-nowrap px-5 py-3 font-mono text-xs text-[#555]">{formatOrderNumber(String(order._id))}</td>
-                    <td className="px-5 py-3 font-medium text-[#1f3a2d]">{order.customerName}</td>
-                    <td className="px-5 py-3 text-[#555]">{order.email}</td>
-                    <td className="px-5 py-3 text-[#555]">{order.city}</td>
-                    <td className="px-5 py-3 font-semibold text-[#134632]">₹{order.total}</td>
-                    <td className="px-5 py-3 capitalize text-[#555]">{order.paymentMethod}</td>
-                    <td className="whitespace-nowrap px-5 py-3">
+                    <td data-label="Customer" className="px-4 py-3">
+                      <div className="min-w-0">
+                        <div className="font-medium text-[#1f3a2d]">{order.customerName}</div>
+                        <div className="text-xs text-[#555]">{order.email}</div>
+                        <div className="text-xs text-[#888]">{[order.city, order.state].filter(Boolean).join(', ')}</div>
+                      </div>
+                    </td>
+                    <td data-label="Total" className="whitespace-nowrap px-4 py-3">
+                      <div>
+                        <div className="font-semibold text-[#134632]">₹{order.total}</div>
+                        <div className="text-xs capitalize text-[#888]">{order.paymentMethod}</div>
+                      </div>
+                    </td>
+                    <td data-label="Status" className="whitespace-nowrap px-4 py-3">
                       <StatusCell
                         orderId={String(order._id)}
                         orderNumber={formatOrderNumber(String(order._id))}
@@ -160,7 +168,7 @@ export default async function AdminPage({
                         invoicesOn={dataRouting.invoices.createInZohoBooks}
                       />
                     </td>
-                    <td className="whitespace-nowrap px-5 py-3">
+                    <td data-label="Invoice" className="whitespace-nowrap px-4 py-3">
                       <InvoiceCell
                         orderId={String(order._id)}
                         orderStatus={(order.status ?? 'placed') as OrderStatus}
@@ -191,7 +199,7 @@ export default async function AdminPage({
         <section>
           <h2 className="mb-4 text-xl font-semibold text-[#134632]">Newsletter Subscribers</h2>
           <div className="overflow-x-auto rounded-[20px] border border-[#dbe7d2] bg-white shadow-sm">
-            <table className="min-w-full text-sm">
+            <table className="admin-table min-w-full text-sm">
               <thead>
                 <tr className="border-b border-[#dbe7d2] text-left text-xs font-semibold uppercase tracking-wide text-[#555]">
                   <th className="px-5 py-3">Date</th>
@@ -206,10 +214,10 @@ export default async function AdminPage({
                 )}
                 {subscribers.map((sub) => (
                   <tr key={String(sub._id)} className="border-b border-[#f0f0e8] last:border-0 hover:bg-[#f8fcf6]">
-                    <td className="whitespace-nowrap px-5 py-3 text-[#555]">
+                    <td data-label="Date" className="whitespace-nowrap px-5 py-3 text-[#555]">
                       {sub.createdAt.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
                     </td>
-                    <td className="px-5 py-3 font-medium text-[#1f3a2d]">{sub.email}</td>
+                    <td data-label="Email" className="px-5 py-3 font-medium text-[#1f3a2d]">{sub.email}</td>
                   </tr>
                 ))}
               </tbody>

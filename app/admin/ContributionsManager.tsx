@@ -400,7 +400,7 @@ export default function ContributionsManager({ contributions }: { contributions:
 
       {/* Existing contributions */}
       <div className="overflow-x-auto rounded-[20px] border border-[#dbe7d2] bg-white shadow-sm">
-        <table className="min-w-full text-sm">
+        <table className="admin-table min-w-full text-sm">
           <thead>
             <tr className="border-b border-[#dbe7d2] text-left text-xs font-semibold uppercase tracking-wide text-[#555]">
               <th className="px-5 py-3">Date</th>
@@ -419,11 +419,11 @@ export default function ContributionsManager({ contributions }: { contributions:
             )}
             {rows.map((c) => (
               <tr key={c.id} className="border-b border-[#f0f0e8] last:border-0 hover:bg-[#f8fcf6]">
-                <td className="whitespace-nowrap px-5 py-3 text-[#555]">{formatMonth(c.month)}</td>
-                <td className="px-5 py-3 font-medium text-[#1f3a2d]">{c.ngo}</td>
-                <td className="whitespace-nowrap px-5 py-3 font-semibold text-[#134632]">{formatRupees(c.amount)}</td>
-                <td className="px-5 py-3 text-[#555]">{c.funded}</td>
-                <td className="px-5 py-3">
+                <td data-label="Date" className="whitespace-nowrap px-5 py-3 text-[#555]">{formatMonth(c.month)}</td>
+                <td data-label="NGO" className="px-5 py-3 font-medium text-[#1f3a2d]">{c.ngo}</td>
+                <td data-label="Amount" className="whitespace-nowrap px-5 py-3 font-semibold text-[#134632]">{formatRupees(c.amount)}</td>
+                <td data-label="Funded" className="px-5 py-3 text-[#555]">{c.funded}</td>
+                <td data-label="Receipt" className="px-5 py-3">
                   {c.receiptUrl ? (
                     <button type="button" onClick={() => setViewing(c)} className="text-[#134632] underline underline-offset-2">
                       View
@@ -432,7 +432,8 @@ export default function ContributionsManager({ contributions }: { contributions:
                     <span className="text-[#bbb]">—</span>
                   )}
                 </td>
-                <td className="whitespace-nowrap px-5 py-3 text-right">
+                <td data-label="Actions" className="whitespace-nowrap px-5 py-3 text-right">
+                  <div>
                   <button
                     type="button"
                     onClick={() => setEditing(c)}
@@ -449,6 +450,7 @@ export default function ContributionsManager({ contributions }: { contributions:
                   >
                     Delete
                   </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -457,7 +459,7 @@ export default function ContributionsManager({ contributions }: { contributions:
             <tfoot>
               <tr className="border-t border-[#dbe7d2]">
                 <td colSpan={2} />
-                <td colSpan={4} className="px-5 py-3 font-semibold text-[#134632]">{formatRupees(total)} total</td>
+                <td data-label="Total" colSpan={4} className="px-5 py-3 font-semibold text-[#134632]">{formatRupees(total)} total</td>
               </tr>
             </tfoot>
           )}

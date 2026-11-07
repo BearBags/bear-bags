@@ -995,3 +995,38 @@ width: 513px;
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
+
+/* Admin tables (class "admin-table") turn into stacked cards on phones: the
+   header row is hidden and each cell shows its column name from data-label. */
+@media (max-width: 767px) {
+  .admin-table thead { display: none; }
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tfoot,
+  .admin-table tr { display: block; width: 100%; }
+  .admin-table tr { padding: 0.75rem 1rem; }
+  .admin-table td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.35rem 0 !important;
+    text-align: right !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+  .admin-table td[data-label]::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    padding-top: 0.15rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #888;
+    text-align: left;
+  }
+  /* Empty-state rows ("No orders yet") and spacer cells */
+  .admin-table td:not([data-label]) { display: block; text-align: center !important; }
+  .admin-table td:empty { display: none; }
+}
